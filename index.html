@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-BR" data-theme="light">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
@@ -7,6 +7,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="Caderno RD">
 <title>Caderno RD</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.30.0/dist/tabler-icons.min.css">
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -18,15 +19,24 @@
 
 <div class="top-bar">
   <div class="top-bar-inner">
-    <span class="week-badge" id="week-badge">🌙 Semana 1</span>
+    <span class="week-badge" id="week-badge">
+      <i class="ti ti-moon" aria-hidden="true"></i> Semana 1
+    </span>
     <div class="week-info">
       <div class="week-title" id="week-title">Sono — A Fundação</div>
       <div class="week-sub" id="week-sub">Sprint 1 · Módulo 4</div>
     </div>
-    <span class="sync idle" id="sync">● Pronto</span>
+    <span class="sync idle" id="sync">
+      <i class="ti ti-circle-dot" aria-hidden="true"></i> Pronto
+    </span>
+    <button class="theme-btn" id="theme-btn" onclick="toggleTheme()" aria-label="Alternar tema">
+      <i class="ti ti-moon-stars" id="theme-icon" aria-hidden="true"></i>
+    </button>
   </div>
   <div class="progress-outer">
-    <div class="progress-bar"><div class="progress-fill" id="prog" style="width:12%"></div></div>
+    <div class="progress-bar">
+      <div class="progress-fill" id="prog" style="width:12%"></div>
+    </div>
   </div>
 </div>
 
@@ -39,7 +49,9 @@
 </div>
 
 <div class="content" id="content">
-  <p style="color:#aaa;font-size:13px;text-align:center;padding:2rem 0">Carregando…</p>
+  <p style="color:var(--text-muted);font-size:13px;text-align:center;padding:2rem 0">
+    <i class="ti ti-loader" aria-hidden="true"></i> Carregando…
+  </p>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
