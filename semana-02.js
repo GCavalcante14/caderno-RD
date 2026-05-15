@@ -7,7 +7,7 @@ window.SEMANA_DATA = {
   titulo: 'Hábitos + Procrastinação',
   temaShort: 'Hábitos',
   sprint: 'Sprint 3 · Módulo 8',
-  emoji: '🔁',
+  icon: 'ti-refresh',
   tagClass: 'habitos',
 
   experimento: {
