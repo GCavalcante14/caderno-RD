@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Caderno RD">
+<title>Caderno RD</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div id="overlay">
+  <div class="spinner"></div>
+  <div class="overlay-text">Carregando suas respostas…</div>
+</div>
+
+<div class="top-bar">
+  <div class="top-bar-inner">
+    <span class="week-badge" id="week-badge">🌙 Semana 1</span>
+    <div class="week-info">
+      <div class="week-title" id="week-title">Sono — A Fundação</div>
+      <div class="week-sub" id="week-sub">Sprint 1 · Módulo 4</div>
+    </div>
+    <span class="sync idle" id="sync">● Pronto</span>
+  </div>
+  <div class="progress-outer">
+    <div class="progress-bar"><div class="progress-fill" id="prog" style="width:12%"></div></div>
+  </div>
+</div>
+
+<div class="week-nav">
+  <div class="week-nav-inner" id="week-nav-inner"></div>
+</div>
+
+<div class="day-nav">
+  <div class="day-nav-inner" id="day-nav-inner"></div>
+</div>
+
+<div class="content" id="content">
+  <p style="color:#aaa;font-size:13px;text-align:center;padding:2rem 0">Carregando…</p>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
