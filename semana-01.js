@@ -7,7 +7,7 @@ window.SEMANA_DATA = {
   titulo: 'Sono — A Fundação',
   temaShort: 'Sono',
   sprint: 'Sprint 1 · Módulo 4',
-  emoji: '🌙',
+  icon: 'ti-moon',
   tagClass: 'sono',
 
   experimento: {
