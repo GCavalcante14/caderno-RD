@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Diário · LifeOS">
+<title>Diário · LifeOS</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.30.0/dist/tabler-icons.min.css">
+<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="lifeos.css">
+</head>
+<body>
+
+<div class="app-shell">
+  <div id="sidebar" class="sidebar"></div>
+
+  <div class="page-content" id="main">
+    <!-- Loading -->
+    <div class="lo-loading" id="loading">
+      <div class="lo-spinner"></div>
+      <span>Carregando...</span>
+    </div>
+
+    <!-- Content (hidden until loaded) -->
+    <div id="page-body" style="display:none">
+
+      <!-- Header -->
+      <div class="page-header">
+        <div class="page-header-left">
+          <div class="page-role">
+            <i class="ti ti-stethoscope" aria-hidden="true"></i>
+            O Residente — executa, observa, registra
+          </div>
+          <h1 class="page-title" id="page-title-date">Hoje</h1>
+          <p class="page-subtitle">Daily Quest · Coração operacional do sistema</p>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px">
+          <div class="save-status idle" id="save-status">
+            <i class="ti ti-circle-dot" aria-hidden="true"></i> Pronto
+          </div>
+        </div>
+      </div>
+
+      <!-- Date Navigation -->
+      <div class="date-nav" style="margin-bottom:1.5rem">
+        <button class="date-nav-btn" onclick="goDay(-1)" title="Dia anterior (←)">
+          <i class="ti ti-chevron-left" aria-hidden="true"></i>
+        </button>
+        <span class="date-nav-text" id="date-display">—</span>
+        <button class="date-nav-btn" onclick="goDay(1)" title="Próximo dia (→)">
+          <i class="ti ti-chevron-right" aria-hidden="true"></i>
+        </button>
+        <button class="date-nav-today" onclick="goToday()">Hoje</button>
+      </div>
+
+      <!-- Two column layout -->
+      <div class="two-col">
+
+        <!-- LEFT: Saúde, Palavras, Hábitos -->
+        <div style="display:flex;flex-direction:column;gap:1.2rem">
+
+          <!-- Saúde & Energia -->
+          <div class="lo-card">
+            <div class="lo-card-header">
+              <i class="ti ti-activity" aria-hidden="true"></i>
+              <span class="lo-card-title">Saúde & Energia</span>
+            </div>
+            <div class="lo-card-body" style="padding:0.8rem 1.2rem">
+
+              <div class="rating-row">
+                <div class="rating-label"><i class="ti ti-clock" aria-hidden="true"></i> Acordei às</div>
+                <input type="time" class="time-input" id="wake-up" onchange="saveField('wake_up', this.value)">
+              </div>
+
+              <div class="rating-row">
+                <div class="rating-label"><i class="ti ti-moon" aria-hidden="true"></i> Horas dormidas</div>
+                <input type="number" class="number-input" id="horas-sono" min="0" max="24" step="0.5" placeholder="7.0" onchange="saveField('horas_sono', parseFloat(this.value))">
+              </div>
+
+              <div class="rating-row">
+                <div class="rating-label"><i class="ti ti-zzz" aria-hidden="true"></i> Qualidade do sono</div>
+                <div class="rating-stars" id="stars-sono" data-field="sono_qualidade"></div>
+              </div>
+
+              <div class="rating-row">
+                <div class="rating-label"><i class="ti ti-flame" aria-hidden="true"></i> Nível de estresse</div>
+                <div class="rating-stars" id="stars-estresse" data-field="estresse"></div>
+              </div>
+
+              <div class="rating-row">
+                <div class="rating-label"><i class="ti ti-mood-smile" aria-hidden="true"></i> Humor</div>
+                <div class="emoji-row" id="emoji-humor">
+                  <span class="emoji-btn" data-val="1" onclick="saveEmoji(1)">😢</span>
+                  <span class="emoji-btn" data-val="2" onclick="saveEmoji(2)">🙁</span>
+                  <span class="emoji-btn" data-val="3" onclick="saveEmoji(3)">😐</span>
+                  <span class="emoji-btn" data-val="4" onclick="saveEmoji(4)">🙂</span>
+                  <span class="emoji-btn" data-val="5" onclick="saveEmoji(5)">😄</span>
+                </div>
+              </div>
+
+              <div class="rating-row">
+                <div class="rating-label"><i class="ti ti-bolt" aria-hidden="true"></i> Intencionalidade</div>
+                <div class="rating-stars" id="stars-int" data-field="intencionalidade"></div>
+              </div>
+
+            </div>
+          </div>
+
+          <!-- Três Palavras -->
+          <div class="lo-card">
+            <div class="lo-card-header">
+              <i class="ti ti-tag" aria-hidden="true"></i>
+              <span class="lo-card-title">Três Palavras do Dia</span>
+            </div>
+            <div class="lo-card-body">
+              <div class="words-count" id="words-count">Escolha até 3 palavras que descrevem hoje</div>
+              <div class="words-grid" id="words-grid"></div>
+            </div>
+          </div>
+
+          <!-- Hábitos -->
+          <div class="lo-card">
+            <div class="lo-card-header">
+              <i class="ti ti-checkbox" aria-hidden="true"></i>
+              <span class="lo-card-title">Hábitos de Hoje</span>
+            </div>
+            <div class="lo-card-body" style="padding:0.4rem 1.2rem" id="habitos-list">
+              <div style="font-size:13px;color:var(--text-muted);padding:0.5rem 0">Carregando hábitos...</div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- RIGHT: Reflexão -->
+        <div class="lo-card" style="align-self:start">
+          <div class="lo-card-header">
+            <i class="ti ti-pencil" aria-hidden="true"></i>
+            <span class="lo-card-title">Reflexão do Dia</span>
+          </div>
+          <div class="lo-card-body">
+
+            <div class="refl-field">
+              <div class="refl-field-label">
+                <i class="ti ti-trophy" aria-hidden="true"></i>
+                O que fiz que me deixa orgulhoso?
+              </div>
+              <textarea class="refl-textarea" id="fiz-bem"
+                placeholder="Uma coisa — grande ou pequena — que você fez bem hoje."
+                oninput="debounceSave('fiz_bem', this.value)"></textarea>
+            </div>
+
+            <div class="refl-field">
+              <div class="refl-field-label">
+                <i class="ti ti-bulb" aria-hidden="true"></i>
+                Lição de vida
+              </div>
+              <textarea class="refl-textarea small" id="licao-vida"
+                placeholder="O que hoje te tornou melhor como pessoa?"
+                oninput="debounceSave('licao_vida', this.value)"></textarea>
+            </div>
+
+            <div class="refl-field">
+              <div class="refl-field-label">
+                <i class="ti ti-stethoscope" aria-hidden="true"></i>
+                Lição de medicina
+              </div>
+              <textarea class="refl-textarea small" id="licao-medicina"
+                placeholder="Um caso, diagnóstico, conduta ou insight clínico de hoje."
+                oninput="debounceSave('licao_medicina', this.value)"></textarea>
+            </div>
+
+            <div class="refl-field">
+              <div class="refl-field-label">
+                <i class="ti ti-heart" aria-hidden="true"></i>
+                Grato por
+              </div>
+              <textarea class="refl-textarea small" id="gratidao"
+                placeholder="Uma coisa pequena ou grande que você aprecia hoje."
+                oninput="debounceSave('gratidao', this.value)"></textarea>
+            </div>
+
+            <div class="refl-field">
+              <div class="refl-field-label">
+                <i class="ti ti-alert-triangle" aria-hidden="true"></i>
+                Não repetir
+              </div>
+              <textarea class="refl-textarea small" id="nao-repetir"
+                placeholder="Um comportamento, decisão ou erro que você não quer repetir amanhã."
+                oninput="debounceSave('nao_repetir', this.value)"></textarea>
+            </div>
+
+          </div>
+        </div>
+
+      </div><!-- end two-col -->
+
+    </div><!-- end page-body -->
+  </div><!-- end page-content -->
+</div><!-- end app-shell -->
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script src="nav.js"></script>
+<script>
+// ── STATE ──────────────────────────────────────
+let currentDate = todayISO();
+let diarioEntry = null;
+let habitos = [];
+let habitoChecks = {};
+let saveTimers = {};
+
+const PALAVRAS = [
+  'Produtivo','Plantão','Estudo','Descanso','Família','Amizades',
+  'Exercício','Saúde','Lazer','Viagem','Planejamento','Focado',
+  'Cansado','Feliz','Estressado','Inspirado','Ansioso','Igreja',
+  'Cinema','Aprendizado','Criativo','Difícil'
+];
+
+let selectedWords = [];
+
+// ── INIT ───────────────────────────────────────
+window.addEventListener('DOMContentLoaded', async () => {
+  await waitForSupabase();
+  await init();
+});
+
+function waitForSupabase() {
+  return new Promise(resolve => {
+    const check = setInterval(() => {
+      if (window.db) { clearInterval(check); resolve(); }
+    }, 50);
+    setTimeout(() => { clearInterval(check); resolve(); }, 3000);
+  });
+}
+
+async function init() {
+  await loadHabitos();
+  await loadDiario(currentDate);
+  renderPage();
+  setupKeyboard();
+  document.getElementById('loading').style.display = 'none';
+  document.getElementById('page-body').style.display = 'block';
+}
+
+// ── NAVIGATION ─────────────────────────────────
+function goDay(n) {
+  currentDate = addDays(currentDate, n);
+  loadDiario(currentDate).then(() => renderPage());
+}
+function goToday() {
+  currentDate = todayISO();
+  loadDiario(currentDate).then(() => renderPage());
+}
+function setupKeyboard() {
+  document.addEventListener('keydown', e => {
+    if (e.target.tagName === 'TEXTAREA' || e.target.tagName === 'INPUT') return;
+    if (e.key === 'ArrowLeft') goDay(-1);
+    if (e.key === 'ArrowRight') goDay(1);
+  });
+}
+
+// ── LOAD ───────────────────────────────────────
+async function loadHabitos() {
+  if (!window.db) return;
+  const { data } = await window.db.from('habitos').select('*').eq('ativo', true).order('ordem');
+  habitos = data || [];
+}
+
+async function loadDiario(date) {
+  if (!window.db) return;
+  const { data } = await window.db.from('diario').select('*').eq('data', date).maybeSingle();
+  diarioEntry = data || { data: date };
+
+  // Load habit checks
+  const { data: checks } = await window.db.from('habito_checks')
+    .select('*').eq('data', date);
+  habitoChecks = {};
+  (checks || []).forEach(c => habitoChecks[c.habito_id] = c.concluido);
+
+  // Parse tres_palavras
+  try {
+    selectedWords = JSON.parse(diarioEntry.tres_palavras || '[]');
+  } catch { selectedWords = []; }
+}
+
+// ── RENDER ─────────────────────────────────────
+function renderPage() {
+  document.getElementById('page-title-date').textContent = formatDate(currentDate);
+  document.getElementById('date-display').textContent =
+    isToday(currentDate) ? 'Hoje' :
+    currentDate === addDays(todayISO(), -1) ? 'Ontem' :
+    new Date(currentDate + 'T12:00:00').toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' });
+
+  renderStars();
+  renderEmoji();
+  renderWakeUp();
+  renderHorasSono();
+  renderWords();
+  renderHabitos();
+  renderReflexao();
+}
+
+function renderStars() {
+  const configs = [
+    { id: 'stars-sono', field: 'sono_qualidade' },
+    { id: 'stars-estresse', field: 'estresse' },
+    { id: 'stars-int', field: 'intencionalidade' },
+  ];
+  configs.forEach(({ id, field }) => {
+    const cont = document.getElementById(id);
+    if (!cont) return;
+    const val = diarioEntry[field] || 0;
+    cont.innerHTML = '';
+    for (let i = 1; i <= 5; i++) {
+      const star = document.createElement('span');
+      star.className = 'star' + (i <= val ? ' on' : '');
+      star.textContent = '★';
+      star.onclick = () => saveStars(field, i, cont);
+      cont.appendChild(star);
+    }
+  });
+}
+
+function saveStars(field, val, cont) {
+  diarioEntry[field] = val;
+  cont.querySelectorAll('.star').forEach((s, i) => s.classList.toggle('on', i < val));
+  saveField(field, val);
+}
+
+function renderEmoji() {
+  const val = diarioEntry.humor || 0;
+  document.querySelectorAll('#emoji-humor .emoji-btn').forEach(btn => {
+    btn.classList.toggle('on', parseInt(btn.dataset.val) === val);
+  });
+}
+
+function saveEmoji(val) {
+  diarioEntry.humor = val;
+  renderEmoji();
+  saveField('humor', val);
+}
+
+function renderWakeUp() {
+  const el = document.getElementById('wake-up');
+  if (el) el.value = diarioEntry.wake_up || '';
+}
+
+function renderHorasSono() {
+  const el = document.getElementById('horas-sono');
+  if (el) el.value = diarioEntry.horas_sono || '';
+}
+
+function renderWords() {
+  const sel = selectedWords.length;
+  document.getElementById('words-count').textContent =
+    sel === 0 ? 'Escolha até 3 palavras que descrevem hoje' :
+    sel === 3 ? '3/3 palavras selecionadas' :
+    `${sel}/3 palavras selecionadas`;
+
+  const grid = document.getElementById('words-grid');
+  grid.innerHTML = PALAVRAS.map(w => {
+    const isSelected = selectedWords.includes(w);
+    const isLocked = !isSelected && sel >= 3;
+    return `<div class="word-chip${isSelected ? ' selected' : ''}${isLocked ? ' locked' : ''}"
+      onclick="${isLocked ? '' : `toggleWord('${w}')`}">${w}</div>`;
+  }).join('');
+}
+
+function toggleWord(w) {
+  if (selectedWords.includes(w)) {
+    selectedWords = selectedWords.filter(x => x !== w);
+  } else if (selectedWords.length < 3) {
+    selectedWords.push(w);
+  }
+  renderWords();
+  saveField('tres_palavras', JSON.stringify(selectedWords));
+}
+
+function renderHabitos() {
+  const list = document.getElementById('habitos-list');
+  if (!habitos.length) {
+    list.innerHTML = `<div style="font-size:13px;color:var(--text-muted);padding:0.5rem 0">
+      Nenhum hábito ainda. <a href="habitos.html" style="color:var(--acc-text)">Adicionar hábitos →</a>
+    </div>`;
+    return;
+  }
+  list.innerHTML = habitos.map(h => {
+    const done = habitoChecks[h.id] || false;
+    return `<div class="habit-check-item" onclick="toggleHabito('${h.id}')">
+      <div class="habit-check-box${done ? ' checked'}">
+        <i class="ti ti-check" aria-hidden="true"></i>
+      </div>
+      <i class="ti ${h.icone} habit-icon" style="color:${h.cor}" aria-hidden="true"></i>
+      <span class="habit-check-name${done ? ' done'}">${h.nome}</span>
+    </div>`;
+  }).join('');
+}
+
+function renderReflexao() {
+  const fields = ['fiz-bem','licao-vida','licao-medicina','gratidao','nao-repetir'];
+  const keys   = ['fiz_bem','licao_vida','licao_medicina','gratidao','nao_repetir'];
+  fields.forEach((id, i) => {
+    const el = document.getElementById(id);
+    if (el) el.value = diarioEntry[keys[i]] || '';
+  });
+}
+
+// ── HABIT TOGGLE ───────────────────────────────
+async function toggleHabito(habitoId) {
+  const current = habitoChecks[habitoId] || false;
+  habitoChecks[habitoId] = !current;
+  renderHabitos();
+  if (!window.db) return;
+  await window.db.from('habito_checks').upsert(
+    { habito_id: habitoId, data: currentDate, concluido: !current },
+    { onConflict: 'habito_id,data' }
+  );
+}
+
+// ── SAVE ───────────────────────────────────────
+function debounceSave(field, value) {
+  clearTimeout(saveTimers[field]);
+  setStatus('saving');
+  saveTimers[field] = setTimeout(() => saveField(field, value), 900);
+}
+
+async function saveField(field, value) {
+  if (!window.db) return;
+  setStatus('saving');
+  diarioEntry[field] = value;
+  try {
+    if (diarioEntry.id) {
+      await window.db.from('diario').update({ [field]: value }).eq('id', diarioEntry.id);
+    } else {
+      const { data } = await window.db.from('diario')
+        .upsert({ data: currentDate, [field]: value }, { onConflict: 'data' })
+        .select().single();
+      if (data) diarioEntry = data;
+    }
+    setStatus('saved');
+  } catch (e) { setStatus('error'); }
+}
+
+function setStatus(state) {
+  const el = document.getElementById('save-status');
+  if (!el) return;
+  const map = {
+    idle:   ['<i class="ti ti-circle-dot" aria-hidden="true"></i> Pronto', 'idle'],
+    saving: ['<i class="ti ti-loader" aria-hidden="true"></i> Salvando…', 'saving'],
+    saved:  ['<i class="ti ti-circle-check" aria-hidden="true"></i> Salvo', 'saved'],
+    error:  ['<i class="ti ti-wifi-off" aria-hidden="true"></i> Erro', 'error'],
+  };
+  const [html, cls] = map[state] || map.idle;
+  el.innerHTML = html;
+  el.className = 'save-status ' + cls;
+  if (state === 'saved') setTimeout(() => setStatus('idle'), 2000);
+}
+</script>
+</body>
+</html>

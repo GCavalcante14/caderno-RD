@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>Semanal · LifeOS</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.30.0/dist/tabler-icons.min.css">
+<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="lifeos.css">
+</head>
+<body>
+
+<div class="app-shell">
+  <div id="sidebar" class="sidebar"></div>
+
+  <div class="page-content">
+
+    <!-- Header -->
+    <div class="page-header">
+      <div class="page-header-left">
+        <div class="page-role">
+          <i class="ti ti-map" aria-hidden="true"></i>
+          O Explorador — sai do modo execução, vê o padrão
+        </div>
+        <h1 class="page-title">Revisão Semanal</h1>
+        <p class="page-subtitle">30–40 min · Todo domingo (ou quando fechar a semana)</p>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px">
+        <div class="save-status idle" id="save-status">
+          <i class="ti ti-circle-dot" aria-hidden="true"></i> Pronto
+        </div>
+      </div>
+    </div>
+
+    <!-- Week Nav -->
+    <div class="date-nav" style="margin-bottom:1.5rem">
+      <button class="date-nav-btn" onclick="goWeek(-1)">
+        <i class="ti ti-chevron-left" aria-hidden="true"></i>
+      </button>
+      <span class="date-nav-text" id="week-display">—</span>
+      <button class="date-nav-btn" onclick="goWeek(1)">
+        <i class="ti ti-chevron-right" aria-hidden="true"></i>
+      </button>
+      <button class="date-nav-today" onclick="goCurrentWeek()">Esta semana</button>
+    </div>
+
+    <div class="lo-loading" id="loading">
+      <div class="lo-spinner"></div>
+      <span>Carregando semana...</span>
+    </div>
+
+    <div id="page-body" style="display:none">
+
+      <!-- Mood Strip -->
+      <div class="lo-card" style="margin-bottom:1.2rem">
+        <div class="lo-card-header">
+          <i class="ti ti-mood-happy" aria-hidden="true"></i>
+          <span class="lo-card-title">Humor da semana</span>
+        </div>
+        <div class="lo-card-body">
+          <div class="mood-strip" id="mood-strip"></div>
+        </div>
+      </div>
+
+      <!-- Summary chips + Habit grid -->
+      <div class="two-col" style="margin-bottom:1.2rem">
+
+        <!-- Resumo numérico -->
+        <div class="lo-card">
+          <div class="lo-card-header">
+            <i class="ti ti-chart-line" aria-hidden="true"></i>
+            <span class="lo-card-title">Resumo da semana</span>
+          </div>
+          <div class="lo-card-body">
+            <div class="summary-row" id="summary-chips"></div>
+            <div style="font-size:11px;color:var(--text-muted);margin-top:0.3rem">
+              Dados dos diários dos 7 dias
+            </div>
+          </div>
+        </div>
+
+        <!-- Habit summary -->
+        <div class="lo-card">
+          <div class="lo-card-header">
+            <i class="ti ti-checkbox" aria-hidden="true"></i>
+            <span class="lo-card-title">Hábitos da semana</span>
+          </div>
+          <div class="lo-card-body" style="padding:0.5rem 1.2rem">
+            <div id="habit-week-summary"></div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Review Questions -->
+      <div class="two-col" style="margin-bottom:1.2rem">
+
+        <!-- Padrão da semana -->
+        <div class="lo-card">
+          <div class="lo-card-header">
+            <i class="ti ti-telescope" aria-hidden="true"></i>
+            <span class="lo-card-title">🔍 O Explorador · Olhar para trás</span>
+          </div>
+          <div class="lo-card-body">
+
+            <div class="pergunta-item">
+              <div class="pergunta-text">Qual foi o padrão da semana?</div>
+              <div class="pergunta-hint">Em qual dia você foi mais produtivo? O que estava diferente? Qual ritmo de energia você percebe?</div>
+              <textarea class="refl-textarea" id="padrao-semana"
+                placeholder="Analisa os diários. O que os dados dizem que você não tinha percebido no dia a dia?"
+                oninput="debounceSave('padrao_semana', this.value)"></textarea>
+            </div>
+
+            <div class="pergunta-item">
+              <div class="pergunta-text">Qual Reino ficou sem atenção — e foi intencional?</div>
+              <textarea class="refl-textarea small" id="okrs-check"
+                placeholder="Saúde, Carreira, Finanças, Relacionamentos, Aprendizado, Legado. Algum em crise silenciosa?"
+                oninput="debounceSave('okrs_check', this.value)"></textarea>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- Próxima semana -->
+        <div class="lo-card">
+          <div class="lo-card-header">
+            <i class="ti ti-compass" aria-hidden="true"></i>
+            <span class="lo-card-title">🗺 O Explorador · Planejar à frente</span>
+          </div>
+          <div class="lo-card-body">
+
+            <div class="pergunta-item">
+              <div class="pergunta-text">Projetos e campanhas — o que avançou? O que travou?</div>
+              <textarea class="refl-textarea small" id="projetos-check"
+                placeholder="Algum projeto parado há +2 semanas? Tarefas que sobraram precisam de novo projeto?"
+                oninput="debounceSave('projetos_check', this.value)"></textarea>
+            </div>
+
+            <div class="pergunta-item">
+              <div class="pergunta-text">3 prioridades da próxima semana por Reino</div>
+              <div class="pergunta-hint">Não mais que 3. Rituais não contam — são o piso.</div>
+              <textarea class="refl-textarea" id="prioridades"
+                placeholder="1. [Reino] Prioridade&#10;2. [Reino] Prioridade&#10;3. [Reino] Prioridade"
+                oninput="debounceSave('prioridades', this.value)"></textarea>
+            </div>
+
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Reflexão pós-semana -->
+      <div class="lo-card">
+        <div class="lo-card-header">
+          <i class="ti ti-writing" aria-hidden="true"></i>
+          <span class="lo-card-title">Reflexão de fechamento</span>
+        </div>
+        <div class="lo-card-body">
+          <div class="pergunta-text" style="margin-bottom:0.5rem">Como foi essa semana — em uma frase ou parágrafo?</div>
+          <div class="pergunta-hint">Livre. Pode ser o que ficou, o que surpreendeu, o que você quer lembrar desta semana.</div>
+          <textarea class="refl-textarea" id="reflexao-pos" style="min-height:100px"
+            placeholder="Sem estrutura. O que vier."
+            oninput="debounceSave('reflexao_pos', this.value)"></textarea>
+        </div>
+      </div>
+
+      <!-- Links para outras abas -->
+      <div style="margin-top:1.2rem;padding:1rem;background:var(--surface2);border-radius:var(--radius);border:1px solid var(--border)">
+        <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.07em;color:var(--text-muted);margin-bottom:0.6rem">
+          <i class="ti ti-link" style="font-size:13px" aria-hidden="true"></i> Conexões desta revisão
+        </div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <a href="diario.html" style="font-size:12px;color:var(--acc-text);text-decoration:none;display:flex;align-items:center;gap:4px;background:var(--acc-soft);padding:4px 10px;border-radius:20px">
+            <i class="ti ti-calendar-event" aria-hidden="true"></i> Abrir Diário
+          </a>
+          <a href="habitos.html" style="font-size:12px;color:var(--acc-text);text-decoration:none;display:flex;align-items:center;gap:4px;background:var(--acc-soft);padding:4px 10px;border-radius:20px">
+            <i class="ti ti-checkbox" aria-hidden="true"></i> Ver Hábitos
+          </a>
+          <span style="font-size:12px;color:var(--text-muted);display:flex;align-items:center;gap:4px;padding:4px 10px;background:var(--surface);border:1px solid var(--border);border-radius:20px;opacity:0.5">
+            <i class="ti ti-target" aria-hidden="true"></i> OKRs (em breve)
+          </span>
+          <span style="font-size:12px;color:var(--text-muted);display:flex;align-items:center;gap:4px;padding:4px 10px;background:var(--surface);border:1px solid var(--border);border-radius:20px;opacity:0.5">
+            <i class="ti ti-rocket" aria-hidden="true"></i> Projetos (em breve)
+          </span>
+        </div>
+      </div>
+
+    </div><!-- end page-body -->
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script src="nav.js"></script>
+<script>
+let currentWeekStart = weekStart(todayISO());
+let weekEntry = null;
+let diarios = {};
+let habitos = [];
+let checks = {};
+let saveTimers = {};
+
+const EMOJIS = { 1:'😢', 2:'🙁', 3:'😐', 4:'🙂', 5:'😄' };
+
+window.addEventListener('DOMContentLoaded', async () => {
+  await waitForSupabase();
+  await init();
+});
+
+function waitForSupabase() {
+  return new Promise(resolve => {
+    const check = setInterval(() => { if (window.db) { clearInterval(check); resolve(); } }, 50);
+    setTimeout(() => { clearInterval(check); resolve(); }, 3000);
+  });
+}
+
+async function init() {
+  await loadHabitos();
+  await loadWeekData(currentWeekStart);
+  document.getElementById('loading').style.display = 'none';
+  document.getElementById('page-body').style.display = 'block';
+  renderPage();
+}
+
+function goWeek(n) {
+  currentWeekStart = addDays(currentWeekStart, n * 7);
+  loadWeekData(currentWeekStart).then(() => renderPage());
+}
+function goCurrentWeek() {
+  currentWeekStart = weekStart(todayISO());
+  loadWeekData(currentWeekStart).then(() => renderPage());
+}
+
+async function loadHabitos() {
+  if (!window.db) return;
+  const { data } = await window.db.from('habitos').select('*').eq('ativo', true).order('ordem');
+  habitos = data || [];
+}
+
+async function loadWeekData(monday) {
+  if (!window.db) return;
+  const days = weekDays(monday);
+  const sunday = days[6];
+
+  // Load weekly review entry
+  const { data: wr } = await window.db.from('revisao_semanal')
+    .select('*').eq('semana_inicio', monday).maybeSingle();
+  weekEntry = wr || { semana_inicio: monday };
+
+  // Load diario entries for the week
+  const { data: drs } = await window.db.from('diario')
+    .select('*').gte('data', monday).lte('data', sunday);
+  diarios = {};
+  (drs || []).forEach(d => diarios[d.data] = d);
+
+  // Load habit checks
+  const { data: hc } = await window.db.from('habito_checks')
+    .select('*').gte('data', monday).lte('data', sunday);
+  checks = {};
+  (hc || []).forEach(c => checks[`${c.habito_id}:${c.data}`] = c.concluido);
+}
+
+function renderPage() {
+  const days = weekDays(currentWeekStart);
+  const sunday = days[6];
+  const fmt = d => new Date(d+'T12:00:00').toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit'});
+  document.getElementById('week-display').textContent = `${fmt(currentWeekStart)} → ${fmt(sunday)}`;
+
+  renderMoodStrip(days);
+  renderSummary(days);
+  renderHabitSummary(days);
+  renderTextFields();
+}
+
+function renderMoodStrip(days) {
+  const DNAMES = ['Seg','Ter','Qua','Qui','Sex','Sáb','Dom'];
+  document.getElementById('mood-strip').innerHTML = days.map((d, i) => {
+    const entry = diarios[d];
+    const humor = entry?.humor;
+    const isEmpty = !humor;
+    return `<div class="mood-day${isEmpty ? ' empty' : ''}">
+      <div class="mood-day-label">${DNAMES[i]}</div>
+      <span class="mood-day-emoji">${humor ? EMOJIS[humor] : '·'}</span>
+    </div>`;
+  }).join('');
+}
+
+function renderSummary(days) {
+  const entries = days.map(d => diarios[d]).filter(Boolean);
+  const avg = arr => arr.length ? (arr.reduce((s,v)=>s+v,0)/arr.length).toFixed(1) : '—';
+
+  const sonoAvg = avg(entries.map(e=>e.horas_sono).filter(v=>v!=null));
+  const qualAvg = avg(entries.map(e=>e.sono_qualidade).filter(v=>v!=null));
+  const intAvg  = avg(entries.map(e=>e.intencionalidade).filter(v=>v!=null));
+  const diasRegistrados = entries.length;
+
+  document.getElementById('summary-chips').innerHTML = `
+    <div class="summary-chip">
+      <i class="ti ti-moon" aria-hidden="true"></i>
+      <span class="summary-chip-value">${sonoAvg}h</span>
+      <span class="summary-chip-label">sono médio</span>
+    </div>
+    <div class="summary-chip">
+      <i class="ti ti-zzz" aria-hidden="true"></i>
+      <span class="summary-chip-value">${qualAvg}/5</span>
+      <span class="summary-chip-label">qualidade</span>
+    </div>
+    <div class="summary-chip">
+      <i class="ti ti-bolt" aria-hidden="true"></i>
+      <span class="summary-chip-value">${intAvg}/5</span>
+      <span class="summary-chip-label">intencionalidade</span>
+    </div>
+    <div class="summary-chip">
+      <i class="ti ti-calendar-check" aria-hidden="true"></i>
+      <span class="summary-chip-value">${diasRegistrados}/7</span>
+      <span class="summary-chip-label">dias registrados</span>
+    </div>`;
+}
+
+function renderHabitSummary(days) {
+  if (!habitos.length) {
+    document.getElementById('habit-week-summary').innerHTML =
+      `<p style="font-size:13px;color:var(--text-muted);padding:0.3rem 0">Nenhum hábito cadastrado.</p>`;
+    return;
+  }
+  document.getElementById('habit-week-summary').innerHTML = habitos.map(h => {
+    const done = days.filter(d => checks[`${h.id}:${d}`]).length;
+    const pct = Math.round((done / 7) * 100);
+    const color = pct >= 70 ? 'var(--acc)' : pct >= 40 ? 'var(--amber-text)' : 'var(--red)';
+    return `<div style="display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid var(--border)">
+      <i class="ti ${h.icone}" style="color:${h.cor};font-size:14px" aria-hidden="true"></i>
+      <span style="font-size:12px;flex:1;color:var(--text2)">${h.nome}</span>
+      <span style="font-size:12px;font-weight:700;color:${color}">${done}/7</span>
+    </div>`;
+  }).join('');
+}
+
+function renderTextFields() {
+  ['padrao-semana','okrs-check','projetos-check','prioridades','reflexao-pos'].forEach(id => {
+    const field = id.replace(/-/g,'_');
+    const el = document.getElementById(id);
+    if (el) el.value = weekEntry[field] || '';
+  });
+}
+
+function debounceSave(field, value) {
+  clearTimeout(saveTimers[field]);
+  setStatus('saving');
+  saveTimers[field] = setTimeout(() => saveField(field, value), 900);
+}
+
+async function saveField(field, value) {
+  if (!window.db) return;
+  weekEntry[field] = value;
+  try {
+    if (weekEntry.id) {
+      await window.db.from('revisao_semanal').update({ [field]: value }).eq('id', weekEntry.id);
+    } else {
+      const { data } = await window.db.from('revisao_semanal')
+        .upsert({ semana_inicio: currentWeekStart, [field]: value }, { onConflict: 'semana_inicio' })
+        .select().single();
+      if (data) weekEntry = data;
+    }
+    setStatus('saved');
+  } catch (e) { setStatus('error'); }
+}
+
+function setStatus(state) {
+  const el = document.getElementById('save-status');
+  if (!el) return;
+  const map = {
+    idle:   ['<i class="ti ti-circle-dot" aria-hidden="true"></i> Pronto', 'idle'],
+    saving: ['<i class="ti ti-loader" aria-hidden="true"></i> Salvando…', 'saving'],
+    saved:  ['<i class="ti ti-circle-check" aria-hidden="true"></i> Salvo', 'saved'],
+    error:  ['<i class="ti ti-wifi-off" aria-hidden="true"></i> Erro', 'error'],
+  };
+  const [html, cls] = map[state] || map.idle;
+  el.innerHTML = html;
+  el.className = 'save-status ' + cls;
+  if (state === 'saved') setTimeout(() => setStatus('idle'), 2000);
+}
+</script>
+</body>
+</html>
