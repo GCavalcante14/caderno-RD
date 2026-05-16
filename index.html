@@ -6,55 +6,81 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="Caderno RD">
-<title>Caderno RD</title>
+<title>Caderno RD · LifeOS</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.30.0/dist/tabler-icons.min.css">
 <link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="lifeos.css">
 </head>
 <body>
 
-<div id="overlay">
-  <div class="spinner"></div>
-  <div class="overlay-text">Carregando suas respostas…</div>
-</div>
+<!-- Mobile overlay -->
+<div id="sb-overlay" class="sb-overlay" onclick="closeSidebar()"></div>
 
-<div class="top-bar">
-  <div class="top-bar-inner">
-    <span class="week-badge" id="week-badge">
-      <i class="ti ti-moon" aria-hidden="true"></i> Semana 1
-    </span>
-    <div class="week-info">
-      <div class="week-title" id="week-title">Sono — A Fundação</div>
-      <div class="week-sub" id="week-sub">Sprint 1 · Módulo 4</div>
+<!-- App Shell -->
+<div class="app-shell">
+
+  <!-- Sidebar -->
+  <div id="sidebar" class="sidebar"></div>
+
+  <!-- Main area -->
+  <div class="main-area">
+
+    <!-- Loading overlay -->
+    <div id="overlay">
+      <div class="spinner"></div>
+      <div class="overlay-text">Carregando suas respostas…</div>
     </div>
-    <span class="sync idle" id="sync">
-      <i class="ti ti-circle-dot" aria-hidden="true"></i> Pronto
-    </span>
-    <button class="theme-btn" id="theme-btn" onclick="toggleTheme()" aria-label="Alternar tema">
-      <i class="ti ti-moon-stars" id="theme-icon" aria-hidden="true"></i>
-    </button>
-  </div>
-  <div class="progress-outer">
-    <div class="progress-bar">
-      <div class="progress-fill" id="prog" style="width:12%"></div>
+
+    <!-- Top bar -->
+    <div class="top-bar">
+      <div class="top-bar-inner">
+        <!-- Hambúrguer (só mobile) -->
+        <button class="hamburger" onclick="openSidebar()" aria-label="Menu">
+          <i class="ti ti-menu-2" aria-hidden="true"></i>
+        </button>
+        <span class="week-badge" id="week-badge">
+          <i class="ti ti-moon" aria-hidden="true"></i> Semana 1
+        </span>
+        <div class="week-info">
+          <div class="week-title" id="week-title">Sono — A Fundação</div>
+          <div class="week-sub" id="week-sub">Sprint 1 · Módulo 4</div>
+        </div>
+        <span class="sync idle" id="sync">
+          <i class="ti ti-circle-dot" aria-hidden="true"></i> Pronto
+        </span>
+        <button class="theme-btn" id="theme-btn" onclick="toggleTheme()" aria-label="Alternar tema">
+          <i class="ti ti-moon-stars" id="theme-icon" aria-hidden="true"></i>
+        </button>
+      </div>
+      <div class="progress-outer">
+        <div class="progress-bar">
+          <div class="progress-fill" id="prog" style="width:12%"></div>
+        </div>
+      </div>
     </div>
-  </div>
-</div>
 
-<div class="week-nav">
-  <div class="week-nav-inner" id="week-nav-inner"></div>
-</div>
+    <!-- Week nav -->
+    <div class="week-nav">
+      <div class="week-nav-inner" id="week-nav-inner"></div>
+    </div>
 
-<div class="day-nav">
-  <div class="day-nav-inner" id="day-nav-inner"></div>
-</div>
+    <!-- Day nav -->
+    <div class="day-nav">
+      <div class="day-nav-inner" id="day-nav-inner"></div>
+    </div>
 
-<div class="content" id="content">
-  <p style="color:var(--text-muted);font-size:13px;text-align:center;padding:2rem 0">
-    <i class="ti ti-loader" aria-hidden="true"></i> Carregando…
-  </p>
-</div>
+    <!-- Content -->
+    <div class="content" id="content">
+      <p style="color:var(--text-muted);font-size:13px;text-align:center;padding:2rem 0">
+        <i class="ti ti-loader" aria-hidden="true"></i> Carregando…
+      </p>
+    </div>
+
+  </div><!-- end main-area -->
+</div><!-- end app-shell -->
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script src="nav.js"></script>
 <script src="app.js"></script>
 </body>
 </html>

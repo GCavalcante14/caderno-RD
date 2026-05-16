@@ -1,12 +1,11 @@
 /* ═══════════════════════════════════════════════
    LifeOS · nav.js
-   Sidebar compartilhada entre todas as páginas
+   Sidebar compartilhada — Mac + mobile hambúrguer
    ═══════════════════════════════════════════════ */
 
 const SUPABASE_URL = 'https://hkrbvgahmvhvcerthler.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_f8BD685R8Tx7clXMKvGvtA_lYu4njJy';
 
-// Detecta a página atual
 const currentPage = window.location.pathname.split('/').pop() || 'index.html';
 
 const NAV_ITEMS = [
@@ -19,8 +18,8 @@ const NAV_ITEMS = [
   {
     section: 'Vida Diária',
     items: [
-      { href: 'diario.html', icon: 'ti-calendar-event', label: 'Diário', id: 'diario.html' },
-      { href: 'habitos.html', icon: 'ti-checkbox', label: 'Hábitos', id: 'habitos.html' },
+      { href: 'diario.html',  icon: 'ti-calendar-event', label: 'Diário',   id: 'diario.html',  badge: '' },
+      { href: 'habitos.html', icon: 'ti-checkbox',        label: 'Hábitos',  id: 'habitos.html', badge: '' },
     ]
   },
   {
@@ -32,28 +31,31 @@ const NAV_ITEMS = [
   {
     section: 'Sistema',
     items: [
-      { href: '#', icon: 'ti-map', label: 'Áreas', locked: true },
-      { href: '#', icon: 'ti-target', label: 'OKRs', locked: true },
+      { href: '#', icon: 'ti-map',    label: 'Áreas',    locked: true },
+      { href: '#', icon: 'ti-target', label: 'OKRs',     locked: true },
       { href: '#', icon: 'ti-rocket', label: 'Projetos', locked: true },
     ]
   },
   {
     section: 'Identidade',
     items: [
-      { href: '#', icon: 'ti-diamond', label: 'Valores', locked: true },
-      { href: '#', icon: 'ti-user-heart', label: 'Eu', locked: true },
-      { href: '#', icon: 'ti-notebook', label: 'Diário Livre', locked: true },
+      { href: '#', icon: 'ti-diamond',   label: 'Valores',      locked: true },
+      { href: '#', icon: 'ti-user-heart',label: 'Eu',           locked: true },
+      { href: '#', icon: 'ti-notebook',  label: 'Diário Livre', locked: true },
     ]
   },
 ];
 
+/* ── RENDER NAV ────────────────────────────────── */
 function renderNav() {
   const sidebar = document.getElementById('sidebar');
   if (!sidebar) return;
 
   let html = `
     <div class="sb-logo">
-      <div class="sb-logo-icon"><i class="ti ti-brain" aria-hidden="true"></i></div>
+      <div class="sb-logo-icon">
+        <i class="ti ti-brain" aria-hidden="true"></i>
+      </div>
       <div>
         <div class="sb-logo-text">LifeOS</div>
         <div class="sb-logo-sub">Médico Arquiteto</div>
@@ -69,7 +71,7 @@ function renderNav() {
       html += `
         <a href="${isLocked ? '#' : item.href}"
           class="sb-item${isActive ? ' active' : ''}${isLocked ? ' locked' : ''}"
-          ${isLocked ? 'onclick="return false"' : ''}>
+          ${isLocked ? 'onclick="return false"' : 'onclick="closeSidebar()"'}>
           <i class="ti ${item.icon}" aria-hidden="true"></i>
           ${item.label}
           ${badge}
@@ -93,25 +95,44 @@ function renderNav() {
   applyTheme(theme, false);
 }
 
+/* ── MOBILE SIDEBAR ────────────────────────────── */
+function openSidebar() {
+  const sb = document.getElementById('sidebar');
+  const ov = document.getElementById('sb-overlay');
+  if (sb) sb.classList.add('open');
+  if (ov) ov.classList.add('show');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeSidebar() {
+  const sb = document.getElementById('sidebar');
+  const ov = document.getElementById('sb-overlay');
+  if (sb) sb.classList.remove('open');
+  if (ov) ov.classList.remove('show');
+  document.body.style.overflow = '';
+}
+
+/* ── THEME ─────────────────────────────────────── */
 function toggleTheme() {
   const current = document.documentElement.getAttribute('data-theme') || 'light';
   const next = current === 'light' ? 'dark' : 'light';
   applyTheme(next, true);
-  // Sync to Supabase if db available
-  if (window.db) window.db.from('caderno_respostas')
-    .upsert({ campo: 'pref-theme', valor: next }, { onConflict: 'campo' });
+  if (window.db) {
+    window.db.from('caderno_respostas')
+      .upsert({ campo: 'pref-theme', valor: next }, { onConflict: 'campo' });
+  }
 }
 
 function applyTheme(theme, save) {
   document.documentElement.setAttribute('data-theme', theme);
-  const icon = document.getElementById('sb-theme-icon') || document.getElementById('theme-icon');
+  const icon  = document.getElementById('sb-theme-icon') || document.getElementById('theme-icon');
   const label = document.getElementById('sb-theme-label');
-  if (icon) icon.className = `ti ${theme === 'dark' ? 'ti-sun' : 'ti-moon-stars'}`;
+  if (icon)  icon.className = `ti ${theme === 'dark' ? 'ti-sun' : 'ti-moon-stars'}`;
   if (label) label.textContent = theme === 'dark' ? 'Modo claro' : 'Modo escuro';
-  if (save) localStorage.setItem('rd-theme', theme);
+  if (save)  localStorage.setItem('rd-theme', theme);
 }
 
-// Init Supabase compartilhado
+/* ── SUPABASE ───────────────────────────────────── */
 function initSupabase() {
   if (window.supabase && !window.db) {
     window.db = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
@@ -119,7 +140,7 @@ function initSupabase() {
   return window.db;
 }
 
-// Utilitários de data
+/* ── DATE UTILS ─────────────────────────────────── */
 function todayISO() {
   return new Date().toISOString().split('T')[0];
 }
@@ -138,7 +159,7 @@ function addDays(isoDate, n) {
 function weekStart(isoDate) {
   const d = new Date(isoDate + 'T12:00:00');
   const day = d.getDay();
-  const diff = day === 0 ? -6 : 1 - day; // Monday start
+  const diff = day === 0 ? -6 : 1 - day;
   d.setDate(d.getDate() + diff);
   return d.toISOString().split('T')[0];
 }
@@ -156,7 +177,7 @@ function isToday(isoDate) {
   return isoDate === todayISO();
 }
 
-// Auto-render sidebar when DOM is ready
+/* ── INIT ───────────────────────────────────────── */
 document.addEventListener('DOMContentLoaded', () => {
   renderNav();
   initSupabase();
