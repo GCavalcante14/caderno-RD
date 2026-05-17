@@ -1,45 +1,37 @@
 <!DOCTYPE html>
-<html lang="pt-BR" data-theme="light">
+<html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <title>Hábitos · LifeOS</title>
+<!-- Aplica tema antes de renderizar -->
+<script>(function(){var t=localStorage.getItem('rd-theme')||'light';document.documentElement.setAttribute('data-theme',t);})()</script>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.30.0/dist/tabler-icons.min.css">
 <link rel="stylesheet" href="style.css">
 <link rel="stylesheet" href="lifeos.css">
 </head>
 <body>
 
+<div id="sb-overlay" class="sb-overlay" onclick="closeSidebar()"></div>
 <div class="app-shell">
   <div id="sidebar" class="sidebar"></div>
 
-  <div class="page-content">
+  <div class="main-area">
+    <div class="page-content">
 
-    <div class="page-header">
-      <div class="page-header-left">
-        <div class="page-role">
-          <i class="ti ti-checkbox" aria-hidden="true"></i>
-          Rituais & Hábitos
+      <div class="page-header">
+        <div class="page-header-left">
+          <div class="page-role"><i class="ti ti-checkbox" aria-hidden="true"></i> Rituais & Hábitos</div>
+          <h1 class="page-title">Hábitos</h1>
+          <p class="page-subtitle">Gerencie seus rituais e acompanhe a consistência dos últimos 14 dias</p>
         </div>
-        <h1 class="page-title">Hábitos</h1>
-        <p class="page-subtitle">Gerencie seus rituais e acompanhe a consistência dos últimos 14 dias</p>
-      </div>
-      <div style="display:flex;align-items:center;gap:8px">
         <div class="save-status idle" id="save-status">
           <i class="ti ti-circle-dot" aria-hidden="true"></i> Pronto
         </div>
       </div>
-    </div>
 
-    <div class="lo-loading" id="loading">
-      <div class="lo-spinner"></div>
-      <span>Carregando hábitos...</span>
-    </div>
-
-    <div id="page-body" style="display:none">
-
-      <!-- Grid de consistência (últimos 14 dias) -->
+      <!-- Grid -->
       <div class="lo-card" style="margin-bottom:1.2rem">
         <div class="lo-card-header">
           <i class="ti ti-chart-bar" aria-hidden="true"></i>
@@ -49,7 +41,7 @@
         <div class="lo-card-body" style="padding:1rem 1.2rem">
           <div class="habit-grid-wrap">
             <div class="habit-grid" id="habit-grid">
-              <!-- rendered by JS -->
+              <div style="font-size:13px;color:var(--text-muted);grid-column:1/-1">Carregando...</div>
             </div>
           </div>
           <div style="display:flex;align-items:center;gap:8px;margin-top:0.8rem">
@@ -61,19 +53,16 @@
         </div>
       </div>
 
-      <!-- Lista de hábitos -->
+      <!-- Lista -->
       <div class="lo-card">
         <div class="lo-card-header">
           <i class="ti ti-list" aria-hidden="true"></i>
           <span class="lo-card-title">Meus hábitos</span>
         </div>
-
-        <!-- Lista -->
         <div id="habitos-list">
-          <!-- rendered by JS -->
+          <div style="padding:1.2rem;font-size:13px;color:var(--text-muted)">Carregando...</div>
         </div>
-
-        <!-- Form para adicionar -->
+        <!-- Formulário -->
         <div class="add-form">
           <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.07em;color:var(--text-muted);margin-bottom:0.6rem">
             Adicionar hábito
@@ -103,130 +92,117 @@
             </button>
           </div>
         </div>
-
       </div>
 
-    </div><!-- end page-body -->
-  </div><!-- end page-content -->
-</div><!-- end app-shell -->
+    </div>
+  </div>
+</div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <script src="nav.js"></script>
 <script>
 let habitos = [];
-let checks = {}; // { 'habito_id:date': boolean }
+let checks = {};
 
 const REINO_LABELS = {
-  saude: '🌿 Saúde', carreira: '💼 Carreira',
-  financas: '💰 Finanças', relacionamentos: '❤️ Relacionamentos',
-  aprendizado: '📚 Aprendizado', legado: '🌍 Legado'
+  saude:'🌿 Saúde', carreira:'💼 Carreira', financas:'💰 Finanças',
+  relacionamentos:'❤️ Relacionamentos', aprendizado:'📚 Aprendizado', legado:'🌍 Legado'
 };
 
-window.addEventListener('DOMContentLoaded', async () => {
-  await waitForSupabase();
-  await init();
+// ── INIT — cache primeiro ─────────────────────
+window.addEventListener('DOMContentLoaded', () => {
+  // Mostra do cache imediatamente
+  try {
+    habitos = JSON.parse(localStorage.getItem('lo-habitos') || '[]');
+    checks  = JSON.parse(localStorage.getItem('lo-checks-14d') || '{}');
+  } catch(e) {}
+
+  if (habitos.length) { renderGrid(); renderList(); }
+
+  // Sincroniza em segundo plano
+  initSupabase();
+  syncHabitos();
 });
 
-function waitForSupabase() {
-  return new Promise(resolve => {
-    const check = setInterval(() => {
-      if (window.db) { clearInterval(check); resolve(); }
-    }, 50);
-    setTimeout(() => { clearInterval(check); resolve(); }, 3000);
-  });
-}
-
-async function init() {
-  await loadHabitos();
-  await loadChecks();
-  document.getElementById('loading').style.display = 'none';
-  document.getElementById('page-body').style.display = 'block';
-  renderGrid();
-  renderList();
-}
-
-async function loadHabitos() {
+async function syncHabitos() {
+  if (!window.db) await new Promise(r => setTimeout(r, 1500));
+  initSupabase();
   if (!window.db) return;
-  const { data } = await window.db.from('habitos').select('*').eq('ativo', true).order('ordem');
-  habitos = data || [];
-}
 
-async function loadChecks() {
-  if (!window.db) return;
-  const today = todayISO();
-  const start = addDays(today, -13);
-  const { data } = await window.db.from('habito_checks')
-    .select('*')
-    .gte('data', start)
-    .lte('data', today);
-  checks = {};
-  (data || []).forEach(c => { checks[`${c.habito_id}:${c.data}`] = c.concluido; });
+  try {
+    const today = todayISO();
+    const start = addDays(today, -13);
+
+    const { data: hList } = await window.db.from('habitos').select('*').eq('ativo',true).order('ordem');
+    if (hList) { habitos = hList; localStorage.setItem('lo-habitos', JSON.stringify(hList)); }
+
+    const { data: hc } = await window.db.from('habito_checks')
+      .select('*').gte('data',start).lte('data',today);
+    checks = {};
+    (hc||[]).forEach(c => checks[`${c.habito_id}:${c.data}`] = c.concluido);
+    localStorage.setItem('lo-checks-14d', JSON.stringify(checks));
+
+    renderGrid();
+    renderList();
+  } catch(e) { console.warn(e); }
 }
 
 function getDays14() {
   const today = todayISO();
-  return Array.from({ length: 14 }, (_, i) => addDays(today, -13 + i));
+  return Array.from({length:14},(_,i)=>addDays(today,-13+i));
 }
 
 function renderGrid() {
   const days = getDays14();
   const grid = document.getElementById('habit-grid');
   const period = document.getElementById('period-label');
-
-  const fmt = d => new Date(d + 'T12:00:00').toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' });
+  const fmt = d => new Date(d+'T12:00:00').toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit'});
   period.textContent = `${fmt(days[0])} → ${fmt(days[days.length-1])}`;
 
   if (!habitos.length) {
-    grid.innerHTML = `<div style="grid-column:1/-1;font-size:13px;color:var(--text-muted);padding:0.5rem 0">Adicione hábitos abaixo para ver o grid.</div>`;
+    grid.innerHTML = `<div style="grid-column:1/-1;font-size:13px;color:var(--text-muted)">Adicione hábitos abaixo para ver o grid.</div>`;
     return;
   }
 
-  // Header row
-  let html = `<div></div>`; // empty cell top-left
+  let html = `<div></div>`;
   days.forEach(d => {
     const isT = isToday(d);
-    html += `<div class="hg-header" style="${isT ? 'color:var(--acc)' : ''}">${shortDay(d)}<br>${new Date(d+'T12:00:00').getDate()}</div>`;
+    html += `<div class="hg-header" style="${isT?'color:var(--acc)':''}">${shortDay(d)}<br>${new Date(d+'T12:00:00').getDate()}</div>`;
   });
-
-  // Habit rows
   habitos.forEach(h => {
     html += `<div class="hg-name"><i class="ti ${h.icone}" style="color:${h.cor}" aria-hidden="true"></i>${h.nome}</div>`;
     days.forEach(d => {
       const done = checks[`${h.id}:${d}`];
-      const isT = isToday(d);
-      html += `<div class="hg-cell"><div class="hg-dot${done ? ' done' : ''}${isT && !done ? ' today-empty' : ''}"></div></div>`;
+      html += `<div class="hg-cell"><div class="hg-dot${done?' done':''}"></div></div>`;
     });
   });
 
-  grid.style.gridTemplateColumns = `180px repeat(14, 1fr)`;
+  grid.style.gridTemplateColumns = `180px repeat(14,1fr)`;
   grid.innerHTML = html;
 }
 
 function renderList() {
   const list = document.getElementById('habitos-list');
   if (!habitos.length) {
-    list.innerHTML = `<div style="padding:1.2rem;font-size:13px;color:var(--text-muted)">Nenhum hábito ainda. Use o formulário abaixo para adicionar.</div>`;
+    list.innerHTML = `<div style="padding:1.2rem;font-size:13px;color:var(--text-muted)">Nenhum hábito ainda. Use o formulário abaixo.</div>`;
     return;
   }
-
-  const today = todayISO();
+  const days14 = getDays14();
   list.innerHTML = habitos.map(h => {
-    const days14 = getDays14();
-    const doneCount = days14.filter(d => checks[`${h.id}:${d}`]).length;
-    const pct = Math.round((doneCount / 14) * 100);
-    return `
-      <div class="habit-manage-item" id="hi-${h.id}">
-        <div class="habit-color-dot" style="background:${h.cor}"></div>
-        <i class="ti ${h.icone}" style="color:${h.cor};font-size:16px" aria-hidden="true"></i>
-        <div class="habit-manage-name">${h.nome}</div>
-        <span class="habit-manage-reino">${REINO_LABELS[h.reino] || h.reino}</span>
-        <span style="font-size:11px;font-weight:600;color:${pct>=70?'var(--acc-text)':'var(--text-muted)'};min-width:36px;text-align:right">${pct}%</span>
-        <div class="habit-manage-actions">
-          <button class="habit-action-btn danger" onclick="removeHabito('${h.id}')" title="Desativar">
-            <i class="ti ti-trash" aria-hidden="true"></i>
-          </button>
-        </div>
-      </div>`;
+    const doneCount = days14.filter(d=>checks[`${h.id}:${d}`]).length;
+    const pct = Math.round((doneCount/14)*100);
+    return `<div class="habit-manage-item">
+      <div class="habit-color-dot" style="background:${h.cor}"></div>
+      <i class="ti ${h.icone}" style="color:${h.cor};font-size:16px" aria-hidden="true"></i>
+      <div class="habit-manage-name">${h.nome}</div>
+      <span class="habit-manage-reino">${REINO_LABELS[h.reino]||h.reino}</span>
+      <span style="font-size:11px;font-weight:700;color:${pct>=70?'var(--acc-text)':'var(--text-muted)'};min-width:36px;text-align:right">${pct}%</span>
+      <div class="habit-manage-actions">
+        <button class="habit-action-btn danger" onclick="removeHabito('${h.id}')" title="Desativar">
+          <i class="ti ti-trash" aria-hidden="true"></i>
+        </button>
+      </div>
+    </div>`;
   }).join('');
 }
 
@@ -235,45 +211,47 @@ async function addHabito() {
   const icone = document.getElementById('new-icone').value.trim() || 'ti-check';
   const reino = document.getElementById('new-reino').value;
   if (!nome) return;
-  if (!window.db) return;
 
+  // Otimista: adiciona ao cache imediatamente
+  const temp = { id:'temp-'+Date.now(), nome, icone, reino, cor:'#8a2540', ordem:habitos.length+1, ativo:true };
+  habitos.push(temp);
+  localStorage.setItem('lo-habitos', JSON.stringify(habitos));
+  document.getElementById('new-nome').value = '';
+  renderGrid(); renderList();
+
+  if (!window.db) return;
   setStatus('saving');
   const { data } = await window.db.from('habitos')
-    .insert({ nome, icone, reino, cor: '#8a2540', ordem: habitos.length + 1 })
+    .insert({nome,icone,reino,cor:'#8a2540',ordem:habitos.length})
     .select().single();
-
   if (data) {
-    habitos.push(data);
-    document.getElementById('new-nome').value = '';
-    document.getElementById('new-icone').value = 'ti-check';
-    renderGrid();
-    renderList();
-    setStatus('saved');
+    habitos = habitos.map(h => h.id===temp.id ? data : h);
+    localStorage.setItem('lo-habitos', JSON.stringify(habitos));
+    renderGrid(); renderList();
   }
+  setStatus('saved');
 }
 
 async function removeHabito(id) {
-  if (!window.db) return;
   if (!confirm('Desativar este hábito? O histórico será preservado.')) return;
-  await window.db.from('habitos').update({ ativo: false }).eq('id', id);
-  habitos = habitos.filter(h => h.id !== id);
-  renderGrid();
-  renderList();
+  habitos = habitos.filter(h=>h.id!==id);
+  localStorage.setItem('lo-habitos', JSON.stringify(habitos));
+  renderGrid(); renderList();
+  if (!window.db) return;
+  await window.db.from('habitos').update({ativo:false}).eq('id',id);
 }
 
-function setStatus(state) {
+function setStatus(s) {
   const el = document.getElementById('save-status');
   if (!el) return;
-  const map = {
-    idle:   ['<i class="ti ti-circle-dot" aria-hidden="true"></i> Pronto', 'idle'],
-    saving: ['<i class="ti ti-loader" aria-hidden="true"></i> Salvando…', 'saving'],
-    saved:  ['<i class="ti ti-circle-check" aria-hidden="true"></i> Salvo', 'saved'],
-    error:  ['<i class="ti ti-wifi-off" aria-hidden="true"></i> Erro', 'error'],
+  const m = {
+    idle:   ['<i class="ti ti-circle-dot"></i> Pronto','idle'],
+    saving: ['<i class="ti ti-loader"></i> Salvando…','saving'],
+    saved:  ['<i class="ti ti-circle-check"></i> Salvo','saved'],
   };
-  const [html, cls] = map[state] || map.idle;
-  el.innerHTML = html;
-  el.className = 'save-status ' + cls;
-  if (state === 'saved') setTimeout(() => setStatus('idle'), 2000);
+  const [h,c]=m[s]||m.idle;
+  el.innerHTML=h; el.className='save-status '+c;
+  if(s==='saved') setTimeout(()=>setStatus('idle'),2000);
 }
 </script>
 </body>

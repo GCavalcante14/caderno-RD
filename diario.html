@@ -1,31 +1,26 @@
 <!DOCTYPE html>
-<html lang="pt-BR" data-theme="light">
+<html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Diário · LifeOS">
 <title>Diário · LifeOS</title>
+<!-- Aplica tema antes de renderizar — evita flash -->
+<script>(function(){var t=localStorage.getItem('rd-theme')||'light';document.documentElement.setAttribute('data-theme',t);})()</script>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.30.0/dist/tabler-icons.min.css">
 <link rel="stylesheet" href="style.css">
 <link rel="stylesheet" href="lifeos.css">
 </head>
 <body>
 
+<div id="sb-overlay" class="sb-overlay" onclick="closeSidebar()"></div>
 <div class="app-shell">
   <div id="sidebar" class="sidebar"></div>
 
-  <div class="page-content" id="main">
-    <!-- Loading -->
-    <div class="lo-loading" id="loading">
-      <div class="lo-spinner"></div>
-      <span>Carregando...</span>
-    </div>
+  <div class="main-area">
+    <div class="page-content" id="main">
 
-    <!-- Content (hidden until loaded) -->
-    <div id="page-body" style="display:none">
-
-      <!-- Header -->
       <div class="page-header">
         <div class="page-header-left">
           <div class="page-role">
@@ -44,20 +39,19 @@
 
       <!-- Date Navigation -->
       <div class="date-nav" style="margin-bottom:1.5rem">
-        <button class="date-nav-btn" onclick="goDay(-1)" title="Dia anterior (←)">
+        <button class="date-nav-btn" onclick="goDay(-1)" title="← dia anterior">
           <i class="ti ti-chevron-left" aria-hidden="true"></i>
         </button>
         <span class="date-nav-text" id="date-display">—</span>
-        <button class="date-nav-btn" onclick="goDay(1)" title="Próximo dia (→)">
+        <button class="date-nav-btn" onclick="goDay(1)" title="dia seguinte →">
           <i class="ti ti-chevron-right" aria-hidden="true"></i>
         </button>
         <button class="date-nav-today" onclick="goToday()">Hoje</button>
       </div>
 
-      <!-- Two column layout -->
       <div class="two-col">
 
-        <!-- LEFT: Saúde, Palavras, Hábitos -->
+        <!-- LEFT -->
         <div style="display:flex;flex-direction:column;gap:1.2rem">
 
           <!-- Saúde & Energia -->
@@ -66,28 +60,23 @@
               <i class="ti ti-activity" aria-hidden="true"></i>
               <span class="lo-card-title">Saúde & Energia</span>
             </div>
-            <div class="lo-card-body" style="padding:0.8rem 1.2rem">
-
+            <div class="lo-card-body" style="padding:0.6rem 1.2rem">
               <div class="rating-row">
                 <div class="rating-label"><i class="ti ti-clock" aria-hidden="true"></i> Acordei às</div>
-                <input type="time" class="time-input" id="wake-up" onchange="saveField('wake_up', this.value)">
+                <input type="time" class="time-input" id="wake-up" onchange="saveField('wake_up',this.value)">
               </div>
-
               <div class="rating-row">
                 <div class="rating-label"><i class="ti ti-moon" aria-hidden="true"></i> Horas dormidas</div>
-                <input type="number" class="number-input" id="horas-sono" min="0" max="24" step="0.5" placeholder="7.0" onchange="saveField('horas_sono', parseFloat(this.value))">
+                <input type="number" class="number-input" id="horas-sono" min="0" max="24" step="0.5" placeholder="7.0" onchange="saveField('horas_sono',parseFloat(this.value))">
               </div>
-
               <div class="rating-row">
-                <div class="rating-label"><i class="ti ti-zzz" aria-hidden="true"></i> Qualidade do sono</div>
+                <div class="rating-label"><i class="ti ti-zzz" aria-hidden="true"></i> Qualidade sono</div>
                 <div class="rating-stars" id="stars-sono" data-field="sono_qualidade"></div>
               </div>
-
               <div class="rating-row">
-                <div class="rating-label"><i class="ti ti-flame" aria-hidden="true"></i> Nível de estresse</div>
+                <div class="rating-label"><i class="ti ti-flame" aria-hidden="true"></i> Estresse</div>
                 <div class="rating-stars" id="stars-estresse" data-field="estresse"></div>
               </div>
-
               <div class="rating-row">
                 <div class="rating-label"><i class="ti ti-mood-smile" aria-hidden="true"></i> Humor</div>
                 <div class="emoji-row" id="emoji-humor">
@@ -98,12 +87,10 @@
                   <span class="emoji-btn" data-val="5" onclick="saveEmoji(5)">😄</span>
                 </div>
               </div>
-
               <div class="rating-row">
                 <div class="rating-label"><i class="ti ti-bolt" aria-hidden="true"></i> Intencionalidade</div>
                 <div class="rating-stars" id="stars-int" data-field="intencionalidade"></div>
               </div>
-
             </div>
           </div>
 
@@ -111,7 +98,7 @@
           <div class="lo-card">
             <div class="lo-card-header">
               <i class="ti ti-tag" aria-hidden="true"></i>
-              <span class="lo-card-title">Três Palavras do Dia</span>
+              <span class="lo-card-title">Três Palavras</span>
             </div>
             <div class="lo-card-body">
               <div class="words-count" id="words-count">Escolha até 3 palavras que descrevem hoje</div>
@@ -126,7 +113,9 @@
               <span class="lo-card-title">Hábitos de Hoje</span>
             </div>
             <div class="lo-card-body" style="padding:0.4rem 1.2rem" id="habitos-list">
-              <div style="font-size:13px;color:var(--text-muted);padding:0.5rem 0">Carregando hábitos...</div>
+              <div style="font-size:13px;color:var(--text-muted);padding:0.5rem 0">
+                <a href="habitos.html" style="color:var(--acc-text)">Adicionar hábitos →</a>
+              </div>
             </div>
           </div>
 
@@ -139,72 +128,40 @@
             <span class="lo-card-title">Reflexão do Dia</span>
           </div>
           <div class="lo-card-body">
-
             <div class="refl-field">
-              <div class="refl-field-label">
-                <i class="ti ti-trophy" aria-hidden="true"></i>
-                O que fiz que me deixa orgulhoso?
-              </div>
-              <textarea class="refl-textarea" id="fiz-bem"
-                placeholder="Uma coisa — grande ou pequena — que você fez bem hoje."
-                oninput="debounceSave('fiz_bem', this.value)"></textarea>
+              <div class="refl-field-label"><i class="ti ti-trophy" aria-hidden="true"></i> O que fiz que me deixa orgulhoso?</div>
+              <textarea class="refl-textarea" id="fiz-bem" placeholder="Uma coisa — grande ou pequena — que você fez bem hoje." oninput="debounceSave('fiz_bem',this.value)"></textarea>
             </div>
-
             <div class="refl-field">
-              <div class="refl-field-label">
-                <i class="ti ti-bulb" aria-hidden="true"></i>
-                Lição de vida
-              </div>
-              <textarea class="refl-textarea small" id="licao-vida"
-                placeholder="O que hoje te tornou melhor como pessoa?"
-                oninput="debounceSave('licao_vida', this.value)"></textarea>
+              <div class="refl-field-label"><i class="ti ti-bulb" aria-hidden="true"></i> Lição de vida</div>
+              <textarea class="refl-textarea small" id="licao-vida" placeholder="O que hoje te tornou melhor como pessoa?" oninput="debounceSave('licao_vida',this.value)"></textarea>
             </div>
-
             <div class="refl-field">
-              <div class="refl-field-label">
-                <i class="ti ti-stethoscope" aria-hidden="true"></i>
-                Lição de medicina
-              </div>
-              <textarea class="refl-textarea small" id="licao-medicina"
-                placeholder="Um caso, diagnóstico, conduta ou insight clínico de hoje."
-                oninput="debounceSave('licao_medicina', this.value)"></textarea>
+              <div class="refl-field-label"><i class="ti ti-stethoscope" aria-hidden="true"></i> Lição de medicina</div>
+              <textarea class="refl-textarea small" id="licao-medicina" placeholder="Um caso, diagnóstico ou insight clínico de hoje." oninput="debounceSave('licao_medicina',this.value)"></textarea>
             </div>
-
             <div class="refl-field">
-              <div class="refl-field-label">
-                <i class="ti ti-heart" aria-hidden="true"></i>
-                Grato por
-              </div>
-              <textarea class="refl-textarea small" id="gratidao"
-                placeholder="Uma coisa pequena ou grande que você aprecia hoje."
-                oninput="debounceSave('gratidao', this.value)"></textarea>
+              <div class="refl-field-label"><i class="ti ti-heart" aria-hidden="true"></i> Grato por</div>
+              <textarea class="refl-textarea small" id="gratidao" placeholder="Uma coisa que você aprecia hoje." oninput="debounceSave('gratidao',this.value)"></textarea>
             </div>
-
             <div class="refl-field">
-              <div class="refl-field-label">
-                <i class="ti ti-alert-triangle" aria-hidden="true"></i>
-                Não repetir
-              </div>
-              <textarea class="refl-textarea small" id="nao-repetir"
-                placeholder="Um comportamento, decisão ou erro que você não quer repetir amanhã."
-                oninput="debounceSave('nao_repetir', this.value)"></textarea>
+              <div class="refl-field-label"><i class="ti ti-alert-triangle" aria-hidden="true"></i> Não repetir</div>
+              <textarea class="refl-textarea small" id="nao-repetir" placeholder="Um comportamento ou erro que não quer repetir amanhã." oninput="debounceSave('nao_repetir',this.value)"></textarea>
             </div>
-
           </div>
         </div>
 
-      </div><!-- end two-col -->
-
-    </div><!-- end page-body -->
-  </div><!-- end page-content -->
-</div><!-- end app-shell -->
+      </div>
+    </div>
+  </div>
+</div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <script src="nav.js"></script>
 <script>
 // ── STATE ──────────────────────────────────────
 let currentDate = todayISO();
-let diarioEntry = null;
+let diarioEntry = {};
 let habitos = [];
 let habitoChecks = {};
 let saveTimers = {};
@@ -215,163 +172,156 @@ const PALAVRAS = [
   'Cansado','Feliz','Estressado','Inspirado','Ansioso','Igreja',
   'Cinema','Aprendizado','Criativo','Difícil'
 ];
-
 let selectedWords = [];
 
-// ── INIT ───────────────────────────────────────
-window.addEventListener('DOMContentLoaded', async () => {
-  await waitForSupabase();
-  await init();
-});
+// ── CACHE UTILS ────────────────────────────────
+function cacheKey(date)  { return 'lo-diario-' + date; }
+function checksKey(date) { return 'lo-checks-' + date; }
+function habitosKey()    { return 'lo-habitos'; }
 
-function waitForSupabase() {
-  return new Promise(resolve => {
-    const check = setInterval(() => {
-      if (window.db) { clearInterval(check); resolve(); }
-    }, 50);
-    setTimeout(() => { clearInterval(check); resolve(); }, 3000);
-  });
+function saveCache(date, entry, checks) {
+  try {
+    localStorage.setItem(cacheKey(date), JSON.stringify(entry));
+    localStorage.setItem(checksKey(date), JSON.stringify(checks));
+  } catch(e) {}
 }
 
-async function init() {
-  await loadHabitos();
-  await loadDiario(currentDate);
+function loadCache(date) {
+  try {
+    const entry  = JSON.parse(localStorage.getItem(cacheKey(date))  || '{}');
+    const checks = JSON.parse(localStorage.getItem(checksKey(date)) || '{}');
+    const h      = JSON.parse(localStorage.getItem(habitosKey())    || '[]');
+    return { entry, checks, habitos: h };
+  } catch(e) { return { entry: {}, checks: {}, habitos: [] }; }
+}
+
+// ── INIT — mostra imediatamente do cache ───────
+window.addEventListener('DOMContentLoaded', () => {
+  // 1. Mostra do cache instantaneamente
+  const cached = loadCache(currentDate);
+  diarioEntry  = cached.entry;
+  habitoChecks = cached.checks;
+  habitos      = cached.habitos;
+  try { selectedWords = JSON.parse(diarioEntry.tres_palavras || '[]'); } catch { selectedWords = []; }
   renderPage();
+
+  // 2. Sincroniza com Supabase em segundo plano
+  initSupabase();
+  syncFromSupabase(currentDate);
   setupKeyboard();
-  document.getElementById('loading').style.display = 'none';
-  document.getElementById('page-body').style.display = 'block';
+});
+
+async function syncFromSupabase(date) {
+  if (!window.db) {
+    await new Promise(r => setTimeout(r, 1500));
+    initSupabase();
+  }
+  if (!window.db) return;
+
+  try {
+    // Diário entry
+    const { data: entry } = await window.db.from('diario').select('*').eq('data', date).maybeSingle();
+    if (entry) {
+      diarioEntry = entry;
+      try { selectedWords = JSON.parse(entry.tres_palavras || '[]'); } catch { selectedWords = []; }
+    }
+
+    // Hábitos
+    const { data: hList } = await window.db.from('habitos').select('*').eq('ativo', true).order('ordem');
+    if (hList) {
+      habitos = hList;
+      localStorage.setItem(habitosKey(), JSON.stringify(hList));
+    }
+
+    // Checks
+    const { data: checks } = await window.db.from('habito_checks').select('*').eq('data', date);
+    habitoChecks = {};
+    (checks || []).forEach(c => habitoChecks[c.habito_id] = c.concluido);
+
+    saveCache(date, diarioEntry, habitoChecks);
+    renderPage();
+  } catch(e) { console.warn('Supabase sync error:', e); }
 }
 
 // ── NAVIGATION ─────────────────────────────────
 function goDay(n) {
   currentDate = addDays(currentDate, n);
-  loadDiario(currentDate).then(() => renderPage());
+  const cached = loadCache(currentDate);
+  diarioEntry  = cached.entry;
+  habitoChecks = cached.checks;
+  habitos      = cached.habitos.length ? cached.habitos : habitos;
+  try { selectedWords = JSON.parse(diarioEntry.tres_palavras || '[]'); } catch { selectedWords = []; }
+  renderPage();
+  syncFromSupabase(currentDate);
 }
 function goToday() {
   currentDate = todayISO();
-  loadDiario(currentDate).then(() => renderPage());
+  goDay(0);
 }
 function setupKeyboard() {
   document.addEventListener('keydown', e => {
     if (e.target.tagName === 'TEXTAREA' || e.target.tagName === 'INPUT') return;
-    if (e.key === 'ArrowLeft') goDay(-1);
+    if (e.key === 'ArrowLeft')  goDay(-1);
     if (e.key === 'ArrowRight') goDay(1);
   });
-}
-
-// ── LOAD ───────────────────────────────────────
-async function loadHabitos() {
-  if (!window.db) return;
-  const { data } = await window.db.from('habitos').select('*').eq('ativo', true).order('ordem');
-  habitos = data || [];
-}
-
-async function loadDiario(date) {
-  if (!window.db) return;
-  const { data } = await window.db.from('diario').select('*').eq('data', date).maybeSingle();
-  diarioEntry = data || { data: date };
-
-  // Load habit checks
-  const { data: checks } = await window.db.from('habito_checks')
-    .select('*').eq('data', date);
-  habitoChecks = {};
-  (checks || []).forEach(c => habitoChecks[c.habito_id] = c.concluido);
-
-  // Parse tres_palavras
-  try {
-    selectedWords = JSON.parse(diarioEntry.tres_palavras || '[]');
-  } catch { selectedWords = []; }
 }
 
 // ── RENDER ─────────────────────────────────────
 function renderPage() {
   document.getElementById('page-title-date').textContent = formatDate(currentDate);
   document.getElementById('date-display').textContent =
-    isToday(currentDate) ? 'Hoje' :
-    currentDate === addDays(todayISO(), -1) ? 'Ontem' :
-    new Date(currentDate + 'T12:00:00').toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' });
+    isToday(currentDate)                    ? 'Hoje'   :
+    currentDate === addDays(todayISO(),-1)  ? 'Ontem'  :
+    new Date(currentDate+'T12:00:00').toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit'});
 
   renderStars();
   renderEmoji();
-  renderWakeUp();
-  renderHorasSono();
+  document.getElementById('wake-up').value    = diarioEntry.wake_up    || '';
+  document.getElementById('horas-sono').value = diarioEntry.horas_sono || '';
   renderWords();
   renderHabitos();
   renderReflexao();
 }
 
 function renderStars() {
-  const configs = [
-    { id: 'stars-sono', field: 'sono_qualidade' },
-    { id: 'stars-estresse', field: 'estresse' },
-    { id: 'stars-int', field: 'intencionalidade' },
-  ];
-  configs.forEach(({ id, field }) => {
+  [['stars-sono','sono_qualidade'],['stars-estresse','estresse'],['stars-int','intencionalidade']].forEach(([id,field]) => {
     const cont = document.getElementById(id);
     if (!cont) return;
     const val = diarioEntry[field] || 0;
     cont.innerHTML = '';
     for (let i = 1; i <= 5; i++) {
-      const star = document.createElement('span');
-      star.className = 'star' + (i <= val ? ' on' : '');
-      star.textContent = '★';
-      star.onclick = () => saveStars(field, i, cont);
-      cont.appendChild(star);
+      const s = document.createElement('span');
+      s.className = 'star' + (i <= val ? ' on' : '');
+      s.textContent = '★';
+      s.onclick = () => { diarioEntry[field]=i; renderStars(); saveField(field,i); };
+      cont.appendChild(s);
     }
   });
 }
 
-function saveStars(field, val, cont) {
-  diarioEntry[field] = val;
-  cont.querySelectorAll('.star').forEach((s, i) => s.classList.toggle('on', i < val));
-  saveField(field, val);
-}
-
 function renderEmoji() {
   const val = diarioEntry.humor || 0;
-  document.querySelectorAll('#emoji-humor .emoji-btn').forEach(btn => {
-    btn.classList.toggle('on', parseInt(btn.dataset.val) === val);
-  });
+  document.querySelectorAll('#emoji-humor .emoji-btn').forEach(b =>
+    b.classList.toggle('on', parseInt(b.dataset.val) === val));
 }
-
-function saveEmoji(val) {
-  diarioEntry.humor = val;
-  renderEmoji();
-  saveField('humor', val);
-}
-
-function renderWakeUp() {
-  const el = document.getElementById('wake-up');
-  if (el) el.value = diarioEntry.wake_up || '';
-}
-
-function renderHorasSono() {
-  const el = document.getElementById('horas-sono');
-  if (el) el.value = diarioEntry.horas_sono || '';
-}
+function saveEmoji(val) { diarioEntry.humor=val; renderEmoji(); saveField('humor',val); }
 
 function renderWords() {
   const sel = selectedWords.length;
   document.getElementById('words-count').textContent =
-    sel === 0 ? 'Escolha até 3 palavras que descrevem hoje' :
-    sel === 3 ? '3/3 palavras selecionadas' :
-    `${sel}/3 palavras selecionadas`;
-
-  const grid = document.getElementById('words-grid');
-  grid.innerHTML = PALAVRAS.map(w => {
-    const isSelected = selectedWords.includes(w);
-    const isLocked = !isSelected && sel >= 3;
-    return `<div class="word-chip${isSelected ? ' selected' : ''}${isLocked ? ' locked' : ''}"
-      onclick="${isLocked ? '' : `toggleWord('${w}')`}">${w}</div>`;
+    sel===0 ? 'Escolha até 3 palavras que descrevem hoje' :
+    sel===3 ? '3/3 palavras selecionadas' : `${sel}/3 palavras selecionadas`;
+  document.getElementById('words-grid').innerHTML = PALAVRAS.map(w => {
+    const isSel = selectedWords.includes(w);
+    const locked = !isSel && sel >= 3;
+    return `<div class="word-chip${isSel?' selected':''}${locked?' locked':''}"
+      onclick="${locked?'':` toggleWord('${w}')`}">${w}</div>`;
   }).join('');
 }
-
 function toggleWord(w) {
-  if (selectedWords.includes(w)) {
-    selectedWords = selectedWords.filter(x => x !== w);
-  } else if (selectedWords.length < 3) {
-    selectedWords.push(w);
-  }
+  selectedWords = selectedWords.includes(w)
+    ? selectedWords.filter(x=>x!==w)
+    : [...selectedWords, w].slice(0,3);
   renderWords();
   saveField('tres_palavras', JSON.stringify(selectedWords));
 }
@@ -380,28 +330,26 @@ function renderHabitos() {
   const list = document.getElementById('habitos-list');
   if (!habitos.length) {
     list.innerHTML = `<div style="font-size:13px;color:var(--text-muted);padding:0.5rem 0">
-      Nenhum hábito ainda. <a href="habitos.html" style="color:var(--acc-text)">Adicionar hábitos →</a>
-    </div>`;
+      Nenhum hábito. <a href="habitos.html" style="color:var(--acc-text)">Adicionar →</a></div>`;
     return;
   }
   list.innerHTML = habitos.map(h => {
     const done = habitoChecks[h.id] || false;
     return `<div class="habit-check-item" onclick="toggleHabito('${h.id}')">
-      <div class="habit-check-box${done ? ' checked'}">
+      <div class="habit-check-box${done?' checked':''}">
         <i class="ti ti-check" aria-hidden="true"></i>
       </div>
       <i class="ti ${h.icone} habit-icon" style="color:${h.cor}" aria-hidden="true"></i>
-      <span class="habit-check-name${done ? ' done'}">${h.nome}</span>
+      <span class="habit-check-name${done?' done':''}">${h.nome}</span>
     </div>`;
   }).join('');
 }
 
 function renderReflexao() {
-  const fields = ['fiz-bem','licao-vida','licao-medicina','gratidao','nao-repetir'];
-  const keys   = ['fiz_bem','licao_vida','licao_medicina','gratidao','nao_repetir'];
-  fields.forEach((id, i) => {
+  [['fiz-bem','fiz_bem'],['licao-vida','licao_vida'],['licao-medicina','licao_medicina'],
+   ['gratidao','gratidao'],['nao-repetir','nao_repetir']].forEach(([id,k]) => {
     const el = document.getElementById(id);
-    if (el) el.value = diarioEntry[keys[i]] || '';
+    if (el) el.value = diarioEntry[k] || '';
   });
 }
 
@@ -409,6 +357,7 @@ function renderReflexao() {
 async function toggleHabito(habitoId) {
   const current = habitoChecks[habitoId] || false;
   habitoChecks[habitoId] = !current;
+  saveCache(currentDate, diarioEntry, habitoChecks);
   renderHabitos();
   if (!window.db) return;
   await window.db.from('habito_checks').upsert(
@@ -421,13 +370,14 @@ async function toggleHabito(habitoId) {
 function debounceSave(field, value) {
   clearTimeout(saveTimers[field]);
   setStatus('saving');
-  saveTimers[field] = setTimeout(() => saveField(field, value), 900);
+  saveTimers[field] = setTimeout(() => saveField(field, value), 800);
 }
 
 async function saveField(field, value) {
+  diarioEntry[field] = value;
+  saveCache(currentDate, diarioEntry, habitoChecks);
   if (!window.db) return;
   setStatus('saving');
-  diarioEntry[field] = value;
   try {
     if (diarioEntry.id) {
       await window.db.from('diario').update({ [field]: value }).eq('id', diarioEntry.id);
@@ -435,25 +385,24 @@ async function saveField(field, value) {
       const { data } = await window.db.from('diario')
         .upsert({ data: currentDate, [field]: value }, { onConflict: 'data' })
         .select().single();
-      if (data) diarioEntry = data;
+      if (data) { diarioEntry = data; saveCache(currentDate, data, habitoChecks); }
     }
     setStatus('saved');
-  } catch (e) { setStatus('error'); }
+  } catch(e) { setStatus('error'); }
 }
 
-function setStatus(state) {
+function setStatus(s) {
   const el = document.getElementById('save-status');
   if (!el) return;
-  const map = {
-    idle:   ['<i class="ti ti-circle-dot" aria-hidden="true"></i> Pronto', 'idle'],
-    saving: ['<i class="ti ti-loader" aria-hidden="true"></i> Salvando…', 'saving'],
-    saved:  ['<i class="ti ti-circle-check" aria-hidden="true"></i> Salvo', 'saved'],
-    error:  ['<i class="ti ti-wifi-off" aria-hidden="true"></i> Erro', 'error'],
+  const m = {
+    idle:   ['<i class="ti ti-circle-dot"></i> Pronto','idle'],
+    saving: ['<i class="ti ti-loader"></i> Salvando…','saving'],
+    saved:  ['<i class="ti ti-circle-check"></i> Salvo','saved'],
+    error:  ['<i class="ti ti-wifi-off"></i> Erro','error'],
   };
-  const [html, cls] = map[state] || map.idle;
-  el.innerHTML = html;
-  el.className = 'save-status ' + cls;
-  if (state === 'saved') setTimeout(() => setStatus('idle'), 2000);
+  const [h,c] = m[s]||m.idle;
+  el.innerHTML=h; el.className='save-status '+c;
+  if(s==='saved') setTimeout(()=>setStatus('idle'),2000);
 }
 </script>
 </body>
