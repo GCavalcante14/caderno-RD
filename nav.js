@@ -12,7 +12,8 @@ const NAV_ITEMS = [
   {
     section: 'Estudo',
     items: [
-      { href: 'index.html', icon: 'ti-brain', label: 'Caderno RD', id: 'index.html' },
+      { href: "dashboard.html", icon: "ti-layout-dashboard", label: "Dashboard", id: "dashboard.html" },
+      { href: "index.html", icon: "ti-brain", label: "Caderno RD", id: "index.html" },
     ]
   },
   {

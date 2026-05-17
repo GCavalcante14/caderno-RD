@@ -1,0 +1,689 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Dashboard · LifeOS">
+<title>Dashboard · LifeOS</title>
+<script>(function(){var t=localStorage.getItem('rd-theme')||'light';document.documentElement.setAttribute('data-theme',t);})()</script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.30.0/dist/tabler-icons.min.css">
+<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="lifeos.css">
+<style>
+/* ── DASHBOARD ESPECÍFICO ── */
+.dash-greeting {
+  margin-bottom: 1.5rem;
+}
+.dash-greeting-name {
+  font-size: 26px; font-weight: 700; color: var(--text);
+  margin-bottom: 3px;
+}
+.dash-greeting-sub {
+  font-size: 13px; color: var(--text-muted);
+  display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+}
+.dash-greeting-badge {
+  font-size: 11px; font-weight: 600; padding: 2px 9px;
+  border-radius: 20px; background: var(--acc-soft); color: var(--acc-text);
+  display: inline-flex; align-items: center; gap: 4px;
+}
+
+/* Status cards */
+.status-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+  margin-bottom: 1.2rem;
+}
+.status-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1rem 1.1rem;
+  text-decoration: none;
+  cursor: pointer;
+  transition: all 0.15s;
+  display: flex; flex-direction: column; gap: 6px;
+  position: relative; overflow: hidden;
+}
+.status-card:hover { border-color: var(--acc); transform: translateY(-1px); }
+.status-card.ok    { border-left: 3px solid #14b8a6; }
+.status-card.warn  { border-left: 3px solid var(--acc); }
+.status-card.empty { border-left: 3px solid var(--border2); }
+.sc-icon {
+  width: 32px; height: 32px; border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 16px; margin-bottom: 2px;
+}
+.sc-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.07em; color: var(--text-muted); }
+.sc-value { font-size: 17px; font-weight: 700; color: var(--text); line-height: 1.2; }
+.sc-sub   { font-size: 11px; color: var(--text-muted); }
+.sc-status {
+  position: absolute; top: 10px; right: 10px;
+  font-size: 10px; font-weight: 600; padding: 2px 7px;
+  border-radius: 20px;
+}
+.sc-status.ok   { background: #14b8a620; color: #14b8a6; }
+.sc-status.warn { background: var(--acc-soft); color: var(--acc-text); }
+
+/* Trend charts */
+.trend-row {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 1.2rem;
+  margin-bottom: 1.2rem;
+}
+
+/* Sleep trend */
+.sleep-bars { display: flex; gap: 6px; align-items: flex-end; height: 80px; }
+.sleep-bar-wrap { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; }
+.sleep-bar-col { flex: 1; width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; }
+.sleep-bar {
+  width: 100%; border-radius: 4px 4px 0 0;
+  background: var(--acc); opacity: 0.7;
+  transition: all 0.3s; min-height: 4px;
+  position: relative;
+}
+.sleep-bar.good { background: #14b8a6; opacity: 0.8; }
+.sleep-bar.bad  { background: var(--red); opacity: 0.7; }
+.sleep-bar.empty{ background: var(--border); opacity: 0.5; }
+.sleep-bar-emoji { font-size: 14px; }
+.sleep-bar-day  { font-size: 9px; color: var(--text-muted); }
+
+/* Habit mini grid */
+.habit-mini-grid { display: flex; flex-direction: column; gap: 6px; }
+.habit-mini-row  { display: flex; align-items: center; gap: 8px; }
+.habit-mini-name { font-size: 11px; color: var(--text2); min-width: 110px; max-width: 110px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.habit-mini-dots { display: flex; gap: 3px; flex: 1; }
+.habit-mini-dot  { width: 14px; height: 14px; border-radius: 50%; background: var(--border); flex-shrink: 0; }
+.habit-mini-dot.on { background: var(--acc); }
+.habit-mini-pct  { font-size: 11px; font-weight: 700; min-width: 30px; text-align: right; }
+
+/* Next action */
+.next-action {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden; margin-bottom: 1.2rem;
+}
+.na-header {
+  background: var(--acc);
+  padding: 0.7rem 1.2rem;
+  display: flex; align-items: center; gap: 8px;
+}
+.na-header-title { font-size: 12px; font-weight: 700; color: #fff; text-transform: uppercase; letter-spacing: 0.07em; }
+.na-body { padding: 1rem 1.2rem; display: flex; align-items: center; gap: 1rem; }
+.na-text { flex: 1; font-size: 14px; color: var(--text); line-height: 1.5; }
+.na-btn {
+  padding: 0.5rem 1.2rem; border-radius: 20px;
+  background: var(--acc); color: #fff; border: none;
+  font-size: 13px; font-weight: 600; font-family: inherit;
+  cursor: pointer; white-space: nowrap; transition: opacity 0.15s;
+  display: flex; align-items: center; gap: 5px; text-decoration: none;
+}
+.na-btn:hover { opacity: 0.85; }
+.na-btn i { font-size: 14px; }
+
+/* Caderno progress */
+.caderno-progress { display: flex; align-items: center; gap: 12px; }
+.cp-week { flex: 1; }
+.cp-week-label { font-size: 11px; color: var(--text-muted); margin-bottom: 4px; }
+.cp-week-bar { height: 6px; background: var(--border); border-radius: 3px; overflow: hidden; }
+.cp-week-fill { height: 100%; background: var(--acc); border-radius: 3px; transition: width 0.4s; }
+.cp-days { display: flex; gap: 4px; }
+.cp-day {
+  width: 24px; height: 24px; border-radius: 6px;
+  border: 1px solid var(--border); background: var(--surface2);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 10px; font-weight: 600; color: var(--text-muted);
+}
+.cp-day.done { background: var(--acc); border-color: var(--acc); color: #fff; }
+.cp-day.current { border-color: var(--acc); color: var(--acc); }
+
+/* Empty state */
+.empty-state {
+  display: flex; flex-direction: column; align-items: center;
+  justify-content: center; padding: 2rem; text-align: center;
+  color: var(--text-muted); gap: 8px;
+}
+.empty-state i { font-size: 28px; opacity: 0.4; }
+.empty-state p { font-size: 13px; }
+
+@media (max-width: 768px) {
+  .status-grid { grid-template-columns: 1fr 1fr; }
+  .trend-row { grid-template-columns: 1fr; }
+  .dash-greeting-name { font-size: 20px; }
+}
+</style>
+</head>
+<body>
+
+<div id="sb-overlay" class="sb-overlay" onclick="closeSidebar()"></div>
+<div class="app-shell">
+  <div id="sidebar" class="sidebar"></div>
+
+  <div class="main-area">
+    <div class="page-content">
+
+      <!-- Greeting -->
+      <div class="dash-greeting" id="greeting">
+        <div class="dash-greeting-name" id="greeting-name">Bom dia, Gabriel</div>
+        <div class="dash-greeting-sub">
+          <span id="greeting-date">—</span>
+          <span class="dash-greeting-badge">
+            <i class="ti ti-user-heart" aria-hidden="true"></i>
+            Médico Arquiteto
+          </span>
+          <span class="dash-greeting-badge" id="day-type-badge" style="display:none">
+            <i class="ti ti-stethoscope" aria-hidden="true"></i>
+            <span id="day-type-label">Plantão</span>
+          </span>
+        </div>
+      </div>
+
+      <!-- Próxima ação -->
+      <div class="next-action" id="next-action" style="display:none">
+        <div class="na-header">
+          <i class="ti ti-bolt" style="font-size:14px;color:#fff" aria-hidden="true"></i>
+          <span class="na-header-title">Próxima ação</span>
+        </div>
+        <div class="na-body">
+          <div class="na-text" id="na-text">—</div>
+          <a class="na-btn" id="na-btn" href="#">
+            Abrir <i class="ti ti-arrow-right" aria-hidden="true"></i>
+          </a>
+        </div>
+      </div>
+
+      <!-- Status cards -->
+      <div class="status-grid" id="status-grid">
+        <!-- rendered by JS -->
+        <div class="status-card empty"><div class="sc-label">Carregando...</div></div>
+        <div class="status-card empty"><div class="sc-label">Carregando...</div></div>
+        <div class="status-card empty"><div class="sc-label">Carregando...</div></div>
+        <div class="status-card empty"><div class="sc-label">Carregando...</div></div>
+      </div>
+
+      <!-- Trends -->
+      <div class="trend-row">
+
+        <!-- Sono & Humor 7 dias -->
+        <div class="lo-card">
+          <div class="lo-card-header">
+            <i class="ti ti-moon" aria-hidden="true"></i>
+            <span class="lo-card-title">Sono & Humor · 7 dias</span>
+          </div>
+          <div class="lo-card-body">
+            <div id="sleep-trend">
+              <div class="empty-state">
+                <i class="ti ti-moon-off" aria-hidden="true"></i>
+                <p>Preencha o diário por alguns dias para ver o padrão</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Hábitos 7 dias -->
+        <div class="lo-card">
+          <div class="lo-card-header">
+            <i class="ti ti-checkbox" aria-hidden="true"></i>
+            <span class="lo-card-title">Hábitos · 7 dias</span>
+          </div>
+          <div class="lo-card-body" id="habit-trend">
+            <div class="empty-state">
+              <i class="ti ti-checkbox" aria-hidden="true"></i>
+              <p>Nenhum hábito cadastrado ainda</p>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Caderno RD progress -->
+      <div class="lo-card" style="margin-bottom:1.2rem">
+        <div class="lo-card-header">
+          <i class="ti ti-brain" aria-hidden="true"></i>
+          <span class="lo-card-title">Caderno RD · Progresso</span>
+          <a href="index.html" style="margin-left:auto;font-size:11px;color:var(--acc-text);text-decoration:none;display:flex;align-items:center;gap:3px">
+            Abrir <i class="ti ti-arrow-right" style="font-size:12px" aria-hidden="true"></i>
+          </a>
+        </div>
+        <div class="lo-card-body" id="caderno-progress">
+          <div class="empty-state" style="padding:1rem">
+            <p>Carregando progresso...</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Reflexão da semana (última) -->
+      <div class="lo-card">
+        <div class="lo-card-header">
+          <i class="ti ti-writing" aria-hidden="true"></i>
+          <span class="lo-card-title">Última reflexão semanal</span>
+          <a href="semanal.html" style="margin-left:auto;font-size:11px;color:var(--acc-text);text-decoration:none;display:flex;align-items:center;gap:3px">
+            Ver semanal <i class="ti ti-arrow-right" style="font-size:12px" aria-hidden="true"></i>
+          </a>
+        </div>
+        <div class="lo-card-body" id="ultima-reflexao">
+          <div class="empty-state" style="padding:0.5rem">
+            <i class="ti ti-notebook" aria-hidden="true"></i>
+            <p>Nenhuma reflexão semanal ainda. <a href="semanal.html" style="color:var(--acc-text)">Fazer agora →</a></p>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script src="nav.js"></script>
+<script>
+const EMOJIS = {1:'😢',2:'🙁',3:'😐',4:'🙂',5:'😄'};
+const DNAMES = ['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'];
+
+// ── INIT ───────────────────────────────────────
+window.addEventListener('DOMContentLoaded', () => {
+  renderGreeting();
+  loadFromCache();       // mostra do cache imediatamente
+  initSupabase();
+  syncAll();             // atualiza do Supabase em segundo plano
+});
+
+// ── GREETING ───────────────────────────────────
+function renderGreeting() {
+  const hour = new Date().getHours();
+  const greeting = hour < 12 ? 'Bom dia' : hour < 18 ? 'Boa tarde' : 'Boa noite';
+  document.getElementById('greeting-name').textContent = `${greeting}, Gabriel`;
+
+  const now = new Date();
+  const dateStr = now.toLocaleDateString('pt-BR', { weekday:'long', day:'numeric', month:'long' });
+  document.getElementById('greeting-date').textContent = dateStr.charAt(0).toUpperCase() + dateStr.slice(1);
+}
+
+// ── CACHE ──────────────────────────────────────
+function loadFromCache() {
+  try {
+    const habitos = JSON.parse(localStorage.getItem('lo-habitos') || '[]');
+    const checks  = JSON.parse(localStorage.getItem('lo-checks-14d') || '{}');
+    const dias7   = getLast7Days();
+
+    // Diarios do cache
+    const diarios = {};
+    dias7.forEach(d => {
+      try { const v = localStorage.getItem('lo-diario-' + d); if (v) diarios[d] = JSON.parse(v); } catch {}
+    });
+
+    // Caderno progress from localStorage
+    const cadernoDone = getCadernoDone();
+
+    renderAll({ habitos, checks, diarios, cadernoDone, semanal: null });
+  } catch(e) { console.warn(e); }
+}
+
+// ── SYNC ───────────────────────────────────────
+async function syncAll() {
+  if (!window.db) await new Promise(r => setTimeout(r, 1500));
+  initSupabase();
+  if (!window.db) return;
+
+  const today   = todayISO();
+  const days7   = getLast7Days();
+  const days14  = getLast14Days();
+  const monday  = weekStart(today);
+
+  try {
+    // Hábitos
+    const { data: habitos } = await window.db.from('habitos').select('*').eq('ativo',true).order('ordem');
+    if (habitos) localStorage.setItem('lo-habitos', JSON.stringify(habitos));
+
+    // Habit checks 14 dias
+    const { data: hc } = await window.db.from('habito_checks')
+      .select('*').gte('data', days14[0]).lte('data', today);
+    const checks = {};
+    (hc||[]).forEach(c => checks[`${c.habito_id}:${c.data}`] = c.concluido);
+    localStorage.setItem('lo-checks-14d', JSON.stringify(checks));
+
+    // Diarios 7 dias
+    const { data: drs } = await window.db.from('diario')
+      .select('*').gte('data', days7[0]).lte('data', today);
+    const diarios = {};
+    (drs||[]).forEach(d => {
+      diarios[d.data] = d;
+      localStorage.setItem('lo-diario-' + d.data, JSON.stringify(d));
+    });
+
+    // Caderno progress
+    const { data: cadData } = await window.db.from('caderno_respostas')
+      .select('campo, valor').like('campo', 's%-d%-done');
+    const cadernoDone = {};
+    (cadData||[]).forEach(({campo, valor}) => { if (valor==='1') cadernoDone[campo] = true; });
+
+    // Última revisão semanal
+    const { data: semList } = await window.db.from('revisao_semanal')
+      .select('*').order('semana_inicio', {ascending:false}).limit(1);
+    const semanal = semList?.[0] || null;
+
+    renderAll({ habitos: habitos||[], checks, diarios, cadernoDone, semanal });
+  } catch(e) { console.warn('Sync error:', e); }
+}
+
+// ── RENDER ALL ─────────────────────────────────
+function renderAll({ habitos, checks, diarios, cadernoDone, semanal }) {
+  const today  = todayISO();
+  const days7  = getLast7Days();
+  const todayEntry = diarios[today];
+  const diarySemana = weekStart(today);
+
+  // Próxima ação
+  renderNextAction(todayEntry, habitos, checks, today, cadernoDone);
+
+  // Status cards
+  renderStatusCards(todayEntry, habitos, checks, today, cadernoDone);
+
+  // Sono & humor
+  renderSleepTrend(days7, diarios);
+
+  // Hábitos
+  renderHabitTrend(habitos, checks, days7);
+
+  // Caderno
+  renderCadernoProgress(cadernoDone);
+
+  // Última reflexão
+  renderUltimaReflexao(semanal);
+}
+
+// ── NEXT ACTION ────────────────────────────────
+function renderNextAction(todayEntry, habitos, checks, today, cadernoDone) {
+  const el   = document.getElementById('next-action');
+  const text = document.getElementById('na-text');
+  const btn  = document.getElementById('na-btn');
+
+  // Lógica de prioridade
+  let msg, href, icon;
+
+  if (!todayEntry || !todayEntry.fiz_bem) {
+    msg  = 'Você ainda não preencheu o diário de hoje. Leva menos de 10 minutos.';
+    href = 'diario.html';
+    icon = 'ti-calendar-event';
+  } else {
+    const todayChecks = habitos.filter(h => checks[`${h.id}:${today}`]);
+    const pct = habitos.length ? Math.round((todayChecks.length/habitos.length)*100) : 100;
+    if (pct < 50 && habitos.length > 0) {
+      msg  = `Você completou ${todayChecks.length} de ${habitos.length} hábitos hoje. Ainda dá tempo.`;
+      href = 'diario.html';
+      icon = 'ti-checkbox';
+    } else {
+      const monday = weekStart(today);
+      const dayOfWeek = new Date(today+'T12:00:00').getDay();
+      if (dayOfWeek >= 0 && !cadernoDone[`s1-d${dayOfWeek+1}-done`]) {
+        msg  = 'Que tal avançar um dia no Caderno RD?';
+        href = 'index.html';
+        icon = 'ti-brain';
+      } else {
+        el.style.display = 'none';
+        return;
+      }
+    }
+  }
+
+  el.style.display = 'block';
+  text.textContent = msg;
+  btn.href = href;
+  btn.innerHTML = `<i class="ti ${icon}" aria-hidden="true"></i> Abrir <i class="ti ti-arrow-right" aria-hidden="true"></i>`;
+}
+
+// ── STATUS CARDS ───────────────────────────────
+function renderStatusCards(todayEntry, habitos, checks, today, cadernoDone) {
+  const diaryDone = todayEntry && todayEntry.fiz_bem;
+  const habitsDone = habitos.filter(h => checks[`${h.id}:${today}`]).length;
+  const habitsTotal = habitos.length;
+
+  // Caderno — encontra o dia mais avançado
+  let cadernoS = 1, cadernoD = 0;
+  for (let s=1; s<=2; s++) {
+    for (let d=1; d<=7; d++) {
+      if (cadernoDone[`s${s}-d${d}-done`]) { cadernoS=s; cadernoD=d; }
+    }
+  }
+
+  // Semanal — verifica se tem revisão desta semana
+  const monday = weekStart(today);
+  const semanalKey = 'lo-semanal-' + monday;
+  let semanalFeito = false;
+  try { const sem = JSON.parse(localStorage.getItem(semanalKey)||'{}'); semanalFeito = !!(sem.reflexao_pos || sem.padrao_semana); } catch {}
+
+  const cards = [
+    {
+      icon: 'ti-calendar-event', iconBg: diaryDone ? '#14b8a620':'var(--acc-soft)',
+      iconColor: diaryDone ? '#14b8a6':'var(--acc)',
+      label: 'Diário', href: 'diario.html',
+      value: diaryDone ? 'Feito ✓' : 'Pendente',
+      sub: todayEntry?.humor ? EMOJIS[todayEntry.humor] + ' humor de hoje' : 'Não preenchido',
+      status: diaryDone ? 'ok' : 'warn',
+      statusLabel: diaryDone ? '✓ ok' : '! hoje',
+    },
+    {
+      icon: 'ti-checkbox', iconBg: habitsTotal>0&&habitsDone===habitsTotal ? '#14b8a620':'var(--acc-soft)',
+      iconColor: habitsTotal>0&&habitsDone===habitsTotal ? '#14b8a6':'var(--acc)',
+      label: 'Hábitos', href: 'habitos.html',
+      value: habitsTotal > 0 ? `${habitsDone} / ${habitsTotal}` : '—',
+      sub: habitsTotal > 0 ? `${Math.round((habitsDone/habitsTotal)*100)}% hoje` : 'Nenhum cadastrado',
+      status: habitsTotal>0&&habitsDone===habitsTotal ? 'ok' : 'warn',
+      statusLabel: habitsTotal>0&&habitsDone===habitsTotal ? '✓ ok' : `${habitsDone}/${habitsTotal}`,
+    },
+    {
+      icon: 'ti-brain', iconBg: cadernoD>0 ? '#14b8a620':'var(--surface2)',
+      iconColor: cadernoD>0 ? '#14b8a6':'var(--text-muted)',
+      label: 'Caderno RD', href: 'index.html',
+      value: cadernoD > 0 ? `S${cadernoS} · D${cadernoD}` : 'Não iniciado',
+      sub: cadernoD > 0 ? `${cadernoD} de 7 dias completos` : 'Começar agora',
+      status: cadernoD > 0 ? 'ok' : 'empty',
+      statusLabel: cadernoD > 0 ? '✓ ok' : '—',
+    },
+    {
+      icon: 'ti-calendar-week', iconBg: semanalFeito ? '#14b8a620':'var(--acc-soft)',
+      iconColor: semanalFeito ? '#14b8a6':'var(--acc)',
+      label: 'Semanal', href: 'semanal.html',
+      value: semanalFeito ? 'Feito ✓' : 'Pendente',
+      sub: semanalFeito ? 'Revisão desta semana' : 'Fazer no domingo',
+      status: semanalFeito ? 'ok' : 'warn',
+      statusLabel: semanalFeito ? '✓ ok' : '! pendente',
+    },
+  ];
+
+  document.getElementById('status-grid').innerHTML = cards.map(c => `
+    <a class="status-card ${c.status}" href="${c.href}">
+      <span class="sc-status ${c.status}">${c.statusLabel}</span>
+      <div class="sc-icon" style="background:${c.iconBg}">
+        <i class="ti ${c.icon}" style="color:${c.iconColor}" aria-hidden="true"></i>
+      </div>
+      <div class="sc-label">${c.label}</div>
+      <div class="sc-value">${c.value}</div>
+      <div class="sc-sub">${c.sub}</div>
+    </a>`).join('');
+}
+
+// ── SLEEP TREND ────────────────────────────────
+function renderSleepTrend(days, diarios) {
+  const entries = days.map(d => ({ date: d, data: diarios[d] || null }));
+  const maxHoras = Math.max(...entries.map(e => e.data?.horas_sono || 0), 9);
+  const hasData = entries.some(e => e.data);
+
+  if (!hasData) {
+    document.getElementById('sleep-trend').innerHTML = `
+      <div class="empty-state">
+        <i class="ti ti-moon-off" aria-hidden="true"></i>
+        <p>Preencha o diário por alguns dias para ver o padrão</p>
+      </div>`;
+    return;
+  }
+
+  const bars = entries.map(e => {
+    const d = e.data;
+    const horas = d?.horas_sono || 0;
+    const humor = d?.humor;
+    const pct   = horas ? Math.round((horas/maxHoras)*100) : 0;
+    const cls   = !horas ? 'empty' : horas >= 7 ? 'good' : horas < 6 ? 'bad' : '';
+    const day   = new Date(e.date+'T12:00:00').toLocaleDateString('pt-BR',{weekday:'short'}).replace('.','');
+    return `
+      <div class="sleep-bar-wrap">
+        <div class="sleep-bar-col">
+          <div style="font-size:9px;color:var(--text-muted);margin-bottom:2px">${horas ? horas+'h' : ''}</div>
+          <div class="sleep-bar ${cls}" style="height:${Math.max(pct,5)}%"></div>
+        </div>
+        <div class="sleep-bar-emoji">${humor ? EMOJIS[humor] : '·'}</div>
+        <div class="sleep-bar-day">${day}</div>
+      </div>`;
+  }).join('');
+
+  const avgSono = entries.filter(e=>e.data?.horas_sono).reduce((s,e)=>s+(e.data.horas_sono||0),0) /
+    (entries.filter(e=>e.data?.horas_sono).length || 1);
+
+  document.getElementById('sleep-trend').innerHTML = `
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:0.7rem">
+      <span style="font-size:12px;color:var(--text-muted)">Média: <strong style="color:var(--text)">${avgSono.toFixed(1)}h</strong></span>
+      <span style="font-size:11px;color:var(--text-muted)">Meta: 7h</span>
+    </div>
+    <div class="sleep-bars">${bars}</div>`;
+}
+
+// ── HABIT TREND ────────────────────────────────
+function renderHabitTrend(habitos, checks, days7) {
+  if (!habitos.length) {
+    document.getElementById('habit-trend').innerHTML = `
+      <div class="empty-state">
+        <i class="ti ti-checkbox" aria-hidden="true"></i>
+        <p>Nenhum hábito cadastrado. <a href="habitos.html" style="color:var(--acc-text)">Adicionar →</a></p>
+      </div>`;
+    return;
+  }
+
+  // Dias da semana (label curto)
+  const dayLabels = days7.map(d =>
+    new Date(d+'T12:00:00').toLocaleDateString('pt-BR',{weekday:'short'}).replace('.','').slice(0,3)
+  );
+
+  // Header de dias
+  let html = `
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+      <div style="min-width:110px"></div>
+      <div class="habit-mini-dots">
+        ${dayLabels.map(l=>`<div style="width:14px;height:14px;display:flex;align-items:center;justify-content:center;font-size:9px;color:var(--text-muted);flex-shrink:0">${l}</div>`).join('')}
+      </div>
+      <div style="min-width:30px"></div>
+    </div>
+    <div class="habit-mini-grid">`;
+
+  habitos.forEach(h => {
+    const done = days7.filter(d => checks[`${h.id}:${d}`]).length;
+    const pct  = Math.round((done/7)*100);
+    const pctColor = pct>=70?'var(--acc)':pct>=40?'var(--amber-text)':'var(--red)';
+    html += `
+      <div class="habit-mini-row">
+        <div class="habit-mini-name" title="${h.nome}">
+          <i class="ti ${h.icone}" style="color:${h.cor};font-size:12px" aria-hidden="true"></i>
+          ${h.nome}
+        </div>
+        <div class="habit-mini-dots">
+          ${days7.map(d=>`<div class="habit-mini-dot${checks[`${h.id}:${d}`]?' on':''}"></div>`).join('')}
+        </div>
+        <div class="habit-mini-pct" style="color:${pctColor}">${pct}%</div>
+      </div>`;
+  });
+
+  html += '</div>';
+  document.getElementById('habit-trend').innerHTML = html;
+}
+
+// ── CADERNO PROGRESS ───────────────────────────
+function renderCadernoProgress(cadernoDone) {
+  const semanas = [
+    { numero: 1, titulo: 'Sono', icon: 'ti-moon', cor: '#8a2540' },
+    { numero: 2, titulo: 'Hábitos', icon: 'ti-refresh', cor: '#4a7ab8' },
+  ];
+
+  let html = '';
+  semanas.forEach(sem => {
+    const days = Array.from({length:7},(_,i)=>i+1);
+    const done = days.filter(d => cadernoDone[`s${sem.numero}-d${d}-done`]).length;
+    const pct  = Math.round((done/7)*100);
+    html += `
+      <div style="margin-bottom:1rem">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
+          <i class="ti ${sem.icon}" style="color:${sem.cor};font-size:15px" aria-hidden="true"></i>
+          <span style="font-size:13px;font-weight:600;color:var(--text)">S${sem.numero} · ${sem.titulo}</span>
+          <span style="font-size:11px;color:var(--text-muted);margin-left:auto">${done}/7 dias</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px">
+          <div style="flex:1;height:6px;background:var(--border);border-radius:3px;overflow:hidden">
+            <div style="height:100%;width:${pct}%;background:${sem.cor};border-radius:3px;transition:width 0.4s"></div>
+          </div>
+          <div style="display:flex;gap:3px">
+            ${days.map(d => {
+              const isDone = cadernoDone[`s${sem.numero}-d${d}-done`];
+              return `<div style="width:22px;height:22px;border-radius:5px;border:1px solid var(--border);background:${isDone?sem.cor:'var(--surface2)'};display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:${isDone?'#fff':'var(--text-muted)'}">
+                ${isDone?'✓':d}
+              </div>`;
+            }).join('')}
+          </div>
+        </div>
+      </div>`;
+  });
+
+  document.getElementById('caderno-progress').innerHTML = html ||
+    `<div class="empty-state" style="padding:0.5rem"><p>Comece o caderno para ver o progresso</p></div>`;
+}
+
+// ── ÚLTIMA REFLEXÃO ────────────────────────────
+function renderUltimaReflexao(semanal) {
+  const el = document.getElementById('ultima-reflexao');
+  if (!semanal || !semanal.reflexao_pos) {
+    // Tenta do cache local
+    const monday = weekStart(todayISO());
+    try {
+      const cached = JSON.parse(localStorage.getItem('lo-semanal-' + monday) || '{}');
+      if (cached.reflexao_pos) {
+        renderReflexaoText(el, cached, monday);
+        return;
+      }
+    } catch {}
+    el.innerHTML = `
+      <div class="empty-state" style="padding:0.5rem">
+        <i class="ti ti-notebook" aria-hidden="true"></i>
+        <p>Nenhuma reflexão semanal ainda. <a href="semanal.html" style="color:var(--acc-text)">Fazer agora →</a></p>
+      </div>`;
+    return;
+  }
+  renderReflexaoText(el, semanal, semanal.semana_inicio);
+}
+
+function renderReflexaoText(el, semanal, monday) {
+  const fmt = d => new Date(d+'T12:00:00').toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit'});
+  el.innerHTML = `
+    <div style="font-size:11px;color:var(--text-muted);margin-bottom:0.5rem">
+      <i class="ti ti-calendar" style="font-size:12px" aria-hidden="true"></i>
+      Semana de ${fmt(monday)}
+    </div>
+    ${semanal.reflexao_pos ? `<p style="font-size:13px;color:var(--text2);line-height:1.65;margin-bottom:0.7rem">"${semanal.reflexao_pos}"</p>` : ''}
+    ${semanal.prioridades ? `
+      <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.07em;color:var(--text-muted);margin-bottom:4px">
+        Prioridades da próxima semana
+      </div>
+      <p style="font-size:12px;color:var(--text2);line-height:1.6;white-space:pre-line">${semanal.prioridades}</p>` : ''}`;
+}
+
+// ── UTILS ──────────────────────────────────────
+function getLast7Days()  { return Array.from({length:7}, (_,i) => addDays(todayISO(), -6+i)); }
+function getLast14Days() { return Array.from({length:14},(_,i) => addDays(todayISO(),-13+i)); }
+
+function getCadernoDone() {
+  const done = {};
+  Object.keys(localStorage).filter(k => k.startsWith('rd-s') && k.endsWith('-done')).forEach(k => {
+    if (localStorage.getItem(k)==='1') done[k.replace('rd-','')] = true;
+  });
+  return done;
+}
+</script>
+</body>
+</html>
