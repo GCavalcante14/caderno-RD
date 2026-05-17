@@ -1,48 +1,27 @@
 /* ═══════════════════════════════════════════════
    Caderno RD · app.js
+   NOTA: SUPABASE_URL, SUPABASE_KEY, toggleTheme,
+   applyTheme e initSupabase vivem em nav.js agora.
    ═══════════════════════════════════════════════ */
-
-const SUPABASE_URL = 'https://hkrbvgahmvhvcerthler.supabase.co';
-const SUPABASE_KEY = 'sb_publishable_f8BD685R8Tx7clXMKvGvtA_lYu4njJy';
 
 const SEMANAS_DISPONIVEIS = [
   { numero: 1, titulo: 'Sono',    icon: 'ti-moon',    arquivo: 'semana-01.js' },
   { numero: 2, titulo: 'Hábitos', icon: 'ti-refresh', arquivo: 'semana-02.js' },
 ];
 
-let db, semanaAtual = 1, diaAtual = 1, semanaData = null, saveTimers = {};
+let semanaAtual = 1, diaAtual = 1, semanaData = null, saveTimers = {};
 
 /* ── INIT ────────────────────────────────────── */
 window.addEventListener('DOMContentLoaded', () => {
-  initTheme();
+  // nav.js já inicializou o Supabase e o tema
   renderWeekNav();
-  db = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
   carregarSemana(1);
 });
-
-/* ── THEME ───────────────────────────────────── */
-function initTheme() {
-  const saved = localStorage.getItem('rd-theme') || 'light';
-  applyTheme(saved, false);
-}
-
-function toggleTheme() {
-  const current = document.documentElement.getAttribute('data-theme') || 'light';
-  const next = current === 'light' ? 'dark' : 'light';
-  applyTheme(next, true);
-  localStorage.setItem('rd-theme', next);
-  pushSupabase('pref-theme', next);
-}
-
-function applyTheme(theme, save) {
-  document.documentElement.setAttribute('data-theme', theme);
-  const icon = document.getElementById('theme-icon');
-  if (icon) icon.className = theme === 'dark' ? 'ti ti-sun' : 'ti ti-moon-stars';
-}
 
 /* ── WEEK NAV ────────────────────────────────── */
 function renderWeekNav() {
   const inner = document.getElementById('week-nav-inner');
+  if (!inner) return;
   inner.innerHTML = SEMANAS_DISPONIVEIS.map(s =>
     `<button class="week-btn${s.numero === 1 ? ' active' : ''}"
       onclick="carregarSemana(${s.numero})" id="wbtn-${s.numero}">
@@ -52,7 +31,7 @@ function renderWeekNav() {
   ).join('');
 }
 
-/* ── LOAD SEMANA ─────────────────────────────── */
+/* ── CARREGAR SEMANA ─────────────────────────── */
 function carregarSemana(numero) {
   semanaAtual = numero;
   diaAtual = 1;
@@ -87,8 +66,10 @@ function renderApp() {
   const sd = semanaData;
   const badge = document.getElementById('week-badge');
   if (badge) badge.innerHTML = `<i class="ti ${sd.icon}" aria-hidden="true"></i> Semana ${sd.numero}`;
-  document.getElementById('week-title').textContent = sd.titulo;
-  document.getElementById('week-sub').textContent = sd.sprint;
+  const wt = document.getElementById('week-title');
+  const ws = document.getElementById('week-sub');
+  if (wt) wt.textContent = sd.titulo;
+  if (ws) ws.textContent = sd.sprint;
   renderDayNav();
   renderDay(1);
 }
@@ -96,6 +77,7 @@ function renderApp() {
 /* ── DAY NAV ─────────────────────────────────── */
 function renderDayNav() {
   const inner = document.getElementById('day-nav-inner');
+  if (!inner) return;
   const dias = semanaData.dias.map((_, i) =>
     `<button class="day-btn${i === 0 ? ' active' : ''}"
       onclick="renderDay(${i+1})" id="dbtn-${i+1}">Dia ${i+1}</button>`
@@ -173,7 +155,7 @@ function renderDay(n) {
       <span class="nav-pos">${n} / ${total}</span>
       <button class="nav-btn primary" onclick="${n === total ? 'renderSemanal()' : `renderDay(${n+1})`}">
         ${n === total
-          ? `Reflexão semanal <i class="ti ti-notebook" aria-hidden="true"></i>`
+          ? `Reflexão <i class="ti ti-notebook" aria-hidden="true"></i>`
           : `Dia ${n+1} <i class="ti ti-arrow-right" aria-hidden="true"></i>`
         }
       </button>
@@ -218,25 +200,19 @@ function renderSemanal() {
       <strong>Reflexão Semanal</strong>
     </div>
     <div class="tags">
-      <span class="tag tag-int">
-        <i class="ti ti-notebook" aria-hidden="true"></i> Reflexão Semanal
-      </span>
-      <span class="tag tag-dia">
-        <i class="ti ti-clock" aria-hidden="true"></i> 45–60 min
-      </span>
+      <span class="tag tag-int"><i class="ti ti-notebook" aria-hidden="true"></i> Reflexão Semanal</span>
+      <span class="tag tag-dia"><i class="ti ti-clock" aria-hidden="true"></i> 45–60 min</span>
     </div>
     <h1 class="dia-titulo">${semanaData.reflexao_semanal.titulo}</h1>
     <p class="dia-sub">${semanaData.reflexao_semanal.subtitulo}</p>
     <div class="divider"></div>
     <div class="slabel"><i class="ti ti-refresh" aria-hidden="true"></i> Revisão dos conceitos</div>
-    <div class="ancora-rev">
-      <div class="rev-grid">${revisao}</div>
-    </div>
+    <div class="ancora-rev"><div class="rev-grid">${revisao}</div></div>
     <div class="divider"></div>
     <div class="sem-card">
       <div class="sem-header">
         <h2><i class="ti ti-notebook" style="font-size:16px;margin-right:6px" aria-hidden="true"></i>${semanaData.reflexao_semanal.titulo}</h2>
-        <p>Dedique 45–60 min sem interrupção. Pode dividir em dois blocos.</p>
+        <p>Dedique 45–60 min sem interrupção.</p>
       </div>
       <div class="sem-body">${secoes}</div>
     </div>
@@ -258,9 +234,9 @@ function renderSemanal() {
 /* ── HTML BUILDERS ───────────────────────────── */
 function htmlCheckin(s, d) {
   const tipos = [
-    { key: 'sleep',  label: 'Sono ontem',  hint: 'péssimo → ótimo', icon: 'ti-moon' },
-    { key: 'energy', label: 'Energia agora', hint: 'vazio → cheio', icon: 'ti-bolt' },
-    { key: 'humor',  label: 'Humor',        hint: 'baixo → ótimo',  icon: 'ti-mood-smile' },
+    { key:'sleep',  label:'Sono ontem',   hint:'péssimo → ótimo', icon:'ti-moon'       },
+    { key:'energy', label:'Energia agora', hint:'vazio → cheio',   icon:'ti-bolt'       },
+    { key:'humor',  label:'Humor',         hint:'baixo → ótimo',   icon:'ti-mood-smile' },
   ];
   return `
     <div class="slabel"><i class="ti ti-bolt" aria-hidden="true"></i> Check-in · 2 min</div>
@@ -307,50 +283,40 @@ function htmlArtigo(dia) {
       <div class="art-nome">${a.nome}</div>
       <div class="art-fonte">${a.fonte}</div>
       <div class="art-focal">${a.focal}</div>
-      <div class="frase">
-        ${a.frase}
-        <span class="frase-fonte">${a.frase_fonte}</span>
-      </div>
+      <div class="frase">${a.frase}<span class="frase-fonte">${a.frase_fonte}</span></div>
     </div>`;
 }
 
 function htmlReflexao(dia, s, d) {
   const r = dia.reflexao;
-  const modoLabels = { escrever: 'Escrever', lista: 'Lista', diagrama: 'Diagrama' };
-  const modoIcons  = { escrever: 'ti-writing', lista: 'ti-list', diagrama: 'ti-topology-star' };
-  const modos = (r.modos || ['escrever','lista']).map((m, i) =>
-    `<button class="mbtn${i === 0 ? ' active' : ''}" onclick="setModo('${d}-r','${m}',this)">
+  const modoLabels = { escrever:'Escrever', lista:'Lista', diagrama:'Diagrama' };
+  const modoIcons  = { escrever:'ti-writing', lista:'ti-list', diagrama:'ti-topology-star' };
+  const modos = (r.modos||['escrever','lista']).map((m,i) =>
+    `<button class="mbtn${i===0?' active':''}" onclick="setModo('${d}-r','${m}',this)">
       <i class="ti ${modoIcons[m]}" aria-hidden="true"></i> ${modoLabels[m]}
-    </button>`
-  ).join('');
-
-  const areas = (r.modos || ['escrever','lista']).map((m, i) => {
-    if (m === 'diagrama') return `
-      <div class="area${i === 0 ? ' active' : ''}" id="${d}-r-${m}">
+    </button>`).join('');
+  const areas = (r.modos||['escrever','lista']).map((m,i) => {
+    if (m==='diagrama') return `
+      <div class="area${i===0?' active':''}" id="${d}-r-${m}">
         <div class="diag-ph">
           <i class="ti ti-topology-star" aria-hidden="true"></i>
           GoodNotes ou papel
-          <div class="diag-hint">${r.diagrama_hint || ''}</div>
+          <div class="diag-hint">${r.diagrama_hint||''}</div>
         </div>
       </div>`;
     return `
-      <div class="area${i === 0 ? ' active' : ''}" id="${d}-r-${m}">
+      <div class="area${i===0?' active':''}" id="${d}-r-${m}">
         <textarea id="ta-s${s}-d${d}-r-${m}"
-          placeholder="${r['placeholder_' + m] || ''}"
-          oninput="save(this, 's${s}-d${d}-r-${m}')"></textarea>
+          placeholder="${r['placeholder_'+m]||''}"
+          oninput="save(this,'s${s}-d${d}-r-${m}')"></textarea>
       </div>`;
   }).join('');
-
   return `
     <div class="slabel"><i class="ti ti-pencil" aria-hidden="true"></i> Reflexão do dia · 10–15 min</div>
     <div class="refl-card">
       <div class="refl-header">
-        <span class="refl-title">
-          <i class="ti ti-brain" aria-hidden="true"></i> Reflexão
-        </span>
-        <span class="refl-tempo">
-          <i class="ti ti-clock" aria-hidden="true"></i> 10–15 min
-        </span>
+        <span class="refl-title"><i class="ti ti-brain" aria-hidden="true"></i> Reflexão</span>
+        <span class="refl-tempo"><i class="ti ti-clock" aria-hidden="true"></i> 10–15 min</span>
       </div>
       <div class="refl-body">
         <div class="contexto">${r.contexto}</div>
@@ -360,7 +326,7 @@ function htmlReflexao(dia, s, d) {
         ${areas}
         <div class="refl-hint">
           <i class="ti ti-bulb" aria-hidden="true"></i>
-          ${r.hint || 'Não force uma resposta correta. A honestidade aqui é o exercício.'}
+          ${r.hint||'Não force uma resposta correta. A honestidade é o exercício.'}
         </div>
       </div>
     </div>`;
@@ -368,12 +334,12 @@ function htmlReflexao(dia, s, d) {
 
 function htmlTCC(dia, s, d) {
   const t = dia.tcc;
-  const campos = t.campos.map((campo, i) => `
+  const campos = t.campos.map((campo,i) => `
     <div class="tcc-field">
       <label>${campo}</label>
       <textarea id="ta-s${s}-d${d}-tcc-${i+1}"
         placeholder="${t.placeholders[i]}"
-        oninput="save(this, 's${s}-d${d}-tcc-${i+1}')"></textarea>
+        oninput="save(this,'s${s}-d${d}-tcc-${i+1}')"></textarea>
     </div>`).join('');
   return `
     <div class="slabel"><i class="ti ti-puzzle" aria-hidden="true"></i> Conexão TCC</div>
@@ -384,9 +350,7 @@ function htmlTCC(dia, s, d) {
       </div>
       <div class="tcc-grid">
         ${campos}
-        <div class="tcc-hint">
-          <i class="ti ti-info-circle" aria-hidden="true"></i> ${t.hint}
-        </div>
+        <div class="tcc-hint"><i class="ti ti-info-circle" aria-hidden="true"></i> ${t.hint}</div>
       </div>
     </div>`;
 }
@@ -400,55 +364,51 @@ function htmlTensao(s, d) {
         <span class="tensao-title">O que não fechou, contradiz ou incomoda</span>
       </div>
       <div class="tensao-body">
-        <div class="tensao-prompt">Algo no artigo ou na aula gerou atrito com o que você já sabia? Registra — mesmo que seja só uma frase.</div>
+        <div class="tensao-prompt">Algo no artigo ou na aula gerou atrito com o que você já sabia?</div>
         <textarea id="ta-s${s}-d${d}-tensao" style="min-height:65px"
-          placeholder="…"
-          oninput="save(this, 's${s}-d${d}-tensao')"></textarea>
+          placeholder="…" oninput="save(this,'s${s}-d${d}-tensao')"></textarea>
       </div>
     </div>`;
 }
 
 function htmlExperimento(exp, s, d) {
   return `
-    <div class="slabel"><i class="ti ti-flask" aria-hidden="true"></i> Micro-experimento da semana</div>
+    <div class="slabel"><i class="ti ti-flask" aria-hidden="true"></i> Micro-experimento</div>
     <div class="exp-card">
       <div class="exp-header">
-        <span class="exp-htitle">
-          <i class="ti ti-flask" aria-hidden="true"></i> ${exp.titulo}
-        </span>
+        <span class="exp-htitle"><i class="ti ti-flask" aria-hidden="true"></i> ${exp.titulo}</span>
         <span class="exp-badge">dia ${d}</span>
       </div>
       <div class="exp-body">
-        ${d === 1 ? `<div class="exp-texto">${exp.descricao}</div>` : ''}
+        ${d===1 ? `<div class="exp-texto">${exp.descricao}</div>` : ''}
         <span class="exp-label"><i class="ti ti-eye" style="font-size:11px" aria-hidden="true"></i> Observação do dia ${d}</span>
         <textarea id="ta-s${s}-d${d}-exp" style="min-height:55px"
           placeholder="${exp.placeholder_obs}"
-          oninput="save(this, 's${s}-d${d}-exp')"></textarea>
+          oninput="save(this,'s${s}-d${d}-exp')"></textarea>
       </div>
     </div>`;
 }
 
 function htmlMateriais(dia) {
-  const tipoClass = { video:'tv', capitulo:'tc', artigo:'ta', podcast:'tv', livro:'tc', podcast:'tv' };
+  const tipoClass = { video:'tv', capitulo:'tc', artigo:'ta', podcast:'tv', livro:'tc' };
   const tipoIcon  = { video:'ti-player-play', capitulo:'ti-book', artigo:'ti-article', podcast:'ti-headphones', livro:'ti-book' };
   const items = dia.materiais.map(m => `
     <div class="mat-item">
-      <span class="mat-tipo ${tipoClass[m.tipo] || 'tc'}">
-        <i class="ti ${tipoIcon[m.tipo] || 'ti-file'}" aria-hidden="true"></i>
-        ${m.tipo}
+      <span class="mat-tipo ${tipoClass[m.tipo]||'tc'}">
+        <i class="ti ${tipoIcon[m.tipo]||'ti-file'}" aria-hidden="true"></i> ${m.tipo}
       </span>
       <div class="mat-info">
         <div class="mat-title">${m.titulo}</div>
         <div class="mat-detail">${m.detalhe}</div>
       </div>
-      <span class="mat-badge ${m.principal ? 'bp' : 'be'}">${m.principal ? 'principal' : 'extra'}</span>
+      <span class="mat-badge ${m.principal?'bp':'be'}">${m.principal?'principal':'extra'}</span>
     </div>`).join('');
   return `
     <div class="slabel"><i class="ti ti-books" aria-hidden="true"></i> Material complementar</div>
     <div class="mat-card">${items}</div>`;
 }
 
-/* ── SUPABASE SAVE/LOAD ──────────────────────── */
+/* ── SUPABASE ─────────────────────────────────── */
 function save(el, campo) {
   const valor = el.value;
   localStorage.setItem('rd-' + campo, valor);
@@ -458,29 +418,33 @@ function save(el, campo) {
 }
 
 async function pushSupabase(campo, valor) {
+  const db = window.db;
   if (!db) return;
   try {
     const { error } = await db.from('caderno_respostas')
       .upsert({ campo, valor: String(valor) }, { onConflict: 'campo' });
     setStatus(error ? 'error' : 'saved');
-  } catch (e) { setStatus('error'); }
+  } catch(e) { setStatus('error'); }
 }
 
 async function loadAll() {
+  const db = window.db;
   const prefix = `s${semanaAtual}-`;
   try {
-    const { data, error } = await db.from('caderno_respostas')
-      .select('campo, valor')
-      .like('campo', prefix + '%');
-    if (error) throw error;
-    data.forEach(({ campo, valor }) => {
-      localStorage.setItem('rd-' + campo, valor);
-      applyValue(campo, valor);
-    });
-    const theme = await db.from('caderno_respostas').select('valor').eq('campo','pref-theme').single();
-    if (theme.data) applyTheme(theme.data.valor, false);
+    if (db) {
+      const { data, error } = await db.from('caderno_respostas')
+        .select('campo, valor').like('campo', prefix + '%');
+      if (!error) {
+        data.forEach(({ campo, valor }) => {
+          localStorage.setItem('rd-' + campo, valor);
+          applyValue(campo, valor);
+        });
+      }
+    } else {
+      loadFromLocalStorage();
+    }
     setStatus('saved');
-  } catch (e) {
+  } catch(e) {
     loadFromLocalStorage();
     setStatus('error');
   }
@@ -496,14 +460,14 @@ function loadDayData(s, d) {
     if (v) highlightDots(d, tipo, parseInt(v));
   });
   const done = localStorage.getItem(`rd-s${s}-d${d}-done`);
-  if (done === '1') {
+  if (done==='1') {
     const cb = document.getElementById(`done-${d}`);
-    if (cb) { cb.checked = true; markDone(d, true); }
+    if (cb) { cb.checked=true; markDone(d,true); }
   }
 }
 
 function loadSemanalData(s) {
-  for (let i = 1; i <= 6; i++) {
+  for (let i=1; i<=6; i++) {
     const campo = `s${s}-sem-${i}`;
     const v = localStorage.getItem('rd-' + campo);
     const el = document.getElementById(`ta-${campo}`);
@@ -523,21 +487,21 @@ function applyValue(campo, valor) {
   const ciMatch = campo.match(/^s(\d+)-d(\d+)-ci-(\w+)$/);
   if (ciMatch) { highlightDots(parseInt(ciMatch[2]), ciMatch[3], parseInt(valor)); return; }
   const doneMatch = campo.match(/^s(\d+)-d(\d+)-done$/);
-  if (doneMatch && valor === '1') {
+  if (doneMatch && valor==='1') {
     const cb = document.getElementById('done-' + doneMatch[2]);
-    if (cb) { cb.checked = true; markDone(parseInt(doneMatch[2]), true); }
+    if (cb) { cb.checked=true; markDone(parseInt(doneMatch[2]),true); }
   }
 }
 
-/* ── DOTS ────────────────────────────────────── */
-const DOT_COLORS = { sleep: '#8a2540', energy: '#4a7ab8', humor: '#8a4060' };
+/* ── DOTS ─────────────────────────────────────── */
+const DOT_COLORS = { sleep:'#8a2540', energy:'#4a7ab8', humor:'#8a4060' };
 
 function setupDots(s, d) {
   ['sleep','energy','humor'].forEach(tipo => {
     const cont = document.getElementById(`ci-${d}-${tipo}`);
     if (!cont) return;
     cont.innerHTML = '';
-    for (let i = 1; i <= 5; i++) {
+    for (let i=1; i<=5; i++) {
       const dot = document.createElement('div');
       dot.className = 'dot';
       dot.textContent = i;
@@ -557,20 +521,13 @@ function highlightDots(d, tipo, val) {
   const cont = document.getElementById(`ci-${d}-${tipo}`);
   if (!cont) return;
   const color = DOT_COLORS[tipo] || 'var(--acc)';
-  cont.querySelectorAll('.dot').forEach((dot, i) => {
-    if (i < val) {
-      dot.style.background = color;
-      dot.style.borderColor = color;
-      dot.style.color = '#fff';
-    } else {
-      dot.style.background = 'var(--input-bg)';
-      dot.style.borderColor = 'var(--border)';
-      dot.style.color = 'var(--border)';
-    }
+  cont.querySelectorAll('.dot').forEach((dot,i) => {
+    if (i<val) { dot.style.background=color; dot.style.borderColor=color; dot.style.color='#fff'; }
+    else { dot.style.background='var(--input-bg)'; dot.style.borderColor='var(--border)'; dot.style.color='var(--border)'; }
   });
 }
 
-/* ── DONE ────────────────────────────────────── */
+/* ── DONE ─────────────────────────────────────── */
 function saveDone(dia, checked) {
   const campo = `s${semanaAtual}-d${dia}-done`;
   const valor = checked ? '1' : '0';
@@ -608,15 +565,15 @@ function setStatus(state) {
   const [html, cls] = map[state] || map.idle;
   el.innerHTML = html;
   el.className = 'sync ' + cls;
-  if (state === 'saved') setTimeout(() => setStatus('idle'), 2000);
+  if (state==='saved') setTimeout(() => setStatus('idle'), 2000);
 }
 
-/* ── OVERLAY ─────────────────────────────────── */
+/* ── OVERLAY ──────────────────────────────────── */
 function showOverlay() {
   const ol = document.getElementById('overlay');
-  if (ol) { ol.style.display = 'flex'; ol.classList.remove('hidden'); }
+  if (ol) { ol.style.display='flex'; ol.classList.remove('hidden'); }
 }
 function hideOverlay() {
   const ol = document.getElementById('overlay');
-  if (ol) { ol.classList.add('hidden'); setTimeout(() => ol.style.display = 'none', 400); }
+  if (ol) { ol.classList.add('hidden'); setTimeout(() => ol.style.display='none', 400); }
 }
