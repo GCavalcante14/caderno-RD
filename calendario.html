@@ -3,267 +3,244 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
 <title>Calendário · LifeOS</title>
 <script>(function(){var t=localStorage.getItem('rd-theme')||'light';document.documentElement.setAttribute('data-theme',t);})()</script>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.30.0/dist/tabler-icons.min.css">
 <link rel="stylesheet" href="style.css">
 <link rel="stylesheet" href="lifeos.css">
 <style>
-/* ── CALENDAR ESPECÍFICO ── */
+/* ── CALENDAR ── */
 .cal-toolbar {
-  display: flex; align-items: center; gap: 10px;
-  margin-bottom: 1.2rem; flex-wrap: wrap;
+  display:flex;align-items:center;gap:10px;margin-bottom:1.2rem;flex-wrap:wrap;
 }
-.cal-nav { display: flex; align-items: center; gap: 6px; }
-.cal-nav-btn {
-  width: 30px; height: 30px; border-radius: 7px;
-  border: 1px solid var(--border); background: var(--surface2);
-  color: var(--text-muted); cursor: pointer;
-  display: flex; align-items: center; justify-content: center;
-  transition: all 0.15s;
+.cal-nav{display:flex;align-items:center;gap:6px;}
+.cal-nav-btn{
+  width:30px;height:30px;border-radius:7px;border:1px solid var(--border);
+  background:var(--surface2);color:var(--text-muted);cursor:pointer;
+  display:flex;align-items:center;justify-content:center;transition:all .15s;
 }
-.cal-nav-btn:hover { border-color: var(--acc); color: var(--acc); }
-.cal-nav-btn i { font-size: 15px; }
-.cal-title {
-  font-size: 16px; font-weight: 700; color: var(--text);
-  min-width: 180px; text-align: center;
+.cal-nav-btn:hover{border-color:var(--acc);color:var(--acc);}
+.cal-nav-btn i{font-size:15px;}
+.cal-title{font-size:16px;font-weight:700;color:var(--text);min-width:200px;text-align:center;}
+.cal-view-btns{
+  display:flex;border:1px solid var(--border);border-radius:8px;overflow:hidden;margin-left:auto;
 }
-.cal-view-btns { display: flex; border: 1px solid var(--border); border-radius: 8px; overflow: hidden; margin-left: auto; }
-.cal-view-btn {
-  padding: 5px 14px; font-size: 12px; font-weight: 600;
-  border: none; background: var(--surface2); color: var(--text-muted);
-  cursor: pointer; font-family: inherit; transition: all 0.15s;
+.cal-view-btn{
+  padding:5px 14px;font-size:12px;font-weight:600;border:none;
+  background:var(--surface2);color:var(--text-muted);cursor:pointer;
+  font-family:inherit;transition:all .15s;
 }
-.cal-view-btn.active { background: var(--acc); color: #fff; }
-.cal-today-btn {
-  padding: 5px 12px; font-size: 12px; font-weight: 600;
-  border: 1px solid var(--border); border-radius: 7px;
-  background: var(--surface2); color: var(--text-muted);
-  cursor: pointer; font-family: inherit; transition: all 0.15s;
+.cal-view-btn.active{background:var(--acc);color:#fff;}
+.cal-today-btn{
+  padding:5px 12px;font-size:12px;font-weight:600;border:1px solid var(--border);
+  border-radius:7px;background:var(--surface2);color:var(--text-muted);
+  cursor:pointer;font-family:inherit;transition:all .15s;
 }
-.cal-today-btn:hover { border-color: var(--acc); color: var(--acc); }
+.cal-today-btn:hover{border-color:var(--acc);color:var(--acc);}
 
-/* ── CALENDÁRIOS SIDEBAR ── */
-.cal-layout { display: flex; gap: 1.2rem; }
-.cal-sidebar {
-  width: 200px; flex-shrink: 0;
+/* ── LAYOUT ── */
+.cal-layout{display:flex;gap:1.2rem;}
+.cal-sidebar-panel{width:190px;flex-shrink:0;}
+.cal-section-title{
+  font-size:10px;font-weight:700;text-transform:uppercase;
+  letter-spacing:.08em;color:var(--text-muted);margin-bottom:.5rem;
+  margin-top:.8rem;
 }
-.cal-sidebar-section { margin-bottom: 1rem; }
-.cal-sidebar-title {
-  font-size: 10px; font-weight: 700; text-transform: uppercase;
-  letter-spacing: 0.08em; color: var(--text-muted); margin-bottom: 0.5rem;
-}
-.cal-item {
-  display: flex; align-items: center; gap: 8px;
-  padding: 4px 0; cursor: pointer; user-select: none;
-}
-.cal-item-dot {
-  width: 12px; height: 12px; border-radius: 3px; flex-shrink: 0;
-  transition: opacity 0.15s;
-}
-.cal-item.hidden .cal-item-dot { opacity: 0.3; }
-.cal-item-name { font-size: 12px; color: var(--text2); }
-.cal-item.hidden .cal-item-name { color: var(--text-muted); }
+.cal-section-title:first-child{margin-top:0;}
 
-/* ── MONTH VIEW ── */
-.cal-main { flex: 1; min-width: 0; }
-.month-grid {
-  display: grid; grid-template-columns: repeat(7, 1fr);
-  border: 1px solid var(--border); border-radius: var(--radius);
-  overflow: hidden;
+/* ── CALENDAR ITEM ── */
+.cal-item{
+  display:flex;align-items:center;gap:8px;padding:4px 0;
+  cursor:pointer;user-select:none;
 }
-.month-header {
-  padding: 6px 4px; text-align: center;
-  font-size: 11px; font-weight: 700; text-transform: uppercase;
-  letter-spacing: 0.06em; color: var(--text-muted);
-  background: var(--surface2); border-bottom: 1px solid var(--border);
+.cal-check{
+  width:14px;height:14px;border-radius:3px;flex-shrink:0;
+  border:2px solid transparent;display:flex;align-items:center;
+  justify-content:center;transition:all .15s;
 }
-.month-day {
-  min-height: 90px; padding: 5px;
-  border-right: 1px solid var(--border);
-  border-bottom: 1px solid var(--border);
-  background: var(--surface);
-  cursor: pointer; transition: background 0.1s;
-  position: relative;
+.cal-check.on{border:none;}
+.cal-check i{font-size:10px;color:#fff;}
+.cal-item-name{font-size:12px;color:var(--text2);flex:1;}
+.cal-item.hidden .cal-item-name{color:var(--text-muted);}
+.cal-plantao-badge{
+  font-size:9px;padding:1px 5px;border-radius:10px;
+  background:var(--acc-soft);color:var(--acc-text);font-weight:600;
 }
-.month-day:nth-child(7n) { border-right: none; }
-.month-day:hover { background: var(--surface2); }
-.month-day.other-month { background: var(--bg); }
-.month-day.other-month .month-day-num { color: var(--text-hint); }
-.month-day.today { background: var(--acc-soft); }
-.month-day.today .month-day-num {
-  background: var(--acc); color: #fff;
-  width: 22px; height: 22px; border-radius: 50%;
-  display: flex; align-items: center; justify-content: center;
-  font-weight: 700;
-}
-.month-day.plantao { background: var(--acc-soft); border-left: 3px solid var(--acc); }
-.month-day-num {
-  font-size: 12px; font-weight: 600; color: var(--text);
-  margin-bottom: 3px;
-  width: 22px; height: 22px;
-  display: flex; align-items: center; justify-content: center;
-}
-.month-event {
-  font-size: 10px; font-weight: 500;
-  padding: 1px 5px; border-radius: 3px;
-  margin-bottom: 2px; white-space: nowrap;
-  overflow: hidden; text-overflow: ellipsis;
-  cursor: pointer;
-}
-.month-event:hover { opacity: 0.8; }
-.month-more { font-size: 10px; color: var(--text-muted); padding: 1px 5px; }
 
-/* ── WEEK VIEW ── */
-.week-grid { display: flex; flex-direction: column; }
-.week-header { display: grid; grid-template-columns: 50px repeat(7, 1fr); border-bottom: 1px solid var(--border); }
-.week-header-cell {
-  padding: 6px 4px; text-align: center;
-  font-size: 11px; font-weight: 600; color: var(--text-muted);
-  border-left: 1px solid var(--border);
+/* ── MONTH ── */
+.cal-main{flex:1;min-width:0;}
+.month-grid{
+  display:grid;grid-template-columns:repeat(7,1fr);
+  border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;
 }
-.week-header-cell:first-child { border-left: none; }
-.week-header-day {
-  font-size: 20px; font-weight: 700; color: var(--text);
-  display: block; line-height: 1;
+.month-header{
+  padding:6px 4px;text-align:center;font-size:11px;font-weight:700;
+  text-transform:uppercase;letter-spacing:.06em;color:var(--text-muted);
+  background:var(--surface2);border-bottom:1px solid var(--border);
 }
-.week-header-cell.today .week-header-day {
-  background: var(--acc); color: #fff;
-  width: 34px; height: 34px; border-radius: 50%;
-  display: flex; align-items: center; justify-content: center;
-  margin: 0 auto;
+.month-day{
+  min-height:88px;padding:5px;border-right:1px solid var(--border);
+  border-bottom:1px solid var(--border);background:var(--surface);
+  cursor:pointer;transition:background .1s;position:relative;
 }
-.week-header-cell.plantao { background: var(--acc-soft); }
-.week-body { display: grid; grid-template-columns: 50px repeat(7, 1fr); max-height: 500px; overflow-y: auto; }
-.week-time {
-  font-size: 10px; color: var(--text-muted); text-align: right;
-  padding-right: 6px; padding-top: 4px; border-right: 1px solid var(--border);
+.month-day:nth-child(7n){border-right:none;}
+.month-day:hover{background:var(--surface2);}
+.month-day.other-month{background:var(--bg);}
+.month-day.other-month .month-day-num{color:var(--text-hint);}
+.month-day.today{background:var(--acc-soft);}
+.month-day.today .month-day-num{
+  background:var(--acc);color:#fff;width:22px;height:22px;
+  border-radius:50%;display:flex;align-items:center;justify-content:center;
+  font-weight:700;
 }
-.week-cell {
-  border-left: 1px solid var(--border);
-  border-bottom: 1px solid var(--border);
-  min-height: 40px; padding: 2px;
-  position: relative;
+.month-day.has-plantao{border-left:3px solid var(--acc);}
+.month-day-num{
+  font-size:12px;font-weight:600;color:var(--text);margin-bottom:3px;
+  width:22px;height:22px;display:flex;align-items:center;justify-content:center;
 }
-.week-cell.today { background: var(--acc-soft); }
-.week-cell.plantao { background: var(--acc-soft); }
-.week-event {
-  font-size: 10px; padding: 2px 4px; border-radius: 3px;
-  margin-bottom: 1px; cursor: pointer;
-  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+.month-event{
+  font-size:10px;font-weight:500;padding:1px 5px;border-radius:3px;
+  margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  cursor:pointer;color:#fff;
 }
-.week-allday-row { display: grid; grid-template-columns: 50px repeat(7, 1fr); border-bottom: 1px solid var(--border); }
-.week-allday-label {
-  font-size: 9px; color: var(--text-muted); text-align: right;
-  padding-right: 6px; padding-top: 4px;
-}
-.week-allday-cell { border-left: 1px solid var(--border); padding: 2px; min-height: 24px; }
+.month-event:hover{opacity:.85;}
+.month-more{font-size:10px;color:var(--text-muted);padding:1px 5px;}
 
-/* ── DAY VIEW ── */
-.day-view { display: flex; flex-direction: column; gap: 4px; }
-.day-allday-section {
-  background: var(--surface); border: 1px solid var(--border);
-  border-radius: var(--radius-sm); padding: 0.6rem 0.8rem;
-  margin-bottom: 0.5rem;
+/* ── WEEK ── */
+.week-wrap{overflow:auto;max-height:620px;border:1px solid var(--border);border-radius:var(--radius);}
+.week-grid{display:grid;grid-template-columns:52px repeat(7,1fr);min-width:600px;}
+.week-header-row{
+  display:grid;grid-template-columns:52px repeat(7,1fr);
+  border-bottom:2px solid var(--border);position:sticky;top:0;
+  background:var(--surface2);z-index:10;min-width:600px;
 }
-.day-allday-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.07em; color: var(--text-muted); margin-bottom: 4px; }
-.day-time-grid { display: flex; flex-direction: column; border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; max-height: 600px; overflow-y: auto; }
-.day-time-row { display: flex; border-bottom: 1px solid var(--border); min-height: 44px; }
-.day-time-row:last-child { border-bottom: none; }
-.day-time-label {
-  width: 50px; flex-shrink: 0; font-size: 10px; color: var(--text-muted);
-  padding: 4px 6px 0 0; text-align: right; background: var(--surface2);
-  border-right: 1px solid var(--border);
+.week-header-empty{border-right:1px solid var(--border);}
+.week-header-day{
+  padding:6px 4px;text-align:center;border-left:1px solid var(--border);
 }
-.day-time-events { flex: 1; padding: 2px 6px; background: var(--surface); }
-.day-event {
-  display: flex; align-items: flex-start; gap: 8px;
-  padding: 4px 8px; border-radius: 5px; margin-bottom: 3px;
-  cursor: pointer; transition: opacity 0.15s;
+.week-day-name{font-size:10px;color:var(--text-muted);text-transform:uppercase;font-weight:600;}
+.week-day-num{
+  font-size:20px;font-weight:700;color:var(--text);
+  width:32px;height:32px;border-radius:50%;margin:2px auto 0;
+  display:flex;align-items:center;justify-content:center;
 }
-.day-event:hover { opacity: 0.8; }
-.day-event-dot { width: 8px; height: 8px; border-radius: 50%; margin-top: 4px; flex-shrink: 0; }
-.day-event-info { flex: 1; min-width: 0; }
-.day-event-title { font-size: 13px; font-weight: 500; color: var(--text); }
-.day-event-time { font-size: 11px; color: var(--text-muted); }
-.day-event-cal { font-size: 10px; color: var(--text-muted); }
+.week-header-day.today .week-day-num{background:var(--acc);color:#fff;}
+.week-header-day.has-plantao{background:var(--acc-soft);}
+.week-allday-row{
+  display:grid;grid-template-columns:52px repeat(7,1fr);
+  border-bottom:1px solid var(--border);min-width:600px;
+}
+.week-allday-label{
+  font-size:9px;color:var(--text-muted);text-align:right;
+  padding:4px 6px 0;border-right:1px solid var(--border);
+}
+.week-allday-cell{border-left:1px solid var(--border);padding:2px;min-height:22px;}
+.week-time-label{
+  font-size:10px;color:var(--text-muted);text-align:right;
+  padding:0 6px;height:48px;display:flex;align-items:flex-start;
+  padding-top:3px;border-right:1px solid var(--border);
+  border-bottom:1px solid var(--border);
+}
+.week-cell{
+  border-left:1px solid var(--border);border-bottom:1px solid var(--border);
+  height:48px;padding:1px 2px;position:relative;
+}
+.week-cell.today{background:var(--acc-soft);}
+.week-cell.has-plantao{background:var(--acc-soft);}
+.week-event{
+  font-size:10px;padding:1px 4px;border-radius:3px;margin-bottom:1px;
+  cursor:pointer;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#fff;
+}
 
-/* ── CONNECT STATE ── */
-.cal-connect {
-  display: flex; flex-direction: column; align-items: center;
-  justify-content: center; min-height: 400px; gap: 16px;
-  text-align: center;
+/* ── DAY ── */
+.day-view{display:flex;flex-direction:column;gap:6px;}
+.day-allday-box{
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:var(--radius-sm);padding:.6rem .8rem;
 }
-.cal-connect-icon { font-size: 48px; color: var(--text-muted); opacity: 0.4; }
-.cal-connect h2 { font-size: 18px; font-weight: 700; color: var(--text); }
-.cal-connect p { font-size: 13px; color: var(--text-muted); max-width: 360px; line-height: 1.6; }
-.btn-google {
-  display: flex; align-items: center; gap: 10px;
-  padding: 10px 20px; border-radius: 8px;
-  background: var(--surface); border: 1px solid var(--border);
-  font-size: 14px; font-weight: 600; color: var(--text);
-  cursor: pointer; font-family: inherit; transition: all 0.15s;
+.day-allday-lbl{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--text-muted);margin-bottom:4px;}
+.day-time-grid{
+  border:1px solid var(--border);border-radius:var(--radius);
+  overflow:hidden;max-height:600px;overflow-y:auto;
 }
-.btn-google:hover { border-color: var(--acc); }
-.btn-google svg { width: 18px; height: 18px; }
-.btn-disconnect {
-  font-size: 11px; color: var(--text-muted); background: none;
-  border: none; cursor: pointer; font-family: inherit;
-  text-decoration: underline; margin-top: 4px;
+.day-time-row{display:flex;border-bottom:1px solid var(--border);min-height:48px;}
+.day-time-row:last-child{border-bottom:none;}
+.day-time-lbl{
+  width:52px;flex-shrink:0;font-size:10px;color:var(--text-muted);
+  text-align:right;padding:4px 6px 0;background:var(--surface2);
+  border-right:1px solid var(--border);
 }
-.btn-disconnect:hover { color: var(--red); }
+.day-time-events{flex:1;padding:3px 6px;background:var(--surface);}
+.day-event{
+  display:flex;align-items:flex-start;gap:8px;padding:4px 8px;
+  border-radius:5px;margin-bottom:3px;cursor:pointer;transition:opacity .15s;
+}
+.day-event:hover{opacity:.8;}
+.day-event-dot{width:8px;height:8px;border-radius:50%;margin-top:4px;flex-shrink:0;}
+.day-event-title{font-size:13px;font-weight:500;color:var(--text);}
+.day-event-time{font-size:11px;color:var(--text-muted);}
+.day-event-cal{font-size:10px;color:var(--text-muted);}
 
-/* ── EVENT MODAL ── */
-.event-modal-overlay {
-  position: fixed; inset: 0; background: rgba(0,0,0,0.4);
-  z-index: 300; display: flex; align-items: center; justify-content: center;
-  backdrop-filter: blur(2px);
+/* ── CONNECT ── */
+.cal-connect{
+  display:flex;flex-direction:column;align-items:center;
+  justify-content:center;min-height:400px;gap:16px;text-align:center;
 }
-.event-modal {
-  background: var(--surface); border: 1px solid var(--border);
-  border-radius: var(--radius); padding: 1.5rem;
-  max-width: 380px; width: 90%; position: relative;
+.cal-connect-icon{font-size:48px;color:var(--text-muted);opacity:.35;}
+.btn-google{
+  display:flex;align-items:center;gap:10px;padding:10px 20px;border-radius:8px;
+  background:var(--surface);border:1px solid var(--border);font-size:14px;
+  font-weight:600;color:var(--text);cursor:pointer;font-family:inherit;
+  transition:all .15s;
 }
-.event-modal-close {
-  position: absolute; top: 12px; right: 12px;
-  width: 28px; height: 28px; border-radius: 6px;
-  border: 1px solid var(--border); background: var(--surface2);
-  color: var(--text-muted); cursor: pointer;
-  display: flex; align-items: center; justify-content: center;
+.btn-google:hover{border-color:var(--acc);}
+.btn-google svg{width:18px;height:18px;}
+.btn-disconnect{
+  font-size:11px;color:var(--text-muted);background:none;border:none;
+  cursor:pointer;font-family:inherit;text-decoration:underline;
 }
-.event-modal-close i { font-size: 14px; }
-.event-modal-color {
-  width: 14px; height: 14px; border-radius: 50%;
-  display: inline-block; margin-right: 6px; vertical-align: middle;
-}
-.event-modal-title { font-size: 18px; font-weight: 700; color: var(--text); margin-bottom: 0.5rem; }
-.event-modal-row { display: flex; align-items: flex-start; gap: 8px; font-size: 13px; color: var(--text2); margin-bottom: 5px; }
-.event-modal-row i { font-size: 15px; color: var(--text-muted); flex-shrink: 0; margin-top: 1px; }
+.btn-disconnect:hover{color:var(--red,#e24b4a);}
 
-/* ── LOADING ── */
-.cal-loading { display: flex; align-items: center; justify-content: center; min-height: 300px; gap: 10px; color: var(--text-muted); }
-.cal-loading .lo-spinner { width: 20px; height: 20px; }
-
-@media (max-width: 768px) {
-  .cal-layout { flex-direction: column; }
-  .cal-sidebar { width: 100%; }
-  .month-day { min-height: 60px; }
-  .cal-view-btns { margin-left: 0; }
-  .cal-toolbar { gap: 6px; }
+/* ── MODAL ── */
+.ev-overlay{
+  position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:300;
+  display:flex;align-items:center;justify-content:center;backdrop-filter:blur(3px);
+}
+.ev-modal{
+  background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);
+  padding:1.4rem;max-width:380px;width:90%;position:relative;
+}
+.ev-close{
+  position:absolute;top:10px;right:10px;width:28px;height:28px;border-radius:6px;
+  border:1px solid var(--border);background:var(--surface2);color:var(--text-muted);
+  cursor:pointer;display:flex;align-items:center;justify-content:center;
+}
+.ev-close i{font-size:14px;}
+.ev-title{font-size:17px;font-weight:700;color:var(--text);margin-bottom:.6rem;}
+.ev-row{display:flex;align-items:flex-start;gap:8px;font-size:13px;color:var(--text2);margin-bottom:5px;}
+.ev-row i{font-size:15px;color:var(--text-muted);flex-shrink:0;margin-top:1px;}
+.ev-plantao-tag{
+  display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:600;
+  padding:2px 9px;border-radius:20px;background:var(--acc-soft);color:var(--acc-text);
+  margin-bottom:.5rem;
+}
+@media(max-width:768px){
+  .cal-layout{flex-direction:column;}
+  .cal-sidebar-panel{width:100%;}
+  .month-day{min-height:60px;}
+  .cal-view-btns{margin-left:0;}
 }
 </style>
 </head>
 <body>
-
 <div id="sb-overlay" class="sb-overlay" onclick="closeSidebar()"></div>
 <div class="app-shell">
   <div id="sidebar" class="sidebar"></div>
-
   <div class="main-area">
     <div class="page-content">
 
-      <!-- Header -->
+      <!-- HEADER -->
       <div class="page-header">
         <div class="page-header-left">
           <div class="page-role">
@@ -271,18 +248,20 @@
             Calendário
           </div>
           <h1 class="page-title">Agenda</h1>
-          <p class="page-subtitle">Google Calendar integrado — plantões, trabalho e vida pessoal</p>
+          <p class="page-subtitle">Google Calendar — plantões, trabalho e vida pessoal</p>
         </div>
-        <div style="display:flex;align-items:center;gap:8px" id="auth-status-area"></div>
+        <div id="auth-area" style="display:flex;align-items:center;gap:8px"></div>
       </div>
 
-      <!-- Connect state -->
-      <div id="connect-state" class="cal-connect" style="display:none">
+      <!-- CONNECT -->
+      <div id="connect-view" class="cal-connect" style="display:none">
         <i class="ti ti-calendar-off cal-connect-icon" aria-hidden="true"></i>
-        <h2>Conectar Google Agenda</h2>
-        <p>Veja seus calendários — plantões, trabalho e vida pessoal — diretamente no LifeOS. Seus dados ficam no Google. O LifeOS só lê, nunca modifica.</p>
-        <button class="btn-google" onclick="connectGoogle()">
-          <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <h2 style="font-size:18px;font-weight:700;color:var(--text)">Conectar Google Agenda</h2>
+        <p style="font-size:13px;color:var(--text-muted);max-width:360px;line-height:1.6">
+          Veja todos os seus calendários diretamente no LifeOS. Seus dados ficam no Google — o LifeOS só lê, nunca modifica.
+        </p>
+        <button class="btn-google" id="btn-connect" onclick="connectGoogle()">
+          <svg viewBox="0 0 24 24" fill="none">
             <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
             <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
             <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" fill="#FBBC05"/>
@@ -290,58 +269,46 @@
           </svg>
           Conectar com Google
         </button>
-        <p style="font-size:11px;color:var(--text-muted);max-width:300px">Você vai ver uma janela do Google pedindo permissão para ler seus calendários. Sem taxa, sem assinatura.</p>
+        <p style="font-size:11px;color:var(--text-muted)">Gratuito — só pede permissão de leitura</p>
       </div>
 
-      <!-- Calendar UI -->
-      <div id="calendar-ui" style="display:none">
+      <!-- CALENDAR UI -->
+      <div id="calendar-view" style="display:none">
 
         <!-- Toolbar -->
         <div class="cal-toolbar">
           <div class="cal-nav">
-            <button class="cal-nav-btn" onclick="navigate(-1)"><i class="ti ti-chevron-left" aria-hidden="true"></i></button>
+            <button class="cal-nav-btn" onclick="navigate(-1)"><i class="ti ti-chevron-left"></i></button>
             <span class="cal-title" id="cal-title">—</span>
-            <button class="cal-nav-btn" onclick="navigate(1)"><i class="ti ti-chevron-right" aria-hidden="true"></i></button>
+            <button class="cal-nav-btn" onclick="navigate(1)"><i class="ti ti-chevron-right"></i></button>
           </div>
           <button class="cal-today-btn" onclick="goToday()">Hoje</button>
           <div class="cal-view-btns">
-            <button class="cal-view-btn active" id="btn-month" onclick="setView('month')">Mês</button>
-            <button class="cal-view-btn" id="btn-week" onclick="setView('week')">Semana</button>
-            <button class="cal-view-btn" id="btn-day" onclick="setView('day')">Dia</button>
+            <button class="cal-view-btn active" id="vbtn-month" onclick="setView('month')">Mês</button>
+            <button class="cal-view-btn" id="vbtn-week" onclick="setView('week')">Semana</button>
+            <button class="cal-view-btn" id="vbtn-day" onclick="setView('day')">Dia</button>
           </div>
         </div>
 
-        <!-- Layout: calendários + grid -->
         <div class="cal-layout">
 
-          <!-- Calendários -->
-          <div class="cal-sidebar">
-            <div class="cal-sidebar-section">
-              <div class="cal-sidebar-title">Meus calendários</div>
-              <div id="cal-list"></div>
-            </div>
-            <div class="cal-sidebar-section">
-              <div class="cal-sidebar-title" style="margin-top:0.5rem">Legenda</div>
-              <div style="display:flex;align-items:center;gap:6px;font-size:11px;color:var(--text-muted);margin-bottom:4px">
-                <div style="width:10px;height:10px;border-radius:2px;background:var(--acc);flex-shrink:0"></div>
-                Plantão detectado
-              </div>
-              <div style="display:flex;align-items:center;gap:6px;font-size:11px;color:var(--text-muted)">
-                <div style="width:10px;height:10px;border-radius:50%;background:#3b82f6;flex-shrink:0"></div>
-                Evento comum
-              </div>
+          <!-- Sidebar de calendários -->
+          <div class="cal-sidebar-panel">
+            <div class="cal-section-title">Meus calendários</div>
+            <div id="cal-list"></div>
+            <div style="margin-top:1rem;font-size:11px;color:var(--text-muted);line-height:1.5">
+              Clique para mostrar ou ocultar cada agenda. A agenda marcada como 🏥 detecta plantões automaticamente.
             </div>
           </div>
 
           <!-- Grid principal -->
           <div class="cal-main">
-            <div id="cal-loading" class="cal-loading" style="display:none">
+            <div id="cal-loading" style="display:none" class="lo-loading">
               <div class="lo-spinner"></div>
               <span>Carregando eventos...</span>
             </div>
             <div id="cal-grid"></div>
           </div>
-
         </div>
       </div>
 
@@ -350,200 +317,207 @@
 </div>
 
 <!-- Event Modal -->
-<div id="event-modal" class="event-modal-overlay" style="display:none" onclick="closeModal(event)">
-  <div class="event-modal">
-    <button class="event-modal-close" onclick="closeModal()"><i class="ti ti-x" aria-hidden="true"></i></button>
-    <div id="modal-content"></div>
+<div id="ev-overlay" class="ev-overlay" style="display:none" onclick="closeModal(event)">
+  <div class="ev-modal">
+    <button class="ev-close" onclick="closeModal()"><i class="ti ti-x"></i></button>
+    <div id="ev-content"></div>
   </div>
 </div>
 
-<script src="https://accounts.google.com/gsi/client" async></script>
+<!-- Google APIs -->
+<script src="https://apis.google.com/js/api.js" onload="onGapiLoad()"></script>
+<script src="https://accounts.google.com/gsi/client" onload="onGisLoad()"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <script src="nav.js"></script>
 <script>
-// ── CONFIG ──────────────────────────────────────
-const CLIENT_ID = '512480734565-6k267l936s0p23cqfldi2m3nj4o0ori2.apps.googleusercontent.com';
-const SCOPES = 'https://www.googleapis.com/auth/calendar.readonly';
+// ── CONFIG ──────────────────────────────────
+const CLIENT_ID   = '512480734565-6k267l936s0p23cqfldi2m3nj4o0ori2.apps.googleusercontent.com';
+const SCOPES      = 'https://www.googleapis.com/auth/calendar.readonly';
+const DISCOVERY   = 'https://www.googleapis.com/discovery/v1/apis/calendar/v3/rest';
 
-// Palavras-chave que identificam plantão automaticamente
-const PLANTAO_KEYWORDS = ['plantão','plantao','plant.','sobreaviso','escala','on call','oncall','pediátrico noturno'];
+// Calendários marcados como plantão pelo usuário
+// Detecta automaticamente agendas com "escala" no nome
+let plantaoCals = new Set(JSON.parse(localStorage.getItem('cal-plantao') || '[]'));
 
-// ── STATE ───────────────────────────────────────
-let accessToken = null;
-let tokenExpiry = null;
-let tokenClient = null;
-let calendars = []; // { id, summary, color, visible }
-let events = [];    // eventos carregados
-let view = 'month'; // month | week | day
-let cursor = new Date(); // data de referência da visão atual
+// Calendários ocultos pelo usuário
 let hiddenCals = new Set(JSON.parse(localStorage.getItem('cal-hidden') || '[]'));
 
-// ── INIT ─────────────────────────────────────────
-window.addEventListener('DOMContentLoaded', () => {
-  // Tenta restaurar token do localStorage
-  const saved = localStorage.getItem('goog-token');
-  const exp = localStorage.getItem('goog-expiry');
-  if (saved && exp && Date.now() < parseInt(exp)) {
-    accessToken = saved;
-    tokenExpiry = parseInt(exp);
+// ── STATE ────────────────────────────────────
+let gapiReady = false, gisReady = false;
+let tokenClient = null;
+let calendars = [];
+let events    = [];
+let view      = 'month';
+let cursor    = new Date();
+
+// ── GAPI / GIS INIT ──────────────────────────
+function onGapiLoad() {
+  gapi.load('client', async () => {
+    await gapi.client.init({ discoveryDocs: [DISCOVERY] });
+    gapiReady = true;
+    tryAutoConnect();
+  });
+}
+
+function onGisLoad() {
+  tokenClient = google.accounts.oauth2.initTokenClient({
+    client_id: CLIENT_ID,
+    scope: SCOPES,
+    callback: onToken,
+  });
+  gisReady = true;
+  tryAutoConnect();
+}
+
+function tryAutoConnect() {
+  if (!gapiReady || !gisReady) return;
+  const token  = localStorage.getItem('goog-token');
+  const expiry = localStorage.getItem('goog-expiry');
+  if (token && expiry && Date.now() < parseInt(expiry)) {
+    gapi.client.setToken({ access_token: token });
     showCalendar();
   } else {
     showConnect();
   }
+}
 
-  // Inicializa Google Identity Services quando disponível
-  const waitGSI = setInterval(() => {
-    if (window.google?.accounts?.oauth2) {
-      clearInterval(waitGSI);
-      tokenClient = google.accounts.oauth2.initTokenClient({
-        client_id: CLIENT_ID,
-        scope: SCOPES,
-        callback: handleToken,
-      });
-    }
-  }, 200);
-});
-
-// ── AUTH ─────────────────────────────────────────
+// ── AUTH ─────────────────────────────────────
 function connectGoogle() {
-  if (!tokenClient) {
-    alert('Aguarde o Google carregar...');
-    return;
-  }
+  if (!gapiReady || !gisReady) { alert('Aguarde carregar...'); return; }
   tokenClient.requestAccessToken({ prompt: 'consent' });
 }
 
-function handleToken(resp) {
+function onToken(resp) {
   if (resp.error) { console.error(resp); return; }
-  accessToken = resp.access_token;
-  tokenExpiry = Date.now() + (resp.expires_in * 1000);
-  localStorage.setItem('goog-token', accessToken);
-  localStorage.setItem('goog-expiry', String(tokenExpiry));
+  const tk = gapi.client.getToken();
+  localStorage.setItem('goog-token', tk.access_token);
+  localStorage.setItem('goog-expiry', String(Date.now() + tk.expires_in * 1000));
   showCalendar();
 }
 
 function disconnect() {
-  if (!confirm('Desconectar o Google Agenda?')) return;
-  if (accessToken && window.google?.accounts?.oauth2) {
-    google.accounts.oauth2.revoke(accessToken);
-  }
-  accessToken = null;
-  tokenExpiry = null;
+  if (!confirm('Desconectar Google Agenda?')) return;
+  const tk = gapi.client.getToken();
+  if (tk) google.accounts.oauth2.revoke(tk.access_token);
+  gapi.client.setToken(null);
   localStorage.removeItem('goog-token');
   localStorage.removeItem('goog-expiry');
   calendars = []; events = [];
   showConnect();
 }
 
-function isTokenValid() {
-  return accessToken && tokenExpiry && Date.now() < tokenExpiry;
-}
-
-// ── UI STATES ────────────────────────────────────
+// ── UI STATES ────────────────────────────────
 function showConnect() {
-  document.getElementById('connect-state').style.display = 'flex';
-  document.getElementById('calendar-ui').style.display = 'none';
-  document.getElementById('auth-status-area').innerHTML = '';
+  document.getElementById('connect-view').style.display  = 'flex';
+  document.getElementById('calendar-view').style.display = 'none';
+  document.getElementById('auth-area').innerHTML = '';
 }
 
 function showCalendar() {
-  document.getElementById('connect-state').style.display = 'none';
-  document.getElementById('calendar-ui').style.display = 'block';
-  document.getElementById('auth-status-area').innerHTML = `
-    <span style="font-size:12px;color:var(--text-muted)">Google conectado</span>
-    <button class="btn-disconnect" onclick="disconnect()">Desconectar</button>`;
+  document.getElementById('connect-view').style.display  = 'none';
+  document.getElementById('calendar-view').style.display = 'block';
+  document.getElementById('auth-area').innerHTML =
+    `<span style="font-size:12px;color:var(--text-muted)">Google conectado</span>
+     <button class="btn-disconnect" onclick="disconnect()">Desconectar</button>`;
   loadCalendars();
 }
 
-// ── API CALLS ────────────────────────────────────
-async function gFetch(url) {
-  if (!isTokenValid()) { showConnect(); return null; }
-  const r = await fetch(url, { headers: { Authorization: `Bearer ${accessToken}` } });
-  if (!r.ok) {
-    if (r.status === 401) { showConnect(); return null; }
-    return null;
-  }
-  return r.json();
-}
-
+// ── LOAD CALENDARS ────────────────────────────
 async function loadCalendars() {
   setLoading(true);
-  const data = await gFetch('https://www.googleapis.com/calendar/v3/calendarList?maxResults=50');
-  if (!data) { setLoading(false); return; }
+  try {
+    const r = await gapi.client.calendar.calendarList.list({ maxResults: 50 });
+    const items = r.result.items || [];
 
-  calendars = (data.items || []).map(c => ({
-    id: c.id,
-    summary: c.summary,
-    color: c.backgroundColor || '#3b82f6',
-    visible: !hiddenCals.has(c.id),
-    primary: c.primary || false,
-  }));
+    calendars = items.map(c => {
+      const isPlantaoAuto = /escala|plant[aã]o/i.test(c.summary);
+      if (isPlantaoAuto && !plantaoCals.has(c.id)) {
+        plantaoCals.add(c.id);
+        localStorage.setItem('cal-plantao', JSON.stringify([...plantaoCals]));
+      }
+      return {
+        id:      c.id,
+        name:    c.summary,
+        color:   c.backgroundColor || '#3b82f6',
+        // visible = segue o Google Calendar, a menos que usuário tenha ocultado explicitamente
+        visible: c.selected !== false && !hiddenCals.has(c.id),
+        plantao: plantaoCals.has(c.id),
+      };
+    });
 
-  renderCalList();
-  await loadEvents();
+    renderCalList();
+    await loadEvents();
+  } catch(e) {
+    console.error('Erro ao carregar calendários:', e);
+    setLoading(false);
+  }
 }
 
+// ── LOAD EVENTS ───────────────────────────────
 async function loadEvents() {
   setLoading(true);
-  const { start, end } = getRangeForView();
-
-  const promises = calendars.filter(c => c.visible).map(cal =>
-    gFetch(`https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(cal.id)}/events`
-      + `?timeMin=${start.toISOString()}&timeMax=${end.toISOString()}`
-      + `&singleEvents=true&orderBy=startTime&maxResults=200`
-    ).then(data => {
-      if (!data) return [];
-      return (data.items || []).map(e => ({
+  const { tMin, tMax } = getRange();
+  const visible = calendars.filter(c => c.visible);
+  try {
+    const promises = visible.map(cal =>
+      gapi.client.calendar.events.list({
+        calendarId: cal.id,
+        timeMin: tMin.toISOString(),
+        timeMax: tMax.toISOString(),
+        singleEvents: true,
+        orderBy: 'startTime',
+        maxResults: 300,
+      }).then(r => (r.result.items || []).map(e => ({
         ...e,
-        calId: cal.id,
-        calColor: cal.color,
-        calName: cal.summary,
-        isPlantao: isPlantao(e, cal),
-      }));
-    })
-  );
-
-  const results = await Promise.all(promises);
-  events = results.flat();
+        _calId:    cal.id,
+        _calName:  cal.name,
+        _calColor: cal.color,
+        _plantao:  cal.plantao,
+      })))
+    );
+    const results = await Promise.all(promises);
+    events = results.flat();
+  } catch(e) {
+    console.error('Erro ao carregar eventos:', e);
+  }
   setLoading(false);
   renderView();
 }
 
-function getRangeForView() {
+function getRange() {
   const d = new Date(cursor);
   if (view === 'day') {
-    const start = new Date(d); start.setHours(0,0,0,0);
-    const end = new Date(d); end.setHours(23,59,59,999);
-    return { start, end };
+    const tMin = new Date(d); tMin.setHours(0,0,0,0);
+    const tMax = new Date(d); tMax.setHours(23,59,59,999);
+    return { tMin, tMax };
   }
   if (view === 'week') {
-    const start = startOfWeek(d);
-    const end = new Date(start); end.setDate(end.getDate() + 7);
-    return { start, end };
+    const tMin = weekStart(d);
+    const tMax = new Date(tMin); tMax.setDate(tMax.getDate() + 7);
+    return { tMin, tMax };
   }
-  // month — pega um pouco antes e depois para cobrir dias do mês anterior/seguinte
-  const start = new Date(d.getFullYear(), d.getMonth() - 1, 15);
-  const end = new Date(d.getFullYear(), d.getMonth() + 2, 15);
-  return { start, end };
+  // month — inclui bordas do grid
+  const tMin = new Date(d.getFullYear(), d.getMonth() - 1, 20);
+  const tMax = new Date(d.getFullYear(), d.getMonth() + 2, 10);
+  return { tMin, tMax };
 }
 
-// ── PLANTÃO DETECTION ────────────────────────────
-function isPlantao(event, cal) {
-  const text = ((event.summary || '') + (cal.summary || '')).toLowerCase();
-  return PLANTAO_KEYWORDS.some(kw => text.includes(kw));
-}
-
-// ── CALENDAR LIST ────────────────────────────────
+// ── CALENDAR LIST ─────────────────────────────
 function renderCalList() {
-  const list = document.getElementById('cal-list');
-  list.innerHTML = calendars.map(c => `
-    <div class="cal-item${!c.visible ? ' hidden' : ''}" onclick="toggleCal('${c.id}')">
-      <div class="cal-item-dot" style="background:${c.color}"></div>
-      <span class="cal-item-name">${c.summary}</span>
+  document.getElementById('cal-list').innerHTML = calendars.map(c => `
+    <div class="cal-item${c.visible ? '' : ' hidden'}" id="calitem-${btoa(c.id).replace(/=/g,'')}">
+      <div class="cal-check${c.visible ? ' on' : ''}"
+           style="${c.visible ? 'background:'+c.color+';border-color:'+c.color : 'border-color:'+c.color}"
+           onclick="toggleCal('${encodeURIComponent(c.id)}')">
+        ${c.visible ? '<i class="ti ti-check"></i>' : ''}
+      </div>
+      <span class="cal-item-name">${c.name}</span>
+      ${c.plantao ? '<span class="cal-plantao-badge">🏥</span>' : ''}
     </div>`).join('');
 }
 
-function toggleCal(id) {
+function toggleCal(encId) {
+  const id = decodeURIComponent(encId);
   const cal = calendars.find(c => c.id === id);
   if (!cal) return;
   cal.visible = !cal.visible;
@@ -554,12 +528,12 @@ function toggleCal(id) {
   loadEvents();
 }
 
-// ── NAVIGATION ───────────────────────────────────
+// ── NAVIGATION ────────────────────────────────
 function navigate(dir) {
   const d = new Date(cursor);
-  if (view === 'month')  d.setMonth(d.getMonth() + dir);
-  if (view === 'week')   d.setDate(d.getDate() + dir * 7);
-  if (view === 'day')    d.setDate(d.getDate() + dir);
+  if (view === 'month') d.setMonth(d.getMonth() + dir);
+  if (view === 'week')  d.setDate(d.getDate() + dir * 7);
+  if (view === 'day')   d.setDate(d.getDate() + dir);
   cursor = d;
   loadEvents();
 }
@@ -568,13 +542,12 @@ function goToday() { cursor = new Date(); loadEvents(); }
 
 function setView(v) {
   view = v;
-  ['month','week','day'].forEach(x => {
-    document.getElementById('btn-' + x).classList.toggle('active', x === v);
-  });
+  ['month','week','day'].forEach(x =>
+    document.getElementById('vbtn-'+x).classList.toggle('active', x === v));
   loadEvents();
 }
 
-// ── RENDER ───────────────────────────────────────
+// ── RENDER ────────────────────────────────────
 function renderView() {
   updateTitle();
   if (view === 'month') renderMonth();
@@ -583,198 +556,159 @@ function renderView() {
 }
 
 function updateTitle() {
-  const el = document.getElementById('cal-title');
+  const MONTHS = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+  const DAYS   = ['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'];
   const d = cursor;
-  const months = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
-  const days = ['Domingo','Segunda','Terça','Quarta','Quinta','Sexta','Sábado'];
-  if (view === 'month') el.textContent = `${months[d.getMonth()]} ${d.getFullYear()}`;
-  else if (view === 'week') {
-    const ws = startOfWeek(d);
+  let title;
+  if (view === 'month') {
+    title = `${MONTHS[d.getMonth()]} ${d.getFullYear()}`;
+  } else if (view === 'week') {
+    const ws = weekStart(new Date(d));
     const we = new Date(ws); we.setDate(we.getDate() + 6);
-    el.textContent = `${ws.getDate()} ${months[ws.getMonth()].slice(0,3)} — ${we.getDate()} ${months[we.getMonth()].slice(0,3)} ${we.getFullYear()}`;
+    title = `${ws.getDate()} ${MONTHS[ws.getMonth()].slice(0,3)} — ${we.getDate()} ${MONTHS[we.getMonth()].slice(0,3)} ${we.getFullYear()}`;
+  } else {
+    title = `${DAYS[d.getDay()]}, ${d.getDate()} de ${MONTHS[d.getMonth()]}`;
   }
-  else el.textContent = `${days[d.getDay()]}, ${d.getDate()} de ${months[d.getMonth()]} de ${d.getFullYear()}`;
+  document.getElementById('cal-title').textContent = title;
 }
 
-// ── MONTH VIEW ───────────────────────────────────
+// ── MONTH VIEW ────────────────────────────────
 function renderMonth() {
-  const grid = document.getElementById('cal-grid');
-  const year = cursor.getFullYear(), month = cursor.getMonth();
-  const first = new Date(year, month, 1);
-  const last = new Date(year, month + 1, 0);
-  const today = toDateStr(new Date());
+  const y = cursor.getFullYear(), m = cursor.getMonth();
+  const first = new Date(y, m, 1);
+  const last  = new Date(y, m+1, 0);
+  const todayStr = ds(new Date());
+  const startOffset = (first.getDay() + 6) % 7; // Monday start
+  const totalCells  = Math.ceil((startOffset + last.getDate()) / 7) * 7;
+  const DAY_NAMES   = ['Seg','Ter','Qua','Qui','Sex','Sáb','Dom'];
 
-  // Começa na segunda-feira
-  const startDay = (first.getDay() + 6) % 7;
-  const daysInGrid = startDay + last.getDate();
-  const totalCells = Math.ceil(daysInGrid / 7) * 7;
-
-  const dayNames = ['Seg','Ter','Qua','Qui','Sex','Sáb','Dom'];
   let html = '<div class="month-grid">';
-  html += dayNames.map(d => `<div class="month-header">${d}</div>`).join('');
+  html += DAY_NAMES.map(d => `<div class="month-header">${d}</div>`).join('');
 
   for (let i = 0; i < totalCells; i++) {
-    const dayOffset = i - startDay;
-    const date = new Date(year, month, 1 + dayOffset);
-    const dateStr = toDateStr(date);
-    const isCurrentMonth = date.getMonth() === month;
-    const isToday = dateStr === today;
-    const dayEvents = getEventsForDay(dateStr);
-    const hasPlantao = dayEvents.some(e => e.isPlantao);
+    const date    = new Date(y, m, 1 + i - startOffset);
+    const dateStr = ds(date);
+    const isCur   = date.getMonth() === m;
+    const isToday = dateStr === todayStr;
+    const dayEvs  = eventsOnDay(dateStr);
+    const hasP    = dayEvs.some(e => e._plantao);
 
     let cls = 'month-day';
-    if (!isCurrentMonth) cls += ' other-month';
+    if (!isCur)  cls += ' other-month';
     if (isToday) cls += ' today';
-    if (hasPlantao && isCurrentMonth) cls += ' plantao';
+    if (hasP && isCur) cls += ' has-plantao';
 
     html += `<div class="${cls}" onclick="clickDay('${dateStr}')">
       <div class="month-day-num">${date.getDate()}</div>`;
 
-    const maxShow = 3;
-    dayEvents.slice(0, maxShow).forEach(e => {
-      const color = e.calColor || '#3b82f6';
-      const textColor = '#fff';
-      html += `<div class="month-event"
-        style="background:${color};color:${textColor}"
-        onclick="event.stopPropagation();showEvent('${e.id}',event)"
-        title="${e.summary || '(sem título)'}">${e.isPlantao ? '🏥 ' : ''}${e.summary || '(sem título)'}</div>`;
+    dayEvs.slice(0, 3).forEach(e => {
+      html += `<div class="month-event" style="background:${e._calColor}"
+        onclick="event.stopPropagation();openEvent('${e.id}')"
+        title="${e.summary||'(sem título)'}">${e._plantao?'🏥 ':''}${e.summary||'(sem título)'}</div>`;
     });
-    if (dayEvents.length > maxShow) {
-      html += `<div class="month-more">+${dayEvents.length - maxShow} mais</div>`;
-    }
+    if (dayEvs.length > 3) html += `<div class="month-more">+${dayEvs.length-3} mais</div>`;
     html += '</div>';
   }
   html += '</div>';
-  grid.innerHTML = html;
+  document.getElementById('cal-grid').innerHTML = html;
 }
 
-// ── WEEK VIEW ────────────────────────────────────
+// ── WEEK VIEW ─────────────────────────────────
 function renderWeek() {
-  const grid = document.getElementById('cal-grid');
-  const ws = startOfWeek(cursor);
-  const days = Array.from({length:7}, (_,i) => { const d = new Date(ws); d.setDate(d.getDate()+i); return d; });
-  const today = toDateStr(new Date());
-  const dayNames = ['Seg','Ter','Qua','Qui','Sex','Sáb','Dom'];
+  const ws      = weekStart(new Date(cursor));
+  const days    = Array.from({length:7}, (_,i) => { const d=new Date(ws); d.setDate(d.getDate()+i); return d; });
+  const todayS  = ds(new Date());
+  const DNAMES  = ['Seg','Ter','Qua','Qui','Sex','Sáb','Dom'];
 
-  // All-day events
-  const allDaysByDay = days.map(d => getEventsForDay(toDateStr(d)).filter(e => !e.start?.dateTime));
-  const hasAllDay = allDaysByDay.some(arr => arr.length > 0);
-
-  let html = `<div class="week-grid">`;
+  let html = '<div class="week-wrap">';
 
   // Header
-  html += `<div class="week-header"><div></div>`;
-  days.forEach((d, i) => {
-    const ds = toDateStr(d);
-    const isToday = ds === today;
-    const hasPlantao = getEventsForDay(ds).some(e => e.isPlantao);
-    html += `<div class="week-header-cell${isToday?' today':''}${hasPlantao?' plantao':''}">
-      <span style="font-size:10px;display:block">${dayNames[i]}</span>
-      <span class="week-header-day">${d.getDate()}</span>
+  html += '<div class="week-header-row"><div class="week-header-empty"></div>';
+  days.forEach((d,i) => {
+    const dStr = ds(d);
+    const hasP = eventsOnDay(dStr).some(e => e._plantao);
+    html += `<div class="week-header-day${dStr===todayS?' today':''}${hasP?' has-plantao':''}">
+      <div class="week-day-name">${DNAMES[i]}</div>
+      <div class="week-day-num">${d.getDate()}</div>
     </div>`;
   });
   html += '</div>';
 
-  // All-day row
-  if (hasAllDay) {
-    html += `<div class="week-allday-row"><div class="week-allday-label">dia todo</div>`;
-    allDaysByDay.forEach(evs => {
-      html += `<div class="week-allday-cell">`;
-      evs.forEach(e => {
-        html += `<div class="week-event" style="background:${e.calColor};color:#fff"
-          onclick="showEvent('${e.id}',event)">${e.summary||'(sem título)'}</div>`;
-      });
+  // All-day
+  const allDays = days.map(d => eventsOnDay(ds(d)).filter(e => !e.start?.dateTime));
+  if (allDays.some(a => a.length > 0)) {
+    html += '<div class="week-allday-row"><div class="week-allday-label">dia todo</div>';
+    allDays.forEach(evs => {
+      html += '<div class="week-allday-cell">';
+      evs.forEach(e => html += `<div class="week-event" style="background:${e._calColor}" onclick="openEvent('${e.id}')">${e.summary||'(sem título)'}</div>`);
       html += '</div>';
     });
     html += '</div>';
   }
 
-  // Time grid (6h to 23h)
-  html += `<div class="week-body">`;
-  for (let h = 6; h <= 23; h++) {
-    html += `<div class="week-time">${String(h).padStart(2,'0')}h</div>`;
+  // Time grid: 0h-23h
+  html += '<div class="week-grid">';
+  for (let h = 0; h < 24; h++) {
+    html += `<div class="week-time-label">${String(h).padStart(2,'0')}h</div>`;
     days.forEach(d => {
-      const ds = toDateStr(d);
-      const isToday = ds === today;
-      const hasPlantao = getEventsForDay(ds).some(e => e.isPlantao);
-      const hourEvents = getEventsForDay(ds).filter(e => {
-        if (!e.start?.dateTime) return false;
-        const eh = new Date(e.start.dateTime).getHours();
-        return eh === h;
-      });
-      html += `<div class="week-cell${isToday?' today':''}${hasPlantao?' plantao':''}">`;
-      hourEvents.forEach(e => {
-        html += `<div class="week-event" style="background:${e.calColor};color:#fff"
-          onclick="showEvent('${e.id}',event)"
-          title="${e.summary||'(sem título)'}">${e.isPlantao?'🏥 ':''}${e.summary||'(sem título)'}</div>`;
-      });
+      const dStr   = ds(d);
+      const isT    = dStr === todayS;
+      const hasP   = eventsOnDay(dStr).some(e => e._plantao);
+      const hEvs   = eventsOnDay(dStr).filter(e => e.start?.dateTime && new Date(e.start.dateTime).getHours() === h);
+      html += `<div class="week-cell${isT?' today':''}${hasP?' has-plantao':''}">`;
+      hEvs.forEach(e => html += `<div class="week-event" style="background:${e._calColor}" onclick="openEvent('${e.id}')" title="${e.summary||''}">${e._plantao?'🏥 ':''}${e.summary||'(sem título)'}</div>`);
       html += '</div>';
     });
   }
   html += '</div></div>';
-  grid.innerHTML = html;
+  document.getElementById('cal-grid').innerHTML = html;
 }
 
-// ── DAY VIEW ─────────────────────────────────────
+// ── DAY VIEW ──────────────────────────────────
 function renderDay() {
-  const grid = document.getElementById('cal-grid');
-  const ds = toDateStr(cursor);
-  const dayEvents = getEventsForDay(ds);
-  const allDay = dayEvents.filter(e => !e.start?.dateTime);
-  const timed = dayEvents.filter(e => !!e.start?.dateTime);
-  timed.sort((a,b) => new Date(a.start.dateTime) - new Date(b.start.dateTime));
+  const dStr   = ds(cursor);
+  const dayEvs = eventsOnDay(dStr);
+  const allDay = dayEvs.filter(e => !e.start?.dateTime);
+  const timed  = dayEvs.filter(e => !!e.start?.dateTime)
+                       .sort((a,b) => new Date(a.start.dateTime) - new Date(b.start.dateTime));
+  const hasP   = dayEvs.some(e => e._plantao);
 
-  const hasPlantao = dayEvents.some(e => e.isPlantao);
+  let html = '<div class="day-view">';
+  if (hasP) html += `<div style="background:var(--acc-soft);border:1px solid var(--acc);border-radius:8px;padding:8px 12px;font-size:13px;font-weight:600;color:var(--acc-text);margin-bottom:4px">🏥 Dia com plantão</div>`;
 
-  let html = `<div class="day-view">`;
-  if (hasPlantao) {
-    html += `<div style="background:var(--acc-soft);border:1px solid var(--acc);border-radius:8px;padding:8px 12px;font-size:13px;font-weight:600;color:var(--acc-text);margin-bottom:0.5rem">
-      🏥 Dia com plantão detectado</div>`;
-  }
-
-  if (allDay.length > 0) {
-    html += `<div class="day-allday-section">
-      <div class="day-allday-label">Dia todo</div>`;
+  if (allDay.length) {
+    html += '<div class="day-allday-box"><div class="day-allday-lbl">Dia todo</div>';
     allDay.forEach(e => {
-      html += `<div class="day-event" style="background:${e.calColor}20" onclick="showEvent('${e.id}',event)">
-        <div class="day-event-dot" style="background:${e.calColor}"></div>
-        <div class="day-event-info">
-          <div class="day-event-title">${e.summary||'(sem título)'}</div>
-          <div class="day-event-cal">${e.calName}</div>
-        </div>
+      html += `<div class="day-event" style="background:${e._calColor}22" onclick="openEvent('${e.id}')">
+        <div class="day-event-dot" style="background:${e._calColor}"></div>
+        <div><div class="day-event-title">${e.summary||'(sem título)'}</div><div class="day-event-cal">${e._calName}</div></div>
       </div>`;
     });
     html += '</div>';
   }
 
   html += '<div class="day-time-grid">';
-  if (timed.length === 0) {
-    html += `<div style="padding:2rem;text-align:center;color:var(--text-muted);font-size:13px">
-      Nenhum evento com horário neste dia.</div>`;
+  if (!timed.length) {
+    html += '<div style="padding:2rem;text-align:center;color:var(--text-muted);font-size:13px">Nenhum evento com horário neste dia.</div>';
   } else {
-    // Agrupa por hora
     const byHour = {};
-    timed.forEach(e => {
-      const h = new Date(e.start.dateTime).getHours();
-      if (!byHour[h]) byHour[h] = [];
-      byHour[h].push(e);
-    });
-    const minH = Math.min(...Object.keys(byHour).map(Number));
-    const maxH = Math.max(...Object.keys(byHour).map(Number));
-    for (let h = Math.max(0, minH - 1); h <= Math.min(23, maxH + 1); h++) {
+    timed.forEach(e => { const h = new Date(e.start.dateTime).getHours(); (byHour[h]=byHour[h]||[]).push(e); });
+    const hMin = Math.max(0,  Math.min(...Object.keys(byHour).map(Number)) - 1);
+    const hMax = Math.min(23, Math.max(...Object.keys(byHour).map(Number)) + 1);
+    for (let h = hMin; h <= hMax; h++) {
       const hEvs = byHour[h] || [];
       html += `<div class="day-time-row">
-        <div class="day-time-label">${String(h).padStart(2,'0')}h</div>
+        <div class="day-time-lbl">${String(h).padStart(2,'0')}h</div>
         <div class="day-time-events">`;
       hEvs.forEach(e => {
-        const start = fmtTime(e.start.dateTime);
-        const end = e.end?.dateTime ? fmtTime(e.end.dateTime) : '';
-        html += `<div class="day-event" style="background:${e.calColor}20" onclick="showEvent('${e.id}',event)">
-          <div class="day-event-dot" style="background:${e.calColor}"></div>
-          <div class="day-event-info">
-            <div class="day-event-title">${e.isPlantao?'🏥 ':''}${e.summary||'(sem título)'}</div>
-            <div class="day-event-time">${start}${end ? ' → ' + end : ''}</div>
-            <div class="day-event-cal">${e.calName}</div>
+        const start = ftTime(e.start.dateTime);
+        const end   = e.end?.dateTime ? ftTime(e.end.dateTime) : '';
+        html += `<div class="day-event" style="background:${e._calColor}22" onclick="openEvent('${e.id}')">
+          <div class="day-event-dot" style="background:${e._calColor}"></div>
+          <div>
+            <div class="day-event-title">${e._plantao?'🏥 ':''}${e.summary||'(sem título)'}</div>
+            <div class="day-event-time">${start}${end?' → '+end:''}</div>
+            <div class="day-event-cal">${e._calName}</div>
           </div>
         </div>`;
       });
@@ -782,45 +716,29 @@ function renderDay() {
     }
   }
   html += '</div></div>';
-  grid.innerHTML = html;
+  document.getElementById('cal-grid').innerHTML = html;
 }
 
-// ── EVENT MODAL ──────────────────────────────────
-function showEvent(id, e) {
-  if (e) e.stopPropagation();
-  const ev = events.find(x => x.id === id);
-  if (!ev) return;
-
-  const start = ev.start?.dateTime ? fmtDateTime(ev.start.dateTime) : ev.start?.date || '';
-  const end = ev.end?.dateTime ? fmtDateTime(ev.end.dateTime) : '';
-  const isAllDay = !ev.start?.dateTime;
-
-  document.getElementById('modal-content').innerHTML = `
-    <div style="margin-bottom:0.8rem">
-      <span class="event-modal-color" style="background:${ev.calColor}"></span>
-      ${ev.isPlantao ? '<span style="font-size:12px;color:var(--acc-text);background:var(--acc-soft);padding:2px 8px;border-radius:20px;margin-right:6px">🏥 Plantão</span>' : ''}
-    </div>
-    <div class="event-modal-title">${ev.summary || '(sem título)'}</div>
-    <div class="event-modal-row">
-      <i class="ti ti-clock" aria-hidden="true"></i>
-      <span>${isAllDay ? 'Dia todo' : start}${end ? ' → ' + end : ''}</span>
-    </div>
-    ${ev.location ? `<div class="event-modal-row"><i class="ti ti-map-pin" aria-hidden="true"></i><span>${ev.location}</span></div>` : ''}
-    <div class="event-modal-row">
-      <i class="ti ti-calendar" aria-hidden="true"></i>
-      <span>${ev.calName}</span>
-    </div>
-    ${ev.description ? `<div class="event-modal-row" style="flex-direction:column;align-items:flex-start">
-      <div style="font-size:11px;color:var(--text-muted);margin-bottom:4px">Descrição</div>
-      <div style="font-size:13px;color:var(--text2);line-height:1.5">${ev.description.replace(/<[^>]*>/g,'').slice(0,300)}</div>
-    </div>` : ''}`;
-
-  document.getElementById('event-modal').style.display = 'flex';
+// ── EVENT MODAL ───────────────────────────────
+function openEvent(id) {
+  const e = events.find(x => x.id === id);
+  if (!e) return;
+  const allDay  = !e.start?.dateTime;
+  const start   = allDay ? e.start?.date : ftDateTime(e.start.dateTime);
+  const end     = e.end?.dateTime ? ftDateTime(e.end.dateTime) : '';
+  document.getElementById('ev-content').innerHTML = `
+    ${e._plantao ? '<div class="ev-plantao-tag">🏥 Plantão</div>' : ''}
+    <div class="ev-title">${e.summary||'(sem título)'}</div>
+    <div class="ev-row"><i class="ti ti-clock"></i><span>${allDay?'Dia todo':start}${end?' → '+end:''}</span></div>
+    ${e.location?`<div class="ev-row"><i class="ti ti-map-pin"></i><span>${e.location}</span></div>`:''}
+    <div class="ev-row"><i class="ti ti-calendar"></i><span style="display:flex;align-items:center;gap:6px"><span style="width:10px;height:10px;border-radius:50%;background:${e._calColor};display:inline-block"></span>${e._calName}</span></div>
+    ${e.description?`<div class="ev-row" style="flex-direction:column"><div style="font-size:11px;color:var(--text-muted);margin-bottom:3px">Descrição</div><div style="font-size:13px;color:var(--text2);line-height:1.5">${e.description.replace(/<[^>]*>/g,'').slice(0,300)}</div></div>`:''}`;
+  document.getElementById('ev-overlay').style.display = 'flex';
 }
 
-function closeModal(e) {
-  if (!e || e.target.id === 'event-modal' || e.currentTarget.classList.contains('event-modal-close')) {
-    document.getElementById('event-modal').style.display = 'none';
+function closeModal(ev) {
+  if (!ev || ev.target.id === 'ev-overlay' || ev.currentTarget.classList?.contains('ev-close')) {
+    document.getElementById('ev-overlay').style.display = 'none';
   }
 }
 
@@ -829,37 +747,35 @@ function clickDay(dateStr) {
   setView('day');
 }
 
-// ── UTILS ────────────────────────────────────────
-function getEventsForDay(dateStr) {
+// ── UTILS ─────────────────────────────────────
+function eventsOnDay(dateStr) {
   return events.filter(e => {
-    if (e.start?.date) return e.start.date === dateStr;
+    if (e.start?.date)     return e.start.date === dateStr;
     if (e.start?.dateTime) return e.start.dateTime.startsWith(dateStr);
     return false;
   });
 }
 
-function toDateStr(d) {
+function ds(d) {
   return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
 }
 
-function startOfWeek(d) {
+function weekStart(d) {
   const r = new Date(d);
-  const day = r.getDay();
-  const diff = day === 0 ? -6 : 1 - day; // Monday start
-  r.setDate(r.getDate() + diff);
+  r.setDate(r.getDate() - ((r.getDay()+6)%7));
   r.setHours(0,0,0,0);
   return r;
 }
 
-function fmtTime(iso) {
+function ftTime(iso) {
   const d = new Date(iso);
   return `${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
 }
 
-function fmtDateTime(iso) {
+function ftDateTime(iso) {
   const d = new Date(iso);
-  const months = ['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov','dez'];
-  return `${d.getDate()} ${months[d.getMonth()]} · ${fmtTime(iso)}`;
+  const M = ['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov','dez'];
+  return `${d.getDate()} ${M[d.getMonth()]} · ${ftTime(iso)}`;
 }
 
 function setLoading(v) {
