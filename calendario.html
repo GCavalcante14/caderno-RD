@@ -226,10 +226,11 @@ function connectGoogle() {
 
 function onToken(resp) {
   if (resp.error) { console.error(resp); return; }
-  const tk = gapi.client.getToken();
-  accessToken = tk.access_token;
-  localStorage.setItem('goog-token',  tk.access_token);
-  localStorage.setItem('goog-expiry', String(Date.now() + tk.expires_in * 1000));
+  // Usa resp.access_token diretamente (GIS pode não ter setado o gapi.client token ainda)
+  accessToken = resp.access_token;
+  gapi.client.setToken({ access_token: resp.access_token });
+  localStorage.setItem('goog-token',  resp.access_token);
+  localStorage.setItem('goog-expiry', String(Date.now() + resp.expires_in * 1000));
   showCalendar();
 }
 
@@ -259,12 +260,28 @@ function showCalendar() {
   loadCalendars();
 }
 
-// ── API: usa gapi.client.request (resolve CORS) ──
-async function gcal(path, params={}) {
-  const qs = new URLSearchParams(params).toString();
-  const url = `${BASE_URL}${path}${qs ? '?'+qs : ''}`;
-  const resp = await gapi.client.request({ path: url });
-  return resp.result;
+// ── API: XMLHttpRequest com token explícito ──
+function gcal(path, params={}) {
+  return new Promise((resolve, reject) => {
+    const token = accessToken
+      || gapi.client.getToken()?.access_token
+      || localStorage.getItem('goog-token');
+    if (!token) { showConnect(); reject(new Error('Sem token')); return; }
+    const qs = new URLSearchParams(params).toString();
+    const url = 'https://www.googleapis.com/calendar/v3' + path + (qs ? '?' + qs : '');
+    const xhr = new XMLHttpRequest();
+    xhr.open('GET', url, true);
+    xhr.setRequestHeader('Authorization', 'Bearer ' + token);
+    xhr.onload = () => {
+      try {
+        const data = JSON.parse(xhr.responseText);
+        if (xhr.status === 200) { resolve(data); }
+        else { if (xhr.status === 401) showConnect(); reject(data); }
+      } catch(e) { reject(e); }
+    };
+    xhr.onerror = () => reject(new Error('Erro de rede'));
+    xhr.send();
+  });
 }
 
 // ── LOAD ──
