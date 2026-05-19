@@ -177,6 +177,7 @@
 const CLIENT_ID = '512480734565-6k267l936s0p23cqfldi2m3nj4o0ori2.apps.googleusercontent.com';
 const SCOPES    = 'https://www.googleapis.com/auth/calendar.readonly';
 const BASE_URL  = 'https://www.googleapis.com/calendar/v3';
+const API_KEY   = 'AIzaSyDd25B3QlstKxLOv_LNomKBal3gJjq4wjg';
 
 let gapiReady = false, gisReady = false;
 let tokenClient = null;
@@ -268,7 +269,7 @@ function gcal(path, params={}) {
       || localStorage.getItem('goog-token');
     if (!token) { showConnect(); reject(new Error('Sem token')); return; }
     const qs = new URLSearchParams(params).toString();
-    const url = 'https://www.googleapis.com/calendar/v3' + path + (qs ? '?' + qs : '');
+    const url = 'https://www.googleapis.com/calendar/v3' + path + '?key=' + API_KEY + (qs ? '&' + qs : '');
     const xhr = new XMLHttpRequest();
     xhr.open('GET', url, true);
     xhr.setRequestHeader('Authorization', 'Bearer ' + token);
