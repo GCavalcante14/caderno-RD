@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Configurações · LifeOS</title>
+<script>(function(){var t=localStorage.getItem('rd-theme')||'light';document.documentElement.setAttribute('data-theme',t);})()</script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.30.0/dist/tabler-icons.min.css">
+<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="lifeos.css">
+<style>
+.set-layout{display:flex;gap:1.5rem;align-items:flex-start;}
+.set-nav{width:180px;flex-shrink:0;position:sticky;top:1rem;}
+.set-nav-item{display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:8px;font-size:13px;font-weight:500;color:var(--text-muted);cursor:pointer;transition:all .15s;margin-bottom:2px;border:none;background:none;width:100%;text-align:left;font-family:inherit;}
+.set-nav-item:hover{background:var(--surface2);color:var(--text);}
+.set-nav-item.active{background:var(--acc-soft);color:var(--acc-text);font-weight:600;}
+.set-nav-item i{font-size:16px;}
+.set-section{display:none;}.set-section.active{display:block;}
+.set-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:1.2rem;margin-bottom:1rem;}
+.set-card-title{font-size:13px;font-weight:700;color:var(--text);margin-bottom:.8rem;padding-bottom:.5rem;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px;}
+.set-card-title i{font-size:16px;color:var(--acc);}
+.set-row{display:flex;align-items:center;justify-content:space-between;padding:.5rem 0;border-bottom:1px solid var(--border);gap:1rem;}
+.set-row:last-child{border-bottom:none;padding-bottom:0;}
+.set-label{font-size:13px;color:var(--text);font-weight:500;}
+.set-desc{font-size:11px;color:var(--text-muted);margin-top:2px;}
+.toggle{position:relative;display:inline-block;width:40px;height:22px;}
+.toggle input{opacity:0;width:0;height:0;}
+.toggle-slider{position:absolute;inset:0;background:var(--border);border-radius:22px;cursor:pointer;transition:.2s;}
+.toggle-slider:before{content:'';position:absolute;height:16px;width:16px;left:3px;bottom:3px;background:#fff;border-radius:50%;transition:.2s;}
+.toggle input:checked + .toggle-slider{background:var(--acc);}
+.toggle input:checked + .toggle-slider:before{transform:translateX(18px);}
+.set-select{padding:5px 10px;border:1px solid var(--border);border-radius:7px;background:var(--surface2);color:var(--text);font-size:13px;font-family:inherit;cursor:pointer;outline:none;}
+.set-input{padding:6px 10px;border:1px solid var(--border);border-radius:7px;background:var(--surface2);color:var(--text);font-size:13px;font-family:inherit;outline:none;width:180px;}
+.set-input:focus{border-color:var(--acc);}
+.color-swatches{display:flex;gap:6px;flex-wrap:wrap;}
+.color-swatch{width:24px;height:24px;border-radius:50%;cursor:pointer;border:2px solid transparent;transition:all .15s;}
+.color-swatch.active{border-color:var(--text);transform:scale(1.15);}
+.avatar{width:52px;height:52px;border-radius:50%;background:var(--acc-soft);display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:700;color:var(--acc-text);border:2px solid var(--border);flex-shrink:0;}
+.status-ok{font-size:12px;font-weight:600;color:#16a34a;background:#dcfce7;padding:2px 8px;border-radius:20px;}
+.status-err{font-size:12px;font-weight:600;color:#dc2626;background:#fee2e2;padding:2px 8px;border-radius:20px;}
+.btn-sm{padding:5px 12px;border-radius:7px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;border:1px solid var(--border);background:var(--surface2);color:var(--text);transition:all .15s;text-decoration:none;display:inline-flex;align-items:center;gap:5px;}
+.btn-sm:hover{border-color:var(--acc);color:var(--acc);}
+.btn-danger{border-color:#fca5a5 !important;color:#dc2626 !important;background:#fee2e2 !important;}
+.btn-primary{background:var(--acc) !important;color:#fff !important;border-color:var(--acc) !important;}
+.set-toast{position:fixed;bottom:1.5rem;right:1.5rem;z-index:200;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:.6rem 1rem;font-size:13px;display:flex;align-items:center;gap:8px;box-shadow:0 4px 20px rgba(0,0,0,.15);transform:translateY(80px);opacity:0;transition:all .3s;}
+.set-toast.show{transform:translateY(0);opacity:1;}
+@media(max-width:700px){.set-layout{flex-direction:column;}.set-nav{width:100%;position:static;display:flex;flex-wrap:wrap;gap:4px;}.set-nav-item{width:auto;}.set-input{width:140px;}}
+</style>
+</head>
+<body>
+<div id="sb-overlay" class="sb-overlay" onclick="closeSidebar()"></div>
+<div class="app-shell">
+  <div id="sidebar" class="sidebar"></div>
+  <div class="main-area"><div class="page-content">
+
+    <div class="page-header">
+      <div class="page-header-left">
+        <div class="page-role"><i class="ti ti-settings"></i> Sistema</div>
+        <h1 class="page-title">Configurações</h1>
+        <p class="page-subtitle">Ajustes globais do LifeOS</p>
+      </div>
+    </div>
+
+    <div class="set-layout">
+      <div class="set-nav">
+        <button class="set-nav-item active" onclick="setSection('perfil',this)"><i class="ti ti-user-circle"></i>Perfil</button>
+        <button class="set-nav-item" onclick="setSection('aparencia',this)"><i class="ti ti-palette"></i>Aparência</button>
+        <button class="set-nav-item" onclick="setSection('diario',this)"><i class="ti ti-calendar-event"></i>Diário</button>
+        <button class="set-nav-item" onclick="setSection('semana',this)"><i class="ti ti-calendar-week"></i>Semana</button>
+        <button class="set-nav-item" onclick="setSection('conexoes',this)"><i class="ti ti-plug"></i>Conexões</button>
+        <button class="set-nav-item" onclick="setSection('dados',this)"><i class="ti ti-database"></i>Dados</button>
+        <button class="set-nav-item" onclick="setSection('sobre',this)"><i class="ti ti-info-circle"></i>Sobre</button>
+      </div>
+
+      <div class="set-content" style="flex:1;min-width:0">
+
+        <!-- PERFIL -->
+        <div class="set-section active" id="sec-perfil">
+          <div class="set-card">
+            <div class="set-card-title"><i class="ti ti-user-circle"></i>Identidade</div>
+            <div class="set-row">
+              <div><div class="set-label">Nome de exibição</div><div class="set-desc">Aparece no Dashboard e saudações</div></div>
+              <input class="set-input" id="pref-nome" value="Gabriel" oninput="savePref('nome',this.value)">
+            </div>
+            <div class="set-row">
+              <div><div class="set-label">Papel no sistema</div><div class="set-desc">Exibido na sidebar</div></div>
+              <input class="set-input" id="pref-papel" value="Médico Arquiteto" oninput="savePref('papel',this.value)">
+            </div>
+            <div class="set-row">
+              <div><div class="set-label">Iniciais (avatar)</div></div>
+              <div style="display:flex;align-items:center;gap:10px">
+                <div class="avatar" id="avatar-preview">GC</div>
+                <input class="set-input" id="pref-iniciais" value="GC" style="width:70px" oninput="savePref('iniciais',this.value);document.getElementById('avatar-preview').textContent=this.value.toUpperCase().slice(0,2)">
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- APARÊNCIA -->
+        <div class="set-section" id="sec-aparencia">
+          <div class="set-card">
+            <div class="set-card-title"><i class="ti ti-moon-stars"></i>Tema</div>
+            <div class="set-row">
+              <div><div class="set-label">Modo escuro</div><div class="set-desc">Onyx + Vinho — recomendado para plantão</div></div>
+              <label class="toggle"><input type="checkbox" id="toggle-dark" onchange="toggleThemeSettings(this.checked)"><span class="toggle-slider"></span></label>
+            </div>
+          </div>
+          <div class="set-card">
+            <div class="set-card-title"><i class="ti ti-palette"></i>Cor de Destaque</div>
+            <div class="set-row">
+              <div><div class="set-label">Accent color</div><div class="set-desc">Botões, badges e destaques</div></div>
+              <div class="color-swatches">
+                <div class="color-swatch" data-color="#8A2540" style="background:#8A2540" title="Vinho" onclick="setAccent('#8A2540',this)"></div>
+                <div class="color-swatch" data-color="#1D9E75" style="background:#1D9E75" title="Verde RD" onclick="setAccent('#1D9E75',this)"></div>
+                <div class="color-swatch" data-color="#185FA5" style="background:#185FA5" title="Azul" onclick="setAccent('#185FA5',this)"></div>
+                <div class="color-swatch" data-color="#6D28D9" style="background:#6D28D9" title="Roxo" onclick="setAccent('#6D28D9',this)"></div>
+                <div class="color-swatch" data-color="#B45309" style="background:#B45309" title="Âmbar" onclick="setAccent('#B45309',this)"></div>
+                <div class="color-swatch" data-color="#0E6B6B" style="background:#0E6B6B" title="Teal" onclick="setAccent('#0E6B6B',this)"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- DIÁRIO -->
+        <div class="set-section" id="sec-diario">
+          <div class="set-card">
+            <div class="set-card-title"><i class="ti ti-moon"></i>Sono</div>
+            <div class="set-row">
+              <div><div class="set-label">Meta de sono</div><div class="set-desc">Watson et al. (2015) recomenda ≥7h</div></div>
+              <select class="set-select" id="pref-meta-sono" onchange="savePref('meta-sono',this.value)">
+                <option value="6">6h</option><option value="6.5">6h30</option>
+                <option value="7" selected>7h (recomendado)</option>
+                <option value="7.5">7h30</option><option value="8">8h</option>
+              </select>
+            </div>
+            <div class="set-row">
+              <div><div class="set-label">Formato</div><div class="set-desc">Como registrar sono no Diário</div></div>
+              <select class="set-select" onchange="savePref('formato-sono',this.value)">
+                <option value="horas-minutos" selected>Hora dormiu + Hora acordou</option>
+                <option value="total">Total direto (ex: 7h30)</option>
+              </select>
+            </div>
+          </div>
+          <div class="set-card">
+            <div class="set-card-title"><i class="ti ti-eye"></i>Campos Visíveis</div>
+            <div class="set-row">
+              <div><div class="set-label">Lição de medicina</div><div class="set-desc">Insights clínicos do dia</div></div>
+              <label class="toggle"><input type="checkbox" checked onchange="savePref('campo-medicina',this.checked)"><span class="toggle-slider"></span></label>
+            </div>
+            <div class="set-row">
+              <div><div class="set-label">Não repetir</div><div class="set-desc">Comportamento a evitar amanhã</div></div>
+              <label class="toggle"><input type="checkbox" checked onchange="savePref('campo-nao-repetir',this.checked)"><span class="toggle-slider"></span></label>
+            </div>
+            <div class="set-row">
+              <div><div class="set-label">Fui protagonista hoje?</div><div class="set-desc">Pergunta de identidade ao final do dia</div></div>
+              <label class="toggle"><input type="checkbox" onchange="savePref('campo-protagonista',this.checked)"><span class="toggle-slider"></span></label>
+            </div>
+          </div>
+        </div>
+
+        <!-- SEMANA -->
+        <div class="set-section" id="sec-semana">
+          <div class="set-card">
+            <div class="set-card-title"><i class="ti ti-calendar-week"></i>Calendário</div>
+            <div class="set-row">
+              <div><div class="set-label">Início da semana</div><div class="set-desc">Afeta grid de hábitos e revisão semanal</div></div>
+              <select class="set-select" onchange="savePref('inicio-semana',this.value)">
+                <option value="segunda" selected>Segunda-feira</option>
+                <option value="domingo">Domingo</option>
+              </select>
+            </div>
+            <div class="set-row">
+              <div><div class="set-label">Formato de hora</div></div>
+              <select class="set-select" onchange="savePref('formato-hora',this.value)">
+                <option value="24h" selected>24h (23:30)</option>
+                <option value="12h">12h (11:30 PM)</option>
+              </select>
+            </div>
+            <div class="set-row">
+              <div><div class="set-label">Dia da revisão semanal</div></div>
+              <select class="set-select" onchange="savePref('dia-revisao',this.value)">
+                <option value="domingo" selected>Domingo</option>
+                <option value="sabado">Sábado</option>
+                <option value="segunda">Segunda</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- CONEXÕES -->
+        <div class="set-section" id="sec-conexoes">
+          <div class="set-card">
+            <div class="set-card-title"><i class="ti ti-brand-google"></i>Google Calendar</div>
+            <div class="set-row">
+              <div><div class="set-label">Status</div><div class="set-desc">Lê seus calendários — nunca modifica</div></div>
+              <span id="gcal-status" class="status-err">Desconectado</span>
+            </div>
+            <div class="set-row" id="gcal-link-row">
+              <div><div class="set-desc">Conecte para ver plantões e eventos</div></div>
+              <a href="calendario.html" class="btn-sm">Conectar →</a>
+            </div>
+          </div>
+          <div class="set-card">
+            <div class="set-card-title"><i class="ti ti-database"></i>Supabase</div>
+            <div class="set-row">
+              <div><div class="set-label">Status do banco</div><div class="set-desc">Instância própria · São Paulo · Gratuito</div></div>
+              <span id="sb-status" class="status-err">Verificando...</span>
+            </div>
+            <div class="set-row">
+              <div><div class="set-label">Uso de espaço</div></div>
+              <span id="sb-space" style="font-size:13px;color:var(--text-muted)">—</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- DADOS -->
+        <div class="set-section" id="sec-dados">
+          <div class="set-card">
+            <div class="set-card-title"><i class="ti ti-download"></i>Exportar</div>
+            <div class="set-row">
+              <div><div class="set-label">Diário</div><div class="set-desc">Todas as entradas</div></div>
+              <button class="btn-sm" onclick="exportData('diario')"><i class="ti ti-file-export"></i> JSON</button>
+            </div>
+            <div class="set-row">
+              <div><div class="set-label">Hábitos + Histórico</div></div>
+              <button class="btn-sm" onclick="exportData('habitos')"><i class="ti ti-file-export"></i> JSON</button>
+            </div>
+            <div class="set-row">
+              <div><div class="set-label">Caderno RD</div><div class="set-desc">Todas as respostas</div></div>
+              <button class="btn-sm" onclick="exportData('caderno')"><i class="ti ti-file-export"></i> JSON</button>
+            </div>
+            <div class="set-row">
+              <div><div class="set-label">Backup completo</div></div>
+              <button class="btn-sm btn-primary" onclick="exportData('all')"><i class="ti ti-database-export"></i> Tudo</button>
+            </div>
+          </div>
+          <div class="set-card">
+            <div class="set-card-title"><i class="ti ti-trash"></i>Limpar</div>
+            <div class="set-row">
+              <div><div class="set-label">Limpar cache</div><div class="set-desc">Remove localStorage — Supabase mantido</div></div>
+              <button class="btn-sm" onclick="clearCache()">Limpar cache</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- SOBRE -->
+        <div class="set-section" id="sec-sobre">
+          <div class="set-card">
+            <div class="set-card-title"><i class="ti ti-info-circle"></i>LifeOS</div>
+            <div class="set-row"><div class="set-label">Versão</div><span style="font-size:13px;color:var(--text-muted)">1.0.0 · Maio 2026</span></div>
+            <div class="set-row"><div class="set-label">Stack</div><span style="font-size:13px;color:var(--text-muted)">HTML · CSS · JS · Supabase · GitHub Pages</span></div>
+            <div class="set-row"><div class="set-label">Custo mensal</div><span style="font-size:13px;color:#16a34a;font-weight:700">R$ 0,00</span></div>
+            <div class="set-row"><div class="set-label">Repositório</div><a href="https://github.com/gcavalcante14/caderno-RD" target="_blank" style="font-size:13px;color:var(--acc)">gcavalcante14/caderno-RD ↗</a></div>
+          </div>
+          <div class="set-card">
+            <div class="set-card-title"><i class="ti ti-books"></i>Referências científicas</div>
+            <div style="font-size:12px;color:var(--text-muted);line-height:2">
+              <div>Watson et al. (2015) · Sono ≥7h para adultos saudáveis · Sleep</div>
+              <div>Krause et al. (2017) · Neurociência da privação de sono · Nature Reviews</div>
+              <div>Walker & Stickgold (2006) · Memória e plasticidade · Annual Review</div>
+              <div>Lally et al. (2010) · Formação de hábitos: 66 dias · EJSP</div>
+              <div>Steel & Klingsieck (2016) · Procrastinação como falha emocional</div>
+              <div>McClure et al. (2004) · Desconto hiperbólico · Science</div>
+              <div>Clear, J. (2018) · Atomic Habits · Avery</div>
+              <div>Walker, M. (2017) · Why We Sleep · Scribner</div>
+              <div>Beck, J.S. (2011) · Cognitive Behavior Therapy · Guilford</div>
+              <div>Moran, B.P. (2009) · The 12 Week Year</div>
+            </div>
+          </div>
+          <div class="set-card">
+            <div class="set-card-title"><i class="ti ti-history"></i>Changelog</div>
+            <div style="font-size:12px;color:var(--text-muted);line-height:1.9">
+              <div><strong style="color:var(--text)">v1.0.0 · Mai 2026</strong> — Dashboard · Diário · Hábitos · Semanal · Caderno RD S1+S2 · Google Calendar · Configurações · Picker de ícones · Busca global ⌘K</div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div></div>
+</div>
+
+<div class="set-toast" id="toast">
+  <i class="ti ti-check" style="color:#16a34a"></i>
+  <span id="toast-msg">Salvo</span>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script src="nav.js"></script>
+<script>
+function setSection(id, btn) {
+  document.querySelectorAll('.set-section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.set-nav-item').forEach(b => b.classList.remove('active'));
+  document.getElementById('sec-'+id).classList.add('active');
+  btn.classList.add('active');
+}
+
+const PREFS_KEY = 'lifeos-prefs';
+function loadPrefs() { return JSON.parse(localStorage.getItem(PREFS_KEY) || '{}'); }
+function savePref(key, value) {
+  const p = loadPrefs(); p[key] = value;
+  localStorage.setItem(PREFS_KEY, JSON.stringify(p));
+  if (window.db) window.db.from('caderno_respostas').upsert({ campo:'pref-'+key, valor:String(value) },{onConflict:'campo'});
+  showToast('Salvo');
+}
+
+function toggleThemeSettings(dark) { applyTheme(dark ? 'dark' : 'light', true); }
+
+function setAccent(color, el) {
+  document.querySelectorAll('.color-swatch').forEach(s => s.classList.remove('active'));
+  el.classList.add('active');
+  document.documentElement.style.setProperty('--acc', color);
+  savePref('accent', color);
+}
+
+async function exportData(type) {
+  if (!window.db) { showToast('Supabase não conectado', true); return; }
+  let data = {};
+  try {
+    if (type==='diario'||type==='all') { const {data:d}=await window.db.from('diario').select('*'); data.diario=d; }
+    if (type==='habitos'||type==='all') { const {data:h}=await window.db.from('habitos').select('*'); const {data:hc}=await window.db.from('habito_checks').select('*'); data.habitos=h; data.habito_checks=hc; }
+    if (type==='caderno'||type==='all') { const {data:c}=await window.db.from('caderno_respostas').select('*'); data.caderno=c; }
+    if (type==='all') { const {data:r}=await window.db.from('revisao_semanal').select('*'); data.revisao_semanal=r; }
+    const blob = new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
+    const a = document.createElement('a'); a.href=URL.createObjectURL(blob);
+    a.download=`lifeos-backup-${new Date().toISOString().split('T')[0]}.json`; a.click();
+    showToast('Download iniciado!');
+  } catch(e) { showToast('Erro ao exportar', true); }
+}
+
+function clearCache() {
+  if (!confirm('Limpar cache local? Supabase mantido.')) return;
+  const keep=['rd-theme','lifeos-prefs','goog-token','goog-expiry','cal-hidden','cal-plantao'];
+  Object.keys(localStorage).forEach(k => { if (!keep.includes(k)) localStorage.removeItem(k); });
+  showToast('Cache limpo!');
+}
+
+let _toast;
+function showToast(msg, err=false) {
+  const t=document.getElementById('toast');
+  t.querySelector('i').className=`ti ${err?'ti-alert-circle':'ti-check'}`;
+  t.querySelector('i').style.color=err?'#dc2626':'#16a34a';
+  document.getElementById('toast-msg').textContent=msg;
+  t.classList.add('show'); clearTimeout(_toast);
+  _toast=setTimeout(()=>t.classList.remove('show'), 2500);
+}
+
+window.addEventListener('DOMContentLoaded', () => {
+  const p = loadPrefs();
+  const isDark = (localStorage.getItem('rd-theme')||'light')==='dark';
+  document.getElementById('toggle-dark').checked = isDark;
+  if (p.nome) document.getElementById('pref-nome').value = p.nome;
+  if (p.papel) document.getElementById('pref-papel').value = p.papel;
+  if (p.iniciais) { document.getElementById('pref-iniciais').value=p.iniciais; document.getElementById('avatar-preview').textContent=p.iniciais.toUpperCase().slice(0,2); }
+  if (p['meta-sono']) document.getElementById('pref-meta-sono').value=p['meta-sono'];
+  if (p.accent) {
+    document.documentElement.style.setProperty('--acc', p.accent);
+    document.querySelectorAll('.color-swatch').forEach(s => { s.classList.toggle('active', s.dataset.color===p.accent); });
+  }
+  // Status
+  const token=localStorage.getItem('goog-token'), expiry=localStorage.getItem('goog-expiry');
+  if (token && expiry && Date.now()<parseInt(expiry)) {
+    document.getElementById('gcal-status').textContent='Conectado';
+    document.getElementById('gcal-status').className='status-ok';
+    document.getElementById('gcal-link-row').style.display='none';
+  }
+  if (window.db) {
+    window.db.from('caderno_respostas').select('campo').limit(1).then(({error})=>{
+      const el=document.getElementById('sb-status');
+      el.textContent=error?'Erro':'Conectado'; el.className=error?'status-err':'status-ok';
+    });
+  }
+});
+</script>
+</body>
+</html>
