@@ -171,8 +171,6 @@
   </div>
 </div>
 
-<script src="https://apis.google.com/js/api.js" onload="onGapiLoad()"></script>
-<script src="https://accounts.google.com/gsi/client" onload="onGisLoad()"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <script src="nav.js"></script>
 <script>
@@ -564,5 +562,8 @@ function ftT(iso) { const d=new Date(iso); return `${String(d.getHours()).padSta
 function ftDT(iso) { const d=new Date(iso),M=['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov','dez']; return `${d.getDate()} ${M[d.getMonth()]} · ${ftT(iso)}`; }
 function setLoading(v) { document.getElementById('cal-loading').style.display=v?'flex':'none'; if(v) document.getElementById('cal-grid').innerHTML=''; }
 </script>
+<!-- Google APIs carregam DEPOIS do código inline para que onGapiLoad/onGisLoad já estejam definidos -->
+<script src="https://apis.google.com/js/api.js" onload="onGapiLoad()"></script>
+<script src="https://accounts.google.com/gsi/client" onload="onGisLoad()"></script>
 </body>
 </html>
