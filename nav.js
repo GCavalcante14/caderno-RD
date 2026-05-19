@@ -10,23 +10,29 @@ const currentPage = window.location.pathname.split('/').pop() || 'index.html';
 
 const NAV_ITEMS = [
   {
+    section: 'Visão Geral',
+    items: [
+      { href: 'dashboard.html', icon: 'ti-layout-dashboard', label: 'Dashboard', id: 'dashboard.html' },
+    ]
+  },
+  {
     section: 'Estudo',
     items: [
-      { href: "dashboard.html", icon: "ti-layout-dashboard", label: "Dashboard", id: "dashboard.html" },
-      { href: "index.html", icon: "ti-brain", label: "Caderno RD", id: "index.html" },
+      { href: 'index.html', icon: 'ti-brain', label: 'Caderno RD', id: 'index.html' },
     ]
   },
   {
     section: 'Vida Diária',
     items: [
-      { href: 'diario.html',  icon: 'ti-calendar-event', label: 'Diário',   id: 'diario.html',  badge: '' },
-      { href: 'habitos.html', icon: 'ti-checkbox',        label: 'Hábitos',  id: 'habitos.html', badge: '' },
+      { href: 'diario.html',     icon: 'ti-calendar-event', label: 'Diário',     id: 'diario.html'     },
+      { href: 'habitos.html',    icon: 'ti-checkbox',        label: 'Hábitos',    id: 'habitos.html'    },
+      { href: 'calendario.html', icon: 'ti-calendar',        label: 'Calendário', id: 'calendario.html', badge: 'novo' },
     ]
   },
   {
     section: 'Revisões',
     items: [
-      { href: 'semanal.html', icon: 'ti-calendar-week', label: 'Semanal', id: 'semanal.html', badge: 'novo' },
+      { href: 'semanal.html', icon: 'ti-calendar-week', label: 'Semanal', id: 'semanal.html' },
     ]
   },
   {
@@ -40,14 +46,14 @@ const NAV_ITEMS = [
   {
     section: 'Identidade',
     items: [
-      { href: '#', icon: 'ti-diamond',   label: 'Valores',      locked: true },
-      { href: '#', icon: 'ti-user-heart',label: 'Eu',           locked: true },
-      { href: '#', icon: 'ti-notebook',  label: 'Diário Livre', locked: true },
+      { href: '#', icon: 'ti-diamond',    label: 'Valores',      locked: true },
+      { href: '#', icon: 'ti-user-heart', label: 'Eu',           locked: true },
+      { href: '#', icon: 'ti-notebook',   label: 'Diário Livre', locked: true },
     ]
   },
 ];
 
-/* ── RENDER NAV ────────────────────────────────── */
+/* ── RENDER ──────────────────────────────────── */
 function renderNav() {
   const sidebar = document.getElementById('sidebar');
   if (!sidebar) return;
@@ -91,12 +97,11 @@ function renderNav() {
 
   sidebar.innerHTML = html;
 
-  // Apply saved theme
   const theme = localStorage.getItem('rd-theme') || 'light';
   applyTheme(theme, false);
 }
 
-/* ── MOBILE SIDEBAR ────────────────────────────── */
+/* ── MOBILE ──────────────────────────────────── */
 function openSidebar() {
   const sb = document.getElementById('sidebar');
   const ov = document.getElementById('sb-overlay');
@@ -113,7 +118,7 @@ function closeSidebar() {
   document.body.style.overflow = '';
 }
 
-/* ── THEME ─────────────────────────────────────── */
+/* ── TEMA ────────────────────────────────────── */
 function toggleTheme() {
   const current = document.documentElement.getAttribute('data-theme') || 'light';
   const next = current === 'light' ? 'dark' : 'light';
@@ -133,7 +138,7 @@ function applyTheme(theme, save) {
   if (save)  localStorage.setItem('rd-theme', theme);
 }
 
-/* ── SUPABASE ───────────────────────────────────── */
+/* ── SUPABASE ────────────────────────────────── */
 function initSupabase() {
   if (window.supabase && !window.db) {
     window.db = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
@@ -141,14 +146,14 @@ function initSupabase() {
   return window.db;
 }
 
-/* ── DATE UTILS ─────────────────────────────────── */
+/* ── DATE UTILS ──────────────────────────────── */
 function todayISO() {
   return new Date().toISOString().split('T')[0];
 }
 
 function formatDate(isoDate) {
   const d = new Date(isoDate + 'T12:00:00');
-  return d.toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long' });
+  return d.toLocaleDateString('pt-BR', { weekday:'long', day:'numeric', month:'long' });
 }
 
 function addDays(isoDate, n) {
@@ -171,14 +176,14 @@ function weekDays(monday) {
 
 function shortDay(isoDate) {
   const d = new Date(isoDate + 'T12:00:00');
-  return d.toLocaleDateString('pt-BR', { weekday: 'short' }).replace('.', '');
+  return d.toLocaleDateString('pt-BR', { weekday:'short' }).replace('.','');
 }
 
 function isToday(isoDate) {
   return isoDate === todayISO();
 }
 
-/* ── INIT ───────────────────────────────────────── */
+/* ── INIT ────────────────────────────────────── */
 document.addEventListener('DOMContentLoaded', () => {
   renderNav();
   initSupabase();
