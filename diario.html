@@ -6,8 +6,13 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Diário · LifeOS">
 <title>Diário · LifeOS</title>
-<!-- Aplica tema antes de renderizar — evita flash -->
-<script>(function(){var t=localStorage.getItem('rd-theme')||'light';document.documentElement.setAttribute('data-theme',t);})()</script>
+<!-- Bug 1 fix: aplica tema E accent color antes de renderizar -->
+<script>(function(){
+  var t=localStorage.getItem('rd-theme')||'light';
+  var a=localStorage.getItem('lp-accent');
+  document.documentElement.setAttribute('data-theme',t);
+  if(a) document.documentElement.style.setProperty('--acc',a);
+})()</script>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.30.0/dist/tabler-icons.min.css">
 <link rel="stylesheet" href="style.css">
 <link rel="stylesheet" href="lifeos.css">
@@ -25,7 +30,7 @@
         <div class="page-header-left">
           <div class="page-role">
             <i class="ti ti-stethoscope" aria-hidden="true"></i>
-            O Residente — executa, observa, registra
+            O Artesão — executa, observa, registra
           </div>
           <h1 class="page-title" id="page-title-date">Hoje</h1>
           <p class="page-subtitle">Daily Quest · Coração operacional do sistema</p>
@@ -38,7 +43,7 @@
       </div>
 
       <!-- Date Navigation -->
-      <div class="date-nav" style="margin-bottom:1.5rem">
+      <div class="date-nav" style="margin-bottom:1.2rem">
         <button class="date-nav-btn" onclick="goDay(-1)" title="← dia anterior">
           <i class="ti ti-chevron-left" aria-hidden="true"></i>
         </button>
@@ -47,6 +52,18 @@
           <i class="ti ti-chevron-right" aria-hidden="true"></i>
         </button>
         <button class="date-nav-today" onclick="goToday()">Hoje</button>
+      </div>
+
+      <!-- ── TIPO DE DIA ─────────────────────────── -->
+      <div class="lo-card" style="margin-bottom:1.2rem">
+        <div class="lo-card-body" style="padding:0.7rem 1.2rem">
+          <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+            <span style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--text-muted);white-space:nowrap">
+              <i class="ti ti-tag" style="font-size:12px" aria-hidden="true"></i> Tipo de dia
+            </span>
+            <div id="tipo-dia-row" style="display:flex;gap:6px;flex-wrap:wrap"></div>
+          </div>
+        </div>
       </div>
 
       <div class="two-col">
@@ -61,14 +78,21 @@
               <span class="lo-card-title">Saúde & Energia</span>
             </div>
             <div class="lo-card-body" style="padding:0.6rem 1.2rem">
+
+              <!-- Sono: dois campos de hora -->
               <div class="rating-row">
-                <div class="rating-label"><i class="ti ti-clock" aria-hidden="true"></i> Acordei às</div>
-                <input type="time" class="time-input" id="wake-up" onchange="saveField('wake_up',this.value)">
+                <div class="rating-label"><i class="ti ti-moon" aria-hidden="true"></i> Dormiu às</div>
+                <input type="time" class="time-input" id="hora-dormiu" onchange="onSonoChange()">
               </div>
               <div class="rating-row">
-                <div class="rating-label"><i class="ti ti-moon" aria-hidden="true"></i> Horas dormidas</div>
-                <input type="number" class="number-input" id="horas-sono" min="0" max="24" step="0.5" placeholder="7.0" onchange="saveField('horas_sono',parseFloat(this.value))">
+                <div class="rating-label"><i class="ti ti-sun-rise" aria-hidden="true"></i> Acordou às</div>
+                <input type="time" class="time-input" id="hora-acordou" onchange="onSonoChange()">
               </div>
+              <div class="rating-row">
+                <div class="rating-label"><i class="ti ti-zzz" aria-hidden="true"></i> Total de sono</div>
+                <span id="sono-total" style="font-size:13px;color:var(--text2);font-weight:600;padding:0 4px">—</span>
+              </div>
+
               <div class="rating-row">
                 <div class="rating-label"><i class="ti ti-zzz" aria-hidden="true"></i> Qualidade sono</div>
                 <div class="rating-stars" id="stars-sono" data-field="sono_qualidade"></div>
@@ -77,16 +101,13 @@
                 <div class="rating-label"><i class="ti ti-flame" aria-hidden="true"></i> Estresse</div>
                 <div class="rating-stars" id="stars-estresse" data-field="estresse"></div>
               </div>
+
+              <!-- Humor: ícones Tabler ti-mood-* -->
               <div class="rating-row">
                 <div class="rating-label"><i class="ti ti-mood-smile" aria-hidden="true"></i> Humor</div>
-                <div class="emoji-row" id="emoji-humor">
-                  <span class="emoji-btn" data-val="1" onclick="saveEmoji(1)">😢</span>
-                  <span class="emoji-btn" data-val="2" onclick="saveEmoji(2)">🙁</span>
-                  <span class="emoji-btn" data-val="3" onclick="saveEmoji(3)">😐</span>
-                  <span class="emoji-btn" data-val="4" onclick="saveEmoji(4)">🙂</span>
-                  <span class="emoji-btn" data-val="5" onclick="saveEmoji(5)">😄</span>
-                </div>
+                <div id="mood-humor" style="display:flex;gap:6px"></div>
               </div>
+
               <div class="rating-row">
                 <div class="rating-label"><i class="ti ti-bolt" aria-hidden="true"></i> Intencionalidade</div>
                 <div class="rating-stars" id="stars-int" data-field="intencionalidade"></div>
@@ -152,6 +173,21 @@
         </div>
 
       </div>
+
+      <!-- ── PROTAGONISTA (condicional) ─────────── -->
+      <div id="protagonista-card" class="lo-card" style="display:none;margin-top:1.2rem">
+        <div class="lo-card-header">
+          <i class="ti ti-shield-star" aria-hidden="true"></i>
+          <span class="lo-card-title">Fui protagonista hoje?</span>
+        </div>
+        <div class="lo-card-body">
+          <div style="display:flex;gap:8px;margin-bottom:0.8rem" id="prot-scale"></div>
+          <textarea class="refl-textarea small" id="protagonista-nota"
+            placeholder="Opcional — o que define sua resposta hoje?"
+            oninput="debounceSave('protagonista_nota',this.value)"></textarea>
+        </div>
+      </div>
+
     </div>
   </div>
 </div>
@@ -160,11 +196,18 @@
 <script src="nav.js"></script>
 <script>
 // ── STATE ──────────────────────────────────────
-let currentDate = todayISO();
+// Handle ?date=ontem na URL (atalho do ⌘K)
+let currentDate = (() => {
+  const p = new URLSearchParams(window.location.search);
+  const d = p.get('date');
+  if (d === 'ontem') return addDays(todayISO(), -1);
+  return todayISO();
+})();
+
 let diarioEntry = {};
-let habitos = [];
+let habitos     = [];
 let habitoChecks = {};
-let saveTimers = {};
+let saveTimers  = {};
 
 const PALAVRAS = [
   'Produtivo','Plantão','Estudo','Descanso','Família','Amizades',
@@ -174,15 +217,34 @@ const PALAVRAS = [
 ];
 let selectedWords = [];
 
+// ── TIPO DE DIA ────────────────────────────────
+const TIPO_DIA = {
+  'Normal':      { bg:'var(--acc-soft)',            color:'var(--acc-text)'  },
+  'Plantão 24h': { bg:'rgba(138,37,64,0.18)',       color:'#CC8899'          },
+  'Plantão 12h': { bg:'rgba(138,37,64,0.12)',       color:'#CC8899'          },
+  'Sobreaviso':  { bg:'rgba(180,140,40,0.15)',      color:'#C8A030'          },
+  'Pós-plantão': { bg:'rgba(180,140,40,0.15)',      color:'#C8A030'          },
+  'Folga':       { bg:'rgba(29,158,117,0.15)',      color:'#1D9E75'          },
+};
+
+// ── HUMOR ──────────────────────────────────────
+const MOOD_ICONS = [
+  { icon:'ti-mood-sad',   bg:'rgba(220,50,50,0.15)',  color:'#E05555' },
+  { icon:'ti-mood-sad-2', bg:'rgba(220,120,50,0.15)', color:'#E08040' },
+  { icon:'ti-mood-empty', bg:'rgba(180,150,50,0.15)', color:'#C8A030' },
+  { icon:'ti-mood-smile', bg:'rgba(50,160,130,0.15)', color:'#32A082' },
+  { icon:'ti-mood-happy', bg:'rgba(29,158,117,0.15)', color:'#1D9E75' },
+];
+
 // ── CACHE UTILS ────────────────────────────────
-function cacheKey(date)  { return 'lo-diario-' + date; }
-function checksKey(date) { return 'lo-checks-' + date; }
+function cacheKey(date)  { return 'lo-diario-'  + date; }
+function checksKey(date) { return 'lo-checks-'  + date; }
 function habitosKey()    { return 'lo-habitos'; }
 
 function saveCache(date, entry, checks) {
   try {
-    localStorage.setItem(cacheKey(date), JSON.stringify(entry));
-    localStorage.setItem(checksKey(date), JSON.stringify(checks));
+    localStorage.setItem(cacheKey(date),   JSON.stringify(entry));
+    localStorage.setItem(checksKey(date),  JSON.stringify(checks));
   } catch(e) {}
 }
 
@@ -192,20 +254,20 @@ function loadCache(date) {
     const checks = JSON.parse(localStorage.getItem(checksKey(date)) || '{}');
     const h      = JSON.parse(localStorage.getItem(habitosKey())    || '[]');
     return { entry, checks, habitos: h };
-  } catch(e) { return { entry: {}, checks: {}, habitos: [] }; }
+  } catch(e) { return { entry:{}, checks:{}, habitos:[] }; }
 }
 
-// ── INIT — mostra imediatamente do cache ───────
+// ── INIT ───────────────────────────────────────
 window.addEventListener('DOMContentLoaded', () => {
-  // 1. Mostra do cache instantaneamente
-  const cached = loadCache(currentDate);
-  diarioEntry  = cached.entry;
-  habitoChecks = cached.checks;
-  habitos      = cached.habitos;
+  const cached    = loadCache(currentDate);
+  diarioEntry     = cached.entry;
+  habitoChecks    = cached.checks;
+  habitos         = cached.habitos;
   try { selectedWords = JSON.parse(diarioEntry.tres_palavras || '[]'); } catch { selectedWords = []; }
-  renderPage();
 
-  // 2. Sincroniza com Supabase em segundo plano
+  renderPage();
+  initProtagonista(); // Bug 3 fix
+
   initSupabase();
   syncFromSupabase(currentDate);
   setupKeyboard();
@@ -219,21 +281,18 @@ async function syncFromSupabase(date) {
   if (!window.db) return;
 
   try {
-    // Diário entry
     const { data: entry } = await window.db.from('diario').select('*').eq('data', date).maybeSingle();
     if (entry) {
       diarioEntry = entry;
       try { selectedWords = JSON.parse(entry.tres_palavras || '[]'); } catch { selectedWords = []; }
     }
 
-    // Hábitos
     const { data: hList } = await window.db.from('habitos').select('*').eq('ativo', true).order('ordem');
     if (hList) {
       habitos = hList;
       localStorage.setItem(habitosKey(), JSON.stringify(hList));
     }
 
-    // Checks
     const { data: checks } = await window.db.from('habito_checks').select('*').eq('data', date);
     habitoChecks = {};
     (checks || []).forEach(c => habitoChecks[c.habito_id] = c.concluido);
@@ -245,7 +304,7 @@ async function syncFromSupabase(date) {
 
 // ── NAVIGATION ─────────────────────────────────
 function goDay(n) {
-  currentDate = addDays(currentDate, n);
+  currentDate  = addDays(currentDate, n);
   const cached = loadCache(currentDate);
   diarioEntry  = cached.entry;
   habitoChecks = cached.checks;
@@ -254,10 +313,8 @@ function goDay(n) {
   renderPage();
   syncFromSupabase(currentDate);
 }
-function goToday() {
-  currentDate = todayISO();
-  goDay(0);
-}
+function goToday() { currentDate = todayISO(); goDay(0); }
+
 function setupKeyboard() {
   document.addEventListener('keydown', e => {
     if (e.target.tagName === 'TEXTAREA' || e.target.tagName === 'INPUT') return;
@@ -266,23 +323,112 @@ function setupKeyboard() {
   });
 }
 
-// ── RENDER ─────────────────────────────────────
+// ── RENDER PRINCIPAL ───────────────────────────
 function renderPage() {
   document.getElementById('page-title-date').textContent = formatDate(currentDate);
   document.getElementById('date-display').textContent =
-    isToday(currentDate)                    ? 'Hoje'   :
-    currentDate === addDays(todayISO(),-1)  ? 'Ontem'  :
+    isToday(currentDate)                   ? 'Hoje'  :
+    currentDate === addDays(todayISO(),-1) ? 'Ontem' :
     new Date(currentDate+'T12:00:00').toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit'});
 
+  renderTipoDia();
   renderStars();
-  renderEmoji();
-  document.getElementById('wake-up').value    = diarioEntry.wake_up    || '';
-  document.getElementById('horas-sono').value = diarioEntry.horas_sono || '';
+  renderSono();
+  renderMoodIcons();
   renderWords();
   renderHabitos();
   renderReflexao();
+  renderProtagonista();
 }
 
+// ── TIPO DE DIA ────────────────────────────────
+function renderTipoDia() {
+  const current = diarioEntry.tipo_dia || '';
+  document.getElementById('tipo-dia-row').innerHTML = Object.entries(TIPO_DIA).map(([label, cfg]) => {
+    const active = label === current;
+    return `<button onclick="saveTipoDia('${label}')"
+      style="padding:4px 14px;border-radius:20px;
+             border:1px solid ${active ? cfg.color : 'var(--border)'};
+             background:${active ? cfg.bg : 'transparent'};
+             color:${active ? cfg.color : 'var(--text-muted)'};
+             font-size:12px;font-weight:${active ? '600' : '400'};
+             cursor:pointer;white-space:nowrap;
+             transition:all .15s;font-family:inherit">
+      ${label}
+    </button>`;
+  }).join('');
+}
+
+function saveTipoDia(val) {
+  // Clique no mesmo tipo desmarca
+  diarioEntry.tipo_dia = diarioEntry.tipo_dia === val ? '' : val;
+  renderTipoDia();
+  saveField('tipo_dia', diarioEntry.tipo_dia);
+}
+
+// ── SONO ───────────────────────────────────────
+function calcSono(dormiu, acordou) {
+  if (!dormiu || !acordou) return null;
+  const [dh, dm] = dormiu.split(':').map(Number);
+  const [ah, am] = acordou.split(':').map(Number);
+  let mins = (ah * 60 + am) - (dh * 60 + dm);
+  if (mins <= 0) mins += 24 * 60; // dormiu depois de meia-noite
+  const h = Math.floor(mins / 60);
+  const m = mins % 60;
+  return {
+    total: parseFloat((mins / 60).toFixed(1)),
+    label: m > 0 ? `${h}h${String(m).padStart(2,'0')}` : `${h}h`,
+  };
+}
+
+function renderSono() {
+  const dormiu  = diarioEntry.hora_dormiu  || '';
+  const acordou = diarioEntry.hora_acordou || diarioEntry.wake_up || '';
+  document.getElementById('hora-dormiu').value  = dormiu;
+  document.getElementById('hora-acordou').value = acordou;
+  const result = calcSono(dormiu, acordou);
+  document.getElementById('sono-total').textContent = result ? result.label : '—';
+}
+
+function onSonoChange() {
+  const dormiu  = document.getElementById('hora-dormiu').value;
+  const acordou = document.getElementById('hora-acordou').value;
+  const result  = calcSono(dormiu, acordou);
+  document.getElementById('sono-total').textContent = result ? result.label : '—';
+
+  clearTimeout(saveTimers['sono']);
+  setStatus('saving');
+  saveTimers['sono'] = setTimeout(() => {
+    if (dormiu)  saveField('hora_dormiu',  dormiu);
+    if (acordou) saveField('hora_acordou', acordou);
+    if (result)  saveField('horas_sono',   result.total);
+  }, 800);
+}
+
+// ── HUMOR (ti-mood-*) ──────────────────────────
+function renderMoodIcons() {
+  const val = diarioEntry.humor || 0;
+  document.getElementById('mood-humor').innerHTML = MOOD_ICONS.map((m, i) => {
+    const v      = i + 1;
+    const active = v === val;
+    return `<button onclick="saveHumor(${v})" title="Humor ${v}/5"
+      style="width:38px;height:38px;border-radius:10px;
+             border:2px solid ${active ? m.color : 'transparent'};
+             background:${active ? m.bg : 'var(--surface2)'};
+             cursor:pointer;display:flex;align-items:center;
+             justify-content:center;transition:all .15s;padding:0">
+      <i class="ti ${m.icon}" style="font-size:20px;color:${active ? m.color : 'var(--text-muted)'}" aria-hidden="true"></i>
+    </button>`;
+  }).join('');
+}
+
+function saveHumor(val) {
+  diarioEntry.humor = diarioEntry.humor === val ? 0 : val; // clique duplo desmarca
+  renderMoodIcons();
+  saveField('humor', diarioEntry.humor);
+}
+
+// ── STARS ──────────────────────────────────────
 function renderStars() {
   [['stars-sono','sono_qualidade'],['stars-estresse','estresse'],['stars-int','intencionalidade']].forEach(([id,field]) => {
     const cont = document.getElementById(id);
@@ -290,42 +436,42 @@ function renderStars() {
     const val = diarioEntry[field] || 0;
     cont.innerHTML = '';
     for (let i = 1; i <= 5; i++) {
-      const s = document.createElement('span');
+      const s    = document.createElement('span');
       s.className = 'star' + (i <= val ? ' on' : '');
       s.textContent = '★';
-      s.onclick = () => { diarioEntry[field]=i; renderStars(); saveField(field,i); };
+      s.onclick = () => {
+        diarioEntry[field] = diarioEntry[field] === i ? 0 : i;
+        renderStars();
+        saveField(field, diarioEntry[field]);
+      };
       cont.appendChild(s);
     }
   });
 }
 
-function renderEmoji() {
-  const val = diarioEntry.humor || 0;
-  document.querySelectorAll('#emoji-humor .emoji-btn').forEach(b =>
-    b.classList.toggle('on', parseInt(b.dataset.val) === val));
-}
-function saveEmoji(val) { diarioEntry.humor=val; renderEmoji(); saveField('humor',val); }
-
+// ── PALAVRAS ───────────────────────────────────
 function renderWords() {
   const sel = selectedWords.length;
   document.getElementById('words-count').textContent =
-    sel===0 ? 'Escolha até 3 palavras que descrevem hoje' :
-    sel===3 ? '3/3 palavras selecionadas' : `${sel}/3 palavras selecionadas`;
+    sel === 0 ? 'Escolha até 3 palavras que descrevem hoje' :
+    sel === 3 ? '3/3 palavras selecionadas' : `${sel}/3 palavras selecionadas`;
   document.getElementById('words-grid').innerHTML = PALAVRAS.map(w => {
-    const isSel = selectedWords.includes(w);
+    const isSel  = selectedWords.includes(w);
     const locked = !isSel && sel >= 3;
     return `<div class="word-chip${isSel?' selected':''}${locked?' locked':''}"
-      onclick="${locked?'':` toggleWord('${w}')`}">${w}</div>`;
+      onclick="${locked ? '' : `toggleWord('${w}')`}">${w}</div>`;
   }).join('');
 }
+
 function toggleWord(w) {
   selectedWords = selectedWords.includes(w)
-    ? selectedWords.filter(x=>x!==w)
-    : [...selectedWords, w].slice(0,3);
+    ? selectedWords.filter(x => x !== w)
+    : [...selectedWords, w].slice(0, 3);
   renderWords();
   saveField('tres_palavras', JSON.stringify(selectedWords));
 }
 
+// ── HÁBITOS ────────────────────────────────────
 function renderHabitos() {
   const list = document.getElementById('habitos-list');
   if (!habitos.length) {
@@ -345,6 +491,19 @@ function renderHabitos() {
   }).join('');
 }
 
+async function toggleHabito(habitoId) {
+  const current           = habitoChecks[habitoId] || false;
+  habitoChecks[habitoId]  = !current;
+  saveCache(currentDate, diarioEntry, habitoChecks);
+  renderHabitos();
+  if (!window.db) return;
+  await window.db.from('habito_checks').upsert(
+    { habito_id:habitoId, data:currentDate, concluido:!current },
+    { onConflict:'habito_id,data' }
+  );
+}
+
+// ── REFLEXÃO ───────────────────────────────────
 function renderReflexao() {
   [['fiz-bem','fiz_bem'],['licao-vida','licao_vida'],['licao-medicina','licao_medicina'],
    ['gratidao','gratidao'],['nao-repetir','nao_repetir']].forEach(([id,k]) => {
@@ -353,17 +512,40 @@ function renderReflexao() {
   });
 }
 
-// ── HABIT TOGGLE ───────────────────────────────
-async function toggleHabito(habitoId) {
-  const current = habitoChecks[habitoId] || false;
-  habitoChecks[habitoId] = !current;
-  saveCache(currentDate, diarioEntry, habitoChecks);
-  renderHabitos();
-  if (!window.db) return;
-  await window.db.from('habito_checks').upsert(
-    { habito_id: habitoId, data: currentDate, concluido: !current },
-    { onConflict: 'habito_id,data' }
-  );
+// ── PROTAGONISTA (Bug 3 fix + Fase 2) ──────────
+function initProtagonista() {
+  const show = localStorage.getItem('lp-show-protagonista') === 'true';
+  const card = document.getElementById('protagonista-card');
+  if (card) card.style.display = show ? '' : 'none';
+}
+
+function renderProtagonista() {
+  const val   = diarioEntry.protagonista || 0;
+  const COLORS = ['#E05555','#E08040','#C8A030','#32A082','#1D9E75'];
+  const BG     = [
+    'rgba(220,50,50,0.15)','rgba(220,120,50,0.15)',
+    'rgba(180,150,50,0.15)','rgba(50,160,130,0.15)','rgba(29,158,117,0.15)'
+  ];
+  document.getElementById('prot-scale').innerHTML = [1,2,3,4,5].map(v => {
+    const active = v === val;
+    return `<button onclick="saveProtagonista(${v})"
+      style="width:42px;height:42px;border-radius:10px;
+             border:2px solid ${active ? COLORS[v-1] : 'var(--border)'};
+             background:${active ? BG[v-1] : 'var(--surface2)'};
+             color:${active ? COLORS[v-1] : 'var(--text-muted)'};
+             font-size:15px;font-weight:700;cursor:pointer;
+             transition:all .15s;font-family:inherit">
+      ${v}
+    </button>`;
+  }).join('');
+  const nota = document.getElementById('protagonista-nota');
+  if (nota) nota.value = diarioEntry.protagonista_nota || '';
+}
+
+function saveProtagonista(val) {
+  diarioEntry.protagonista = diarioEntry.protagonista === val ? 0 : val;
+  renderProtagonista();
+  saveField('protagonista', diarioEntry.protagonista);
 }
 
 // ── SAVE ───────────────────────────────────────
@@ -380,10 +562,10 @@ async function saveField(field, value) {
   setStatus('saving');
   try {
     if (diarioEntry.id) {
-      await window.db.from('diario').update({ [field]: value }).eq('id', diarioEntry.id);
+      await window.db.from('diario').update({ [field]:value }).eq('id', diarioEntry.id);
     } else {
       const { data } = await window.db.from('diario')
-        .upsert({ data: currentDate, [field]: value }, { onConflict: 'data' })
+        .upsert({ data:currentDate, [field]:value }, { onConflict:'data' })
         .select().single();
       if (data) { diarioEntry = data; saveCache(currentDate, data, habitoChecks); }
     }
@@ -395,14 +577,14 @@ function setStatus(s) {
   const el = document.getElementById('save-status');
   if (!el) return;
   const m = {
-    idle:   ['<i class="ti ti-circle-dot"></i> Pronto','idle'],
-    saving: ['<i class="ti ti-loader"></i> Salvando…','saving'],
-    saved:  ['<i class="ti ti-circle-check"></i> Salvo','saved'],
-    error:  ['<i class="ti ti-wifi-off"></i> Erro','error'],
+    idle:   ['<i class="ti ti-circle-dot"></i> Pronto',   'idle'  ],
+    saving: ['<i class="ti ti-loader"></i> Salvando…',    'saving'],
+    saved:  ['<i class="ti ti-circle-check"></i> Salvo',  'saved' ],
+    error:  ['<i class="ti ti-wifi-off"></i> Erro',       'error' ],
   };
-  const [h,c] = m[s]||m.idle;
-  el.innerHTML=h; el.className='save-status '+c;
-  if(s==='saved') setTimeout(()=>setStatus('idle'),2000);
+  const [h,c] = m[s] || m.idle;
+  el.innerHTML = h; el.className = 'save-status ' + c;
+  if (s === 'saved') setTimeout(() => setStatus('idle'), 2000);
 }
 </script>
 </body>
