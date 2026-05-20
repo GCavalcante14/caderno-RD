@@ -55,7 +55,37 @@ const NAV_GROUPS = [
   },
 ];
 
-// Itens para o ⌘K (todos os módulos + ações rápidas)
+// ── UTILS DE DATA (antes do SEARCH_ITEMS para poder usar aqui) ────
+function todayISO() { return new Date().toISOString().split('T')[0]; }
+
+function formatDate(iso) {
+  const d = new Date(iso + 'T12:00:00');
+  return d.toLocaleDateString('pt-BR', { weekday:'long', day:'numeric', month:'long' });
+}
+
+function addDays(iso, n) {
+  const d = new Date(iso + 'T12:00:00');
+  d.setDate(d.getDate() + n);
+  return d.toISOString().split('T')[0];
+}
+
+function weekStart(iso) {
+  const d = new Date(iso + 'T12:00:00');
+  const day = d.getDay();
+  const diff = day === 0 ? -6 : 1 - day;
+  d.setDate(d.getDate() + diff);
+  return d.toISOString().split('T')[0];
+}
+
+function weekDays(monday) { return Array.from({length:7},(_,i) => addDays(monday, i)); }
+
+function shortDay(iso) {
+  return new Date(iso+'T12:00:00').toLocaleDateString('pt-BR',{weekday:'short'}).replace('.','');
+}
+
+function isToday(iso) { return iso === todayISO(); }
+
+// ── ITENS DO ⌘K ──────────────────────────────────
 const SEARCH_ITEMS = [
   { label:'Dashboard',      href:'dashboard.html',   icon:'ti-layout-dashboard', cat:'Módulos'      },
   { label:'Caderno RD',     href:'index.html',        icon:'ti-brain',            cat:'Módulos'      },
@@ -66,9 +96,22 @@ const SEARCH_ITEMS = [
   { label:'Configurações',  href:'settings.html',     icon:'ti-settings',         cat:'Sistema'      },
   { label:'Semana 1 · Sono',    href:'index.html?s=1', icon:'ti-moon',   cat:'Caderno RD'   },
   { label:'Semana 2 · Hábitos', href:'index.html?s=2', icon:'ti-refresh',cat:'Caderno RD'   },
-  { label:'Diário — Hoje',      href:'diario.html',    icon:'ti-sun',    cat:'Ação Rápida'  },
-  { label:'Revisão Semanal',    href:'semanal.html',   icon:'ti-calendar-week', cat:'Ação Rápida' },
-  { label:'Mudar tema',         href:'#',              icon:'ti-moon-stars',     cat:'Sistema',    action:'toggleTheme' },
+  {
+    label: 'Diário de hoje',
+    icon:  'ti-calendar-event',
+    href:  'diario.html',
+    desc:  new Date().toLocaleDateString('pt-BR', { weekday:'short', day:'2-digit', month:'short' }),
+    cat:   'Ação Rápida',
+  },
+  {
+    label: 'Diário de ontem',
+    icon:  'ti-calendar-event',
+    href:  'diario.html?date=ontem',
+    desc:  'Entrada de ontem',
+    cat:   'Ação Rápida',
+  },
+  { label:'Revisão Semanal', href:'semanal.html', icon:'ti-calendar-week', cat:'Ação Rápida' },
+  { label:'Mudar tema',      href:'#',            icon:'ti-moon-stars',    cat:'Sistema', action:'toggleTheme' },
 ];
 
 // ── RENDER SIDEBAR ────────────────────────────────
@@ -239,6 +282,7 @@ function renderResults(q) {
           </div>
           <div style="flex:1;min-width:0">
             <div style="font-size:13px;font-weight:500;color:var(--text)">${highlightMatch(item.label, q)}</div>
+            ${item.desc ? `<div style="font-size:11px;color:var(--text-muted);margin-top:1px">${item.desc}</div>` : ''}
           </div>
           <i class="ti ti-corner-down-left" style="font-size:13px;color:var(--text-muted);opacity:.5"></i>
         </div>`;
@@ -317,36 +361,6 @@ function initSupabase() {
   }
   return window.db;
 }
-
-// ── UTILS DE DATA ─────────────────────────────────
-function todayISO() { return new Date().toISOString().split('T')[0]; }
-
-function formatDate(iso) {
-  const d = new Date(iso + 'T12:00:00');
-  return d.toLocaleDateString('pt-BR', { weekday:'long', day:'numeric', month:'long' });
-}
-
-function addDays(iso, n) {
-  const d = new Date(iso + 'T12:00:00');
-  d.setDate(d.getDate() + n);
-  return d.toISOString().split('T')[0];
-}
-
-function weekStart(iso) {
-  const d = new Date(iso + 'T12:00:00');
-  const day = d.getDay();
-  const diff = day === 0 ? -6 : 1 - day;
-  d.setDate(d.getDate() + diff);
-  return d.toISOString().split('T')[0];
-}
-
-function weekDays(monday) { return Array.from({length:7},(_,i) => addDays(monday, i)); }
-
-function shortDay(iso) {
-  return new Date(iso+'T12:00:00').toLocaleDateString('pt-BR',{weekday:'short'}).replace('.','');
-}
-
-function isToday(iso) { return iso === todayISO(); }
 
 // ── INIT ─────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
