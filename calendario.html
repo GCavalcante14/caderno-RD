@@ -211,7 +211,10 @@ const MONTHS = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho',
 // ── GAPI INIT ─────────────────────────────────
 function onGapiLoad() {
   gapi.load('client', async () => {
-    try { await gapi.client.init({}); } catch(e) { console.warn('gapi init (non-fatal):', e); }
+    try {
+      // apiKey necessário para o gapi.client.request() rotear corretamente
+      await gapi.client.init({ apiKey: API_KEY });
+    } catch(e) { console.warn('gapi init (non-fatal):', e); }
     gapiReady = true;
     tryRestore();
   });
@@ -334,37 +337,26 @@ function hideBanner() {
   document.getElementById('expired-banner').style.display = 'none';
 }
 
-// ── API — XHR com token explícito ─────────────
-function gcal(path, params = {}) {
-  return new Promise((resolve, reject) => {
-    const token = accessToken
-      || gapi.client.getToken()?.access_token
-      || localStorage.getItem('goog-token');
+// ── API — gapi.client.request() trata CORS internamente ──
+async function gcal(path, params = {}) {
+  const token = accessToken
+    || gapi.client.getToken()?.access_token
+    || localStorage.getItem('goog-token');
 
-    if (!token) { showConnect(); reject(new Error('Sem token')); return; }
+  if (!token) { showConnect(); throw new Error('Sem token'); }
 
-    const qs  = new URLSearchParams(params).toString();
-    // Sem API key — Bearer token OAuth é suficiente e evita conflito com restrições de domínio
-    const url = `https://www.googleapis.com/calendar/v3${path}${qs ? '?'+qs : ''}`;
+  gapi.client.setToken({ access_token: token });
 
-    const xhr = new XMLHttpRequest();
-    xhr.open('GET', url, true);
-    xhr.setRequestHeader('Authorization', 'Bearer ' + token);
-    xhr.onload = () => {
-      try {
-        const data = JSON.parse(xhr.responseText);
-        if (xhr.status === 200) {
-          resolve(data);
-        } else {
-          // Bug 2 fix: 401 não é silenciado — mostra banner e tenta renovar
-          if (xhr.status === 401) showBanner();
-          reject({ status: xhr.status, ...data });
-        }
-      } catch(e) { reject(e); }
-    };
-    xhr.onerror = () => reject(new Error('Erro de rede'));
-    xhr.send();
-  });
+  try {
+    const response = await gapi.client.request({
+      path: `https://www.googleapis.com/calendar/v3${path}`,
+      params,
+    });
+    return response.result;
+  } catch(err) {
+    if (err.status === 401) showBanner();
+    throw { status: err.status, ...(err.result || {}) };
+  }
 }
 
 // ── LOAD ──────────────────────────────────────
