@@ -5,7 +5,13 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="mobile-web-app-capable" content="yes">
 <title>Calendário · LifeOS</title>
-<script>(function(){var t=localStorage.getItem('rd-theme')||'light';document.documentElement.setAttribute('data-theme',t);})()</script>
+<!-- Bug 1 fix: tema + accent antes de renderizar -->
+<script>(function(){
+  var t=localStorage.getItem('rd-theme')||'light';
+  var a=localStorage.getItem('lp-accent');
+  document.documentElement.setAttribute('data-theme',t);
+  if(a) document.documentElement.style.setProperty('--acc',a);
+})()</script>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.30.0/dist/tabler-icons.min.css">
 <link rel="stylesheet" href="style.css">
 <link rel="stylesheet" href="lifeos.css">
@@ -31,7 +37,6 @@
 .cal-item.hidden .cal-item-name{color:var(--text-muted);text-decoration:line-through;}
 .cal-plantao-badge{font-size:9px;padding:1px 5px;border-radius:10px;background:var(--acc-soft);color:var(--acc-text);font-weight:600;}
 .cal-main{flex:1;min-width:0;}
-
 /* MONTH */
 .month-grid{display:grid;grid-template-columns:repeat(7,1fr);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;}
 .month-header{padding:6px 4px;text-align:center;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--text-muted);background:var(--surface2);border-bottom:1px solid var(--border);}
@@ -47,7 +52,6 @@
 .mev{font-size:10px;font-weight:500;padding:1px 5px;border-radius:3px;margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:pointer;color:#fff;}
 .mev:hover{opacity:.85;}
 .mmore{font-size:10px;color:var(--text-muted);padding:1px 5px;}
-
 /* WEEK */
 .week-outer{border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;}
 .week-head{display:grid;grid-template-columns:52px repeat(7,1fr);background:var(--surface2);border-bottom:2px solid var(--border);}
@@ -63,7 +67,6 @@
 .wc.wtoday{background:var(--acc-soft);}
 .wc.wplantao{background:var(--acc-soft);}
 .wev{font-size:10px;padding:1px 4px;border-radius:3px;margin-bottom:1px;cursor:pointer;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#fff;}
-
 /* DAY */
 .day-view{display:flex;flex-direction:column;gap:6px;}
 .day-allday{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);padding:.6rem .8rem;}
@@ -79,7 +82,6 @@
 .dev-title{font-size:13px;font-weight:500;color:var(--text);}
 .dev-time{font-size:11px;color:var(--text-muted);}
 .dev-cal{font-size:10px;color:var(--text-muted);}
-
 /* CONNECT */
 .cal-connect{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:400px;gap:16px;text-align:center;}
 .btn-google{display:flex;align-items:center;gap:10px;padding:10px 20px;border-radius:8px;background:var(--surface);border:1px solid var(--border);font-size:14px;font-weight:600;color:var(--text);cursor:pointer;font-family:inherit;transition:all .15s;}
@@ -87,7 +89,12 @@
 .btn-google svg{width:18px;height:18px;}
 .btn-disconnect{font-size:11px;color:var(--text-muted);background:none;border:none;cursor:pointer;font-family:inherit;text-decoration:underline;}
 .btn-disconnect:hover{color:#e24b4a;}
-
+/* BANNER de sessão expirada */
+.cal-banner{display:none;align-items:center;gap:10px;padding:10px 14px;
+  background:rgba(220,120,50,0.12);border:1px solid #C8A030;border-radius:8px;
+  margin-bottom:1rem;font-size:13px;color:#C8A030;}
+.cal-banner button{margin-left:auto;padding:4px 12px;border-radius:6px;border:1px solid #C8A030;
+  background:transparent;color:#C8A030;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;}
 /* MODAL */
 .ev-overlay{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:300;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(3px);}
 .ev-modal{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:1.4rem;max-width:380px;width:90%;position:relative;}
@@ -99,9 +106,11 @@
 </style>
 </head>
 <body>
+
 <div id="sb-overlay" class="sb-overlay" onclick="closeSidebar()"></div>
 <div class="app-shell">
   <div id="sidebar" class="sidebar"></div>
+
   <div class="main-area">
     <div class="page-content">
 
@@ -112,6 +121,13 @@
           <p class="page-subtitle">Google Calendar — plantões, trabalho e vida pessoal</p>
         </div>
         <div id="auth-area" style="display:flex;align-items:center;gap:8px"></div>
+      </div>
+
+      <!-- Banner de sessão expirada (Bug 2 fix) -->
+      <div class="cal-banner" id="expired-banner">
+        <i class="ti ti-wifi-off" aria-hidden="true"></i>
+        <span>Sessão Google expirada — reconectando automaticamente...</span>
+        <button onclick="connectGoogle()">Reconectar</button>
       </div>
 
       <!-- CONNECT -->
@@ -137,8 +153,8 @@
           <button class="cal-today-btn" onclick="goToday()">Hoje</button>
           <div class="cal-view-btns">
             <button class="cal-view-btn active" id="vbtn-month" onclick="setView('month')">Mês</button>
-            <button class="cal-view-btn" id="vbtn-week"  onclick="setView('week')">Semana</button>
-            <button class="cal-view-btn" id="vbtn-day"   onclick="setView('day')">Dia</button>
+            <button class="cal-view-btn" id="vbtn-week" onclick="setView('week')">Semana</button>
+            <button class="cal-view-btn" id="vbtn-day" onclick="setView('day')">Dia</button>
           </div>
         </div>
 
@@ -173,24 +189,29 @@
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <script src="nav.js"></script>
+<script src="lifeos-core.js"></script>
 <script>
 const CLIENT_ID = '512480734565-6k267l936s0p23cqfldi2m3nj4o0ori2.apps.googleusercontent.com';
 const SCOPES    = 'https://www.googleapis.com/auth/calendar.readonly';
-const BASE_URL  = 'https://www.googleapis.com/calendar/v3';
 const API_KEY   = 'AIzaSyDd25B3QlstKxLOv_LNomKBal3gJjq4wjg';
 
 let gapiReady = false, gisReady = false;
 let tokenClient = null;
 let accessToken = null;
+let refreshTimer = null;
+
 let calendars = [], events = [];
 let view = 'month', cursor = new Date();
 let plantaoCals = new Set(JSON.parse(localStorage.getItem('cal-plantao') || '[]'));
 let hiddenCals  = new Set(JSON.parse(localStorage.getItem('cal-hidden')  || '[]'));
 
-// ── GAPI INIT (sem discoveryDocs — usa gapi.client.request direto) ──
+const MONTHS = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho',
+                'Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+
+// ── GAPI INIT ─────────────────────────────────
 function onGapiLoad() {
   gapi.load('client', async () => {
-    await gapi.client.init({}); // sem discoveryDocs, sem apiKey
+    try { await gapi.client.init({}); } catch(e) { console.warn('gapi init (non-fatal):', e); }
     gapiReady = true;
     tryRestore();
   });
@@ -206,37 +227,78 @@ function onGisLoad() {
   tryRestore();
 }
 
+// ── RESTORE / SILENT REFRESH ──────────────────
 function tryRestore() {
   if (!gapiReady || !gisReady) return;
+
   const saved  = localStorage.getItem('goog-token');
-  const expiry = localStorage.getItem('goog-expiry');
-  if (saved && expiry && Date.now() < parseInt(expiry)) {
+  const expiry = parseInt(localStorage.getItem('goog-expiry') || '0');
+  const valid  = saved && Date.now() < expiry;
+
+  if (valid) {
+    // Token ainda válido — usa direto
     accessToken = saved;
     gapi.client.setToken({ access_token: saved });
+    scheduleRefresh(expiry - Date.now());
     showCalendar();
+  } else if (saved) {
+    // Token expirado mas já foi conectado antes — tenta renovar silenciosamente
+    silentRefresh();
   } else {
+    // Primeira vez
     showConnect();
   }
 }
 
-// ── AUTH ──
+function silentRefresh() {
+  try {
+    // prompt:'' = sem popup se o usuário já tiver dado permissão
+    tokenClient.requestAccessToken({ prompt: '' });
+    // onToken() será chamado pelo GIS quando concluir
+  } catch(e) {
+    showConnect();
+  }
+}
+
+function scheduleRefresh(msUntilExpiry) {
+  clearTimeout(refreshTimer);
+  // Renova 5 minutos antes de expirar
+  const delay = Math.max(0, msUntilExpiry - 5 * 60 * 1000);
+  refreshTimer = setTimeout(() => silentRefresh(), delay);
+}
+
+// ── AUTH ──────────────────────────────────────
 function connectGoogle() {
-  if (!gapiReady || !gisReady) { alert('Aguarde...'); return; }
+  if (!gapiReady || !gisReady) { alert('Aguarde carregar...'); return; }
+  hideBanner();
+  // prompt:'consent' = sempre mostra tela de permissão (garante refresh_token)
   tokenClient.requestAccessToken({ prompt: 'consent' });
 }
 
 function onToken(resp) {
-  if (resp.error) { console.error(resp); return; }
-  // Usa resp.access_token diretamente (GIS pode não ter setado o gapi.client token ainda)
+  if (resp.error) {
+    // interaction_required = precisa de login explícito (sem popup disponível)
+    if (resp.error === 'interaction_required' || resp.error === 'access_denied') {
+      showConnect();
+    }
+    return;
+  }
+
   accessToken = resp.access_token;
   gapi.client.setToken({ access_token: resp.access_token });
-  localStorage.setItem('goog-token',  resp.access_token);
-  localStorage.setItem('goog-expiry', String(Date.now() + resp.expires_in * 1000));
+  localStorage.setItem('goog-token', resp.access_token);
+
+  const expiry = Date.now() + resp.expires_in * 1000;
+  localStorage.setItem('goog-expiry', String(expiry));
+  scheduleRefresh(resp.expires_in * 1000);
+
+  hideBanner();
   showCalendar();
 }
 
 function disconnect() {
-  if (!confirm('Desconectar?')) return;
+  if (!confirm('Desconectar Google Agenda?')) return;
+  clearTimeout(refreshTimer);
   if (accessToken) google.accounts.oauth2.revoke(accessToken);
   gapi.client.setToken(null);
   accessToken = null;
@@ -246,38 +308,57 @@ function disconnect() {
   showConnect();
 }
 
-// ── UI STATES ──
+// ── UI STATES ─────────────────────────────────
 function showConnect() {
-  document.getElementById('connect-view').style.display  = 'flex';
-  document.getElementById('calendar-view').style.display = 'none';
+  document.getElementById('connect-view').style.display   = 'flex';
+  document.getElementById('calendar-view').style.display  = 'none';
   document.getElementById('auth-area').innerHTML = '';
 }
+
 function showCalendar() {
-  document.getElementById('connect-view').style.display  = 'none';
-  document.getElementById('calendar-view').style.display = 'block';
+  document.getElementById('connect-view').style.display   = 'none';
+  document.getElementById('calendar-view').style.display  = 'block';
   document.getElementById('auth-area').innerHTML =
     `<span style="font-size:12px;color:var(--text-muted)">Google conectado</span>
      <button class="btn-disconnect" onclick="disconnect()">Desconectar</button>`;
   loadCalendars();
 }
 
-// ── API: XMLHttpRequest com token explícito ──
-function gcal(path, params={}) {
+function showBanner() {
+  const b = document.getElementById('expired-banner');
+  b.style.display = 'flex';
+  // Tenta renovar silenciosamente ao mostrar o banner
+  silentRefresh();
+}
+function hideBanner() {
+  document.getElementById('expired-banner').style.display = 'none';
+}
+
+// ── API — XHR com token explícito ─────────────
+function gcal(path, params = {}) {
   return new Promise((resolve, reject) => {
     const token = accessToken
       || gapi.client.getToken()?.access_token
       || localStorage.getItem('goog-token');
+
     if (!token) { showConnect(); reject(new Error('Sem token')); return; }
-    const qs = new URLSearchParams(params).toString();
-    const url = 'https://www.googleapis.com/calendar/v3' + path + '?key=' + API_KEY + (qs ? '&' + qs : '');
+
+    const qs  = new URLSearchParams(params).toString();
+    const url = `https://www.googleapis.com/calendar/v3${path}?key=${API_KEY}${qs ? '&'+qs : ''}`;
+
     const xhr = new XMLHttpRequest();
     xhr.open('GET', url, true);
     xhr.setRequestHeader('Authorization', 'Bearer ' + token);
     xhr.onload = () => {
       try {
         const data = JSON.parse(xhr.responseText);
-        if (xhr.status === 200) { resolve(data); }
-        else { if (xhr.status === 401) showConnect(); reject(data); }
+        if (xhr.status === 200) {
+          resolve(data);
+        } else {
+          // Bug 2 fix: 401 não é silenciado — mostra banner e tenta renovar
+          if (xhr.status === 401) showBanner();
+          reject({ status: xhr.status, ...data });
+        }
       } catch(e) { reject(e); }
     };
     xhr.onerror = () => reject(new Error('Erro de rede'));
@@ -285,35 +366,38 @@ function gcal(path, params={}) {
   });
 }
 
-// ── LOAD ──
+// ── LOAD ──────────────────────────────────────
 async function loadCalendars() {
   setLoading(true);
   try {
     const data = await gcal('/calendarList', { maxResults: 50 });
-    const items = data.items || [];
-
-    calendars = items.map(c => {
-      // Detecta plantão por nome da agenda
+    calendars = (data.items || []).map(c => {
       const isPlantaoAuto = /escala|plant[aã]o/i.test(c.summary);
       if (isPlantaoAuto) plantaoCals.add(c.id);
       return {
         id:      c.id,
         name:    c.summary,
         color:   c.backgroundColor || '#3b82f6',
-        // Segue configuração do Google Calendar (selected) a menos que usuário tenha mudado
         visible: (c.selected !== false) && !hiddenCals.has(c.id),
         plantao: plantaoCals.has(c.id),
       };
     });
-
     localStorage.setItem('cal-plantao', JSON.stringify([...plantaoCals]));
     renderCalList();
     await loadEvents();
   } catch(e) {
     console.error('Erro ao carregar calendários:', e);
     setLoading(false);
-    // Token pode ter expirado
-    if (e.status === 401) showConnect();
+    if (e.status === 401) {
+      showBanner();
+    } else {
+      // Mostra erro visível no grid em vez de tela vazia
+      document.getElementById('cal-grid').innerHTML =
+        `<div style="padding:2rem;text-align:center;color:var(--text-muted);font-size:13px">
+          <i class="ti ti-alert-triangle" style="font-size:32px;display:block;margin-bottom:8px;opacity:.5" aria-hidden="true"></i>
+          Erro ao carregar calendários. Verifique sua conexão.
+        </div>`;
+    }
   }
 }
 
@@ -325,24 +409,30 @@ async function loadEvents() {
   try {
     const promises = visible.map(cal =>
       gcal(`/calendars/${encodeURIComponent(cal.id)}/events`, {
-        timeMin:       tMin.toISOString(),
-        timeMax:       tMax.toISOString(),
-        singleEvents:  'true',
-        orderBy:       'startTime',
-        maxResults:    300,
+        timeMin: tMin.toISOString(),
+        timeMax: tMax.toISOString(),
+        singleEvents: 'true',
+        orderBy: 'startTime',
+        maxResults: 300,
       }).then(data => (data.items || []).map(e => ({
         ...e,
         _calId:    cal.id,
         _calName:  cal.name,
         _calColor: cal.color,
         _plantao:  cal.plantao,
-      }))).catch(() => [])
+      }))).catch(err => {
+        // Bug 2 fix: propaga 401, silencia outros (agenda sem permissão, etc.)
+        if (err?.status === 401) showBanner();
+        return [];
+      })
     );
+
     const results = await Promise.all(promises);
     events = results.flat();
   } catch(e) {
-    console.error('Erro ao carregar eventos:', e);
+    console.error('loadEvents error:', e);
   }
+
   setLoading(false);
   renderView();
 }
@@ -364,7 +454,7 @@ function getRange() {
   return { tMin, tMax };
 }
 
-// ── CAL LIST ──
+// ── CAL LIST ──────────────────────────────────
 function renderCalList() {
   document.getElementById('cal-list').innerHTML = calendars.map(c => `
     <div class="cal-item${c.visible?'':' hidden'}" onclick="toggleCal('${encodeURIComponent(c.id)}')">
@@ -377,7 +467,7 @@ function renderCalList() {
 }
 
 function toggleCal(enc) {
-  const id = decodeURIComponent(enc);
+  const id  = decodeURIComponent(enc);
   const cal = calendars.find(c => c.id === id);
   if (!cal) return;
   cal.visible = !cal.visible;
@@ -387,7 +477,7 @@ function toggleCal(enc) {
   loadEvents();
 }
 
-// ── NAV ──
+// ── NAV ───────────────────────────────────────
 function navigate(dir) {
   const d = new Date(cursor);
   if (view==='month') d.setMonth(d.getMonth()+dir);
@@ -402,20 +492,17 @@ function setView(v) {
   loadEvents();
 }
 
-// ── RENDER ──
-const MONTHS = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
-const DNAMES = ['Seg','Ter','Qua','Qui','Sex','Sáb','Dom'];
-
+// ── RENDER ────────────────────────────────────
 function renderView() {
-  // Title
   const d = cursor;
   let title = '';
-  if (view==='month') title = `${MONTHS[d.getMonth()]} ${d.getFullYear()}`;
-  else if (view==='week') {
-    const ws = wStart(new Date(d)), we = new Date(ws); we.setDate(we.getDate()+6);
+  if (view==='month') {
+    title = `${MONTHS[d.getMonth()]} ${d.getFullYear()}`;
+  } else if (view==='week') {
+    const ws=wStart(new Date(d)), we=new Date(ws); we.setDate(we.getDate()+6);
     title = `${ws.getDate()} ${MONTHS[ws.getMonth()].slice(0,3)} — ${we.getDate()} ${MONTHS[we.getMonth()].slice(0,3)} ${we.getFullYear()}`;
   } else {
-    const dn = ['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'];
+    const dn=['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'];
     title = `${dn[d.getDay()]}, ${d.getDate()} de ${MONTHS[d.getMonth()]}`;
   }
   document.getElementById('cal-title').textContent = title;
@@ -426,63 +513,53 @@ function renderView() {
 }
 
 function renderMonth() {
-  const y = cursor.getFullYear(), m = cursor.getMonth();
-  const first = new Date(y,m,1), last = new Date(y,m+1,0);
-  const todayS = ds(new Date());
-  const off = (first.getDay()+6)%7;
-  const total = Math.ceil((off+last.getDate())/7)*7;
+  const y=cursor.getFullYear(), m=cursor.getMonth();
+  const first=new Date(y,m,1), last=new Date(y,m+1,0);
+  const todayS=ds(new Date());
+  const off=(first.getDay()+6)%7;
+  const total=Math.ceil((off+last.getDate())/7)*7;
 
   let html = '<div class="month-grid">';
   html += DNAMES.map(n=>`<div class="month-header">${n}</div>`).join('');
 
   for (let i=0; i<total; i++) {
-    const date = new Date(y,m,1+i-off);
-    const dStr = ds(date);
-    const cur  = date.getMonth()===m;
-    const isT  = dStr===todayS;
-    const evs  = dayEvs(dStr);
-    const hasP = evs.some(e=>e._plantao);
-
-    let cls = 'month-day';
+    const date=new Date(y,m,1+i-off);
+    const dStr=ds(date);
+    const cur=date.getMonth()===m, isT=dStr===todayS;
+    const evs=dayEvs(dStr), hasP=evs.some(e=>e._plantao);
+    let cls='month-day';
     if (!cur) cls+=' other';
     if (isT)  cls+=' today';
     if (hasP&&cur) cls+=' plantao';
 
-    html += `<div class="${cls}" onclick="clickDay('${dStr}')">
-      <div class="mdn">${date.getDate()}</div>`;
-    evs.slice(0,3).forEach(e => {
-      html += `<div class="mev" style="background:${e._calColor}"
+    html+=`<div class="${cls}" onclick="clickDay('${dStr}')"><div class="mdn">${date.getDate()}</div>`;
+    evs.slice(0,3).forEach(e=>{
+      html+=`<div class="mev" style="background:${e._calColor}"
         onclick="event.stopPropagation();openEv('${e.id}')"
         title="${e.summary||''}">${e._plantao?'🏥 ':''}${e.summary||'(sem título)'}</div>`;
     });
     if (evs.length>3) html+=`<div class="mmore">+${evs.length-3} mais</div>`;
-    html += '</div>';
+    html+='</div>';
   }
-  html += '</div>';
+  html+='</div>';
   document.getElementById('cal-grid').innerHTML = html;
 }
 
 function renderWeek() {
-  const ws   = wStart(new Date(cursor));
-  const days = Array.from({length:7},(_,i)=>{const d=new Date(ws);d.setDate(d.getDate()+i);return d;});
-  const todS = ds(new Date());
+  const ws=wStart(new Date(cursor));
+  const days=Array.from({length:7},(_,i)=>{const d=new Date(ws);d.setDate(d.getDate()+i);return d;});
+  const todS=ds(new Date());
 
-  let html = '<div class="week-outer">';
-  // Header
-  html += '<div class="week-head"><div class="wh-empty"></div>';
+  let html='<div class="week-outer"><div class="week-head"><div class="wh-empty"></div>';
   days.forEach((d,i)=>{
     const dStr=ds(d), isT=dStr===todS, hasP=dayEvs(dStr).some(e=>e._plantao);
     html+=`<div class="wh-day${isT?' wtoday':''}${hasP?' wplantao':''}">
       <div class="wh-name">${DNAMES[i]}</div>
-      <div class="wh-num">${d.getDate()}</div>
-    </div>`;
+      <div class="wh-num">${d.getDate()}</div></div>`;
   });
-  html += '</div>';
-
-  // Body 0-23h
-  html += '<div class="week-body">';
-  for (let h=0;h<24;h++) {
-    html += `<div class="wt">${String(h).padStart(2,'0')}h</div>`;
+  html+='</div><div class="week-body">';
+  for (let h=0; h<24; h++) {
+    html+=`<div class="wt">${String(h).padStart(2,'0')}h</div>`;
     days.forEach(d=>{
       const dStr=ds(d), isT=dStr===todS, hasP=dayEvs(dStr).some(e=>e._plantao);
       const hEvs=dayEvs(dStr).filter(e=>e.start?.dateTime&&new Date(e.start.dateTime).getHours()===h);
@@ -491,18 +568,18 @@ function renderWeek() {
       html+='</div>';
     });
   }
-  html += '</div></div>';
+  html+='</div></div>';
   document.getElementById('cal-grid').innerHTML = html;
 }
 
 function renderDay() {
-  const dStr = ds(cursor);
-  const all  = dayEvs(dStr);
-  const ad   = all.filter(e=>!e.start?.dateTime);
-  const timed= all.filter(e=>!!e.start?.dateTime).sort((a,b)=>new Date(a.start.dateTime)-new Date(b.start.dateTime));
-  const hasP = all.some(e=>e._plantao);
+  const dStr=ds(cursor);
+  const all=dayEvs(dStr);
+  const ad=all.filter(e=>!e.start?.dateTime);
+  const timed=all.filter(e=>!!e.start?.dateTime).sort((a,b)=>new Date(a.start.dateTime)-new Date(b.start.dateTime));
+  const hasP=all.some(e=>e._plantao);
 
-  let html = '<div class="day-view">';
+  let html='<div class="day-view">';
   if (hasP) html+=`<div style="background:var(--acc-soft);border:1px solid var(--acc);border-radius:8px;padding:8px 12px;font-size:13px;font-weight:600;color:var(--acc-text)">🏥 Dia com plantão</div>`;
 
   if (ad.length) {
@@ -510,21 +587,20 @@ function renderDay() {
     ad.forEach(e=>{
       html+=`<div class="dev" style="background:${e._calColor}22" onclick="openEv('${e.id}')">
         <div class="dev-dot" style="background:${e._calColor}"></div>
-        <div><div class="dev-title">${e.summary||'(sem título)'}</div><div class="dev-cal">${e._calName}</div></div>
-      </div>`;
+        <div><div class="dev-title">${e.summary||'(sem título)'}</div><div class="dev-cal">${e._calName}</div></div></div>`;
     });
     html+='</div>';
   }
 
   html+='<div class="day-grid">';
   if (!timed.length) {
-    html+='<div style="padding:2rem;text-align:center;color:var(--text-muted);font-size:13px">Nenhum evento com horário neste dia.</div>';
+    html+=`<div style="padding:2rem;text-align:center;color:var(--text-muted);font-size:13px">Nenhum evento com horário neste dia.</div>`;
   } else {
     const byH={};
     timed.forEach(e=>{const h=new Date(e.start.dateTime).getHours();(byH[h]=byH[h]||[]).push(e);});
     const hMin=Math.max(0,Math.min(...Object.keys(byH).map(Number))-1);
     const hMax=Math.min(23,Math.max(...Object.keys(byH).map(Number))+1);
-    for (let h=hMin;h<=hMax;h++) {
+    for (let h=hMin; h<=hMax; h++) {
       const hEvs=byH[h]||[];
       html+=`<div class="day-row"><div class="day-lbl">${String(h).padStart(2,'0')}h</div><div class="day-evs">`;
       hEvs.forEach(e=>{
@@ -535,8 +611,7 @@ function renderDay() {
             <div class="dev-title">${e._plantao?'🏥 ':''}${e.summary||'(sem título)'}</div>
             <div class="dev-time">${start}${end?' → '+end:''}</div>
             <div class="dev-cal">${e._calName}</div>
-          </div>
-        </div>`;
+          </div></div>`;
       });
       html+='</div></div>';
     }
@@ -545,7 +620,7 @@ function renderDay() {
   document.getElementById('cal-grid').innerHTML = html;
 }
 
-// ── MODAL ──
+// ── MODAL ─────────────────────────────────────
 function openEv(id) {
   const e=events.find(x=>x.id===id); if(!e) return;
   const ad=!e.start?.dateTime;
@@ -556,20 +631,27 @@ function openEv(id) {
     <div class="ev-title">${e.summary||'(sem título)'}</div>
     <div class="ev-row"><i class="ti ti-clock"></i><span>${ad?'Dia todo':s}${en?' → '+en:''}</span></div>
     ${e.location?`<div class="ev-row"><i class="ti ti-map-pin"></i><span>${e.location}</span></div>`:''}
-    <div class="ev-row"><i class="ti ti-calendar"></i><span style="display:flex;align-items:center;gap:6px"><span style="width:10px;height:10px;border-radius:50%;background:${e._calColor};display:inline-block"></span>${e._calName}</span></div>
-    ${e.description?`<div class="ev-row" style="flex-direction:column"><div style="font-size:11px;color:var(--text-muted);margin-bottom:3px">Descrição</div><div style="font-size:13px;color:var(--text2);line-height:1.5">${e.description.replace(/<[^>]*>/g,'').slice(0,300)}</div></div>`:''}`;
+    <div class="ev-row"><i class="ti ti-calendar"></i><span style="display:flex;align-items:center;gap:6px">
+      <span style="width:10px;height:10px;border-radius:50%;background:${e._calColor};display:inline-block"></span>
+      ${e._calName}</span></div>
+    ${e.description?`<div class="ev-row" style="flex-direction:column">
+      <div style="font-size:11px;color:var(--text-muted);margin-bottom:3px">Descrição</div>
+      <div style="font-size:13px;color:var(--text2);line-height:1.5">${e.description.replace(/<[^>]*>/g,'').slice(0,300)}</div>
+    </div>`:''}`;
   document.getElementById('ev-overlay').style.display='flex';
 }
+
 function closeModal(ev) {
-  if (!ev||ev.target.id==='ev-overlay'||ev.currentTarget.classList?.contains('ev-close'))
+  if (!ev || ev.target.id==='ev-overlay' || ev.currentTarget.classList?.contains('ev-close'))
     document.getElementById('ev-overlay').style.display='none';
 }
+
 function clickDay(d) { cursor=new Date(d+'T12:00:00'); setView('day'); }
 
-// ── UTILS ──
+// ── UTILS ─────────────────────────────────────
 function dayEvs(dStr) {
   return events.filter(e=>{
-    if (e.start?.date)     return e.start.date===dStr;
+    if (e.start?.date) return e.start.date===dStr;
     if (e.start?.dateTime) return e.start.dateTime.startsWith(dStr);
     return false;
   });
@@ -580,7 +662,8 @@ function ftT(iso) { const d=new Date(iso); return `${String(d.getHours()).padSta
 function ftDT(iso) { const d=new Date(iso),M=['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov','dez']; return `${d.getDate()} ${M[d.getMonth()]} · ${ftT(iso)}`; }
 function setLoading(v) { document.getElementById('cal-loading').style.display=v?'flex':'none'; if(v) document.getElementById('cal-grid').innerHTML=''; }
 </script>
-<!-- Google APIs carregam DEPOIS do código inline para que onGapiLoad/onGisLoad já estejam definidos -->
+
+<!-- Google APIs carregam DEPOIS para que onGapiLoad/onGisLoad já estejam definidos -->
 <script src="https://apis.google.com/js/api.js" onload="onGapiLoad()"></script>
 <script src="https://accounts.google.com/gsi/client" onload="onGisLoad()"></script>
 </body>
