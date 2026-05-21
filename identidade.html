@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>Eu · LifeOS</title>
+<script>(function(){
+  var t=localStorage.getItem('rd-theme')||'light';
+  var a=localStorage.getItem('lp-accent');
+  document.documentElement.setAttribute('data-theme',t);
+  if(a) document.documentElement.style.setProperty('--acc',a);
+})()</script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.30.0/dist/tabler-icons.min.css">
+<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="lifeos.css">
+<style>
+/* Declaração de classe */
+.classe-card{
+  background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);
+  padding:1.6rem;margin-bottom:1.4rem;text-align:center;
+}
+.classe-tag{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;
+  color:var(--acc-text);background:var(--acc-soft);padding:3px 12px;border-radius:20px;
+  display:inline-block;margin-bottom:.9rem;}
+.classe-text{font-size:18px;font-weight:700;color:var(--text);line-height:1.5;
+  cursor:text;padding:6px;border-radius:8px;border:1px solid transparent;transition:border-color .15s;}
+.classe-text:hover{border-color:var(--border);}
+.classe-input{width:100%;font-size:18px;font-weight:700;color:var(--text);
+  border:1px solid var(--acc);border-radius:8px;padding:6px;background:var(--surface2);
+  font-family:inherit;outline:none;text-align:center;box-sizing:border-box;line-height:1.5;}
+
+/* Visão 2031 */
+.visao-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:1rem;margin-bottom:1.4rem;}
+@media(max-width:680px){.visao-grid{grid-template-columns:1fr;}}
+
+.visao-item{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);
+  padding:1rem;cursor:pointer;transition:border-color .15s,box-shadow .15s;border-left:4px solid transparent;}
+.visao-item:hover{box-shadow:0 3px 12px rgba(0,0,0,.07);}
+.visao-item-header{display:flex;align-items:center;gap:8px;margin-bottom:.5rem;}
+.visao-item-header i{font-size:15px;}
+.visao-item-nome{font-size:12px;font-weight:700;color:var(--text2);}
+.visao-item-atualizado{font-size:10px;color:var(--text-muted);margin-left:auto;}
+.visao-item-texto{font-size:12px;color:var(--text-muted);line-height:1.5;
+  display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;}
+.visao-item-vazia{font-size:12px;color:var(--text-muted);font-style:italic;}
+
+/* Anti-padrões */
+.antipadrao-item{display:flex;align-items:flex-start;gap:10px;padding:.6rem 0;
+  border-bottom:1px solid var(--border);}
+.antipadrao-item:last-child{border-bottom:none;}
+.antipadrao-check{width:18px;height:18px;border-radius:5px;border:2px solid var(--border);
+  flex-shrink:0;cursor:pointer;display:flex;align-items:center;justify-content:center;
+  transition:all .15s;margin-top:1px;}
+.antipadrao-check.on{background:var(--acc);border-color:var(--acc);}
+.antipadrao-check.on i{color:#fff;font-size:11px;}
+.antipadrao-texto{font-size:13px;color:var(--text2);flex:1;line-height:1.4;}
+.antipadrao-texto.on{color:var(--text-muted);text-decoration:line-through;}
+.antipadrao-del{background:none;border:none;color:var(--text-muted);cursor:pointer;
+  padding:2px 4px;opacity:0;transition:opacity .1s;}
+.antipadrao-item:hover .antipadrao-del{opacity:1;}
+
+.add-antipadrao{display:flex;gap:.5rem;margin-top:.7rem;}
+.add-antipadrao input{flex:1;padding:.4rem .7rem;border:1px solid var(--border);border-radius:7px;
+  background:var(--surface2);color:var(--text);font-size:13px;font-family:inherit;outline:none;}
+.add-antipadrao input:focus{border-color:var(--acc);}
+.add-antipadrao button{padding:.4rem .8rem;border-radius:7px;border:none;background:var(--acc);
+  color:#fff;font-size:13px;cursor:pointer;font-family:inherit;}
+
+/* Carta */
+.carta-meta{font-size:11px;color:var(--text-muted);margin-top:.5rem;display:flex;align-items:center;gap:5px;}
+.carta-textarea{width:100%;padding:.7rem .8rem;border:1px solid var(--border);border-radius:8px;
+  background:var(--surface2);color:var(--text);font-size:13px;font-family:inherit;
+  outline:none;resize:vertical;min-height:160px;box-sizing:border-box;line-height:1.7;}
+.carta-textarea:focus{border-color:var(--acc);}
+
+/* Modal visão */
+.mo{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:200;
+  display:flex;align-items:center;justify-content:center;backdrop-filter:blur(3px);}
+.mo-box{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);
+  padding:1.5rem;width:100%;max-width:440px;max-height:90vh;overflow-y:auto;position:relative;}
+.mo-close{position:absolute;top:12px;right:12px;width:28px;height:28px;border-radius:6px;
+  border:1px solid var(--border);background:var(--surface2);color:var(--text-muted);
+  cursor:pointer;display:flex;align-items:center;justify-content:center;}
+.mo-title{font-size:15px;font-weight:700;color:var(--text);margin-bottom:1rem;}
+.mo-textarea{width:100%;padding:.6rem .8rem;border:1px solid var(--border);border-radius:8px;
+  background:var(--surface2);color:var(--text);font-size:13px;font-family:inherit;
+  outline:none;resize:vertical;min-height:100px;box-sizing:border-box;line-height:1.6;}
+.mo-textarea:focus{border-color:var(--acc);}
+.mo-actions{display:flex;gap:.6rem;justify-content:flex-end;margin-top:1rem;
+  padding-top:.9rem;border-top:1px solid var(--border);}
+.btn-p{padding:.42rem 1.1rem;border-radius:8px;border:none;background:var(--acc);
+  color:#fff;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;}
+.btn-s{padding:.42rem 1rem;border-radius:8px;border:1px solid var(--border);
+  background:var(--surface2);color:var(--text-muted);font-size:13px;cursor:pointer;font-family:inherit;}
+</style>
+</head>
+<body>
+
+<div id="sb-overlay" class="sb-overlay" onclick="closeSidebar()"></div>
+<div class="app-shell">
+  <div id="sidebar" class="sidebar"></div>
+  <div class="main-area">
+    <div class="page-content">
+
+      <div class="page-header">
+        <div class="page-header-left">
+          <div class="page-role"><i class="ti ti-user-heart" aria-hidden="true"></i> Médico Arquiteto</div>
+          <h1 class="page-title">Eu</h1>
+          <p class="page-subtitle">Quem você está sendo</p>
+        </div>
+        <div class="save-status idle" id="save-status">
+          <i class="ti ti-circle-dot"></i> Pronto
+        </div>
+      </div>
+
+      <!-- Declaração de Classe -->
+      <div class="classe-card">
+        <div class="classe-tag"><i class="ti ti-shield-star" style="font-size:11px" aria-hidden="true"></i> Classe</div>
+        <div class="classe-text" id="classe-text" onclick="editClasse()">Carregando...</div>
+      </div>
+
+      <!-- Visão 2031 por Área -->
+      <div class="lo-card" style="margin-bottom:1.4rem">
+        <div class="lo-card-header">
+          <i class="ti ti-telescope" aria-hidden="true"></i>
+          <span class="lo-card-title">Visão 2031</span>
+          <span style="font-size:11px;color:var(--text-muted);margin-left:auto">clique para editar</span>
+        </div>
+        <div class="lo-card-body" style="padding:.5rem 1.2rem">
+          <div class="visao-grid" id="visao-grid">
+            <div style="grid-column:1/-1;font-size:13px;color:var(--text-muted)">Carregando...</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="two-col">
+
+        <!-- Anti-padrões -->
+        <div class="lo-card" style="align-self:start">
+          <div class="lo-card-header">
+            <i class="ti ti-alert-triangle" aria-hidden="true"></i>
+            <span class="lo-card-title">Anti-padrões</span>
+          </div>
+          <div class="lo-card-body">
+            <p style="font-size:12px;color:var(--text-muted);margin-bottom:.8rem;line-height:1.5">
+              Comportamentos que sabotam o sistema. Marque os que está trabalhando ativamente.
+            </p>
+            <div id="antipadroes-list"></div>
+            <div class="add-antipadrao">
+              <input type="text" id="novo-antipadrao" placeholder="Adicionar anti-padrão..."
+                onkeydown="if(event.key==='Enter')addAntipadrao()">
+              <button onclick="addAntipadrao()"><i class="ti ti-plus"></i></button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Carta para o eu de 2031 -->
+        <div class="lo-card" style="align-self:start">
+          <div class="lo-card-header">
+            <i class="ti ti-mail" aria-hidden="true"></i>
+            <span class="lo-card-title">Carta para o eu de 2031</span>
+          </div>
+          <div class="lo-card-body">
+            <textarea class="carta-textarea" id="carta-input"
+              placeholder="Escreva para quem você quer ser. O que quer que ele saiba? O que prometeu? O que está construindo?"
+              oninput="debounceSave('identidade-carta-2031', this.value)"></textarea>
+            <div class="carta-meta" id="carta-meta">
+              <i class="ti ti-clock" style="font-size:11px" aria-hidden="true"></i>
+              Nunca editada
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- Modal edição de visão por área -->
+<div class="mo" id="modal-visao" style="display:none" onclick="if(event.target===this)closeVisaoModal()">
+  <div class="mo-box">
+    <button class="mo-close" onclick="closeVisaoModal()"><i class="ti ti-x"></i></button>
+    <div class="mo-title" id="modal-visao-title">Visão 2031</div>
+    <textarea class="mo-textarea" id="modal-visao-input" placeholder="Como essa área estará em 2031?"></textarea>
+    <div class="mo-actions">
+      <button class="btn-s" onclick="closeVisaoModal()">Cancelar</button>
+      <button class="btn-p" onclick="saveVisao()">Salvar</button>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script src="nav.js"></script>
+<script src="lifeos-core.js"></script>
+<script>
+let areas = [];
+let antipadroes = [];
+let editingAreaId = null;
+let saveTimers = {};
+
+const CLASSE_DEFAULT = 'Médico Arquiteto em construção — opero na interseção entre a medicina de alto desempenho e a vida intencional.';
+
+const ANTIPADROES_DEFAULT = [
+  'Planejamento como substituto da execução',
+  'Abandono no estágio pesado — sistema não sobrevive ao plantão',
+  'Muitas frentes, zero conclusão (muitos Reinos em expansão simultânea)',
+  'Estudar sem aplicar — consumo de conteúdo sem ação em 24h',
+  'Sistema complexo demais para o pior dia',
+  '8 ou 80 — perfeccionismo que paralisa na primeira falha',
+  'Gamificação que gera culpa — streak quebrado = abandono total',
+  'Comparar com quem não tem residência — expectativa errada',
+];
+
+// ── INIT ───────────────────────────────────────
+window.addEventListener('DOMContentLoaded', async () => {
+  initSupabase();
+  await Promise.all([loadClasse(), loadAreas(), loadAntipadroes(), loadCarta()]);
+});
+
+async function loadClasse() {
+  if (!window.db) { await new Promise(r => setTimeout(r, 1200)); initSupabase(); }
+  const { data } = await window.db.from('caderno_respostas')
+    .select('valor').eq('campo', 'identidade-declaracao').maybeSingle();
+  const texto = data?.valor || CLASSE_DEFAULT;
+  const el = document.getElementById('classe-text');
+  el.textContent = texto;
+}
+
+async function loadAreas() {
+  if (!window.db) return;
+  const { data } = await window.db.from('areas').select('*').eq('ativo', true).order('ordem');
+  areas = data || [];
+  renderVisao();
+}
+
+async function loadAntipadroes() {
+  if (!window.db) return;
+  const { data } = await window.db.from('caderno_respostas')
+    .select('valor').eq('campo', 'identidade-antipadroes').maybeSingle();
+  if (data?.valor) {
+    try { antipadroes = JSON.parse(data.valor); } catch { antipadroes = defaultAntipadroes(); }
+  } else {
+    antipadroes = defaultAntipadroes();
+  }
+  renderAntipadroes();
+}
+
+function defaultAntipadroes() {
+  return ANTIPADROES_DEFAULT.map((t, i) => ({ id: i + 1, texto: t, ativo: false }));
+}
+
+async function loadCarta() {
+  if (!window.db) return;
+  const { data } = await window.db.from('caderno_respostas')
+    .select('valor,atualizado_em').eq('campo', 'identidade-carta-2031').maybeSingle();
+  if (data?.valor) {
+    document.getElementById('carta-input').value = data.valor;
+    const d = new Date(data.atualizado_em);
+    document.getElementById('carta-meta').innerHTML =
+      `<i class="ti ti-clock" style="font-size:11px"></i> Última edição: ${d.toLocaleDateString('pt-BR', {day:'2-digit',month:'short',year:'numeric'})}`;
+  }
+}
+
+// ── DECLARAÇÃO DE CLASSE ───────────────────────
+function editClasse() {
+  const el = document.getElementById('classe-text');
+  const val = el.textContent;
+  const input = document.createElement('input');
+  input.className = 'classe-input';
+  input.value = val;
+  input.onblur = () => saveClasse(input.value);
+  input.onkeydown = e => { if (e.key === 'Enter') input.blur(); };
+  el.replaceWith(input);
+  input.select();
+}
+
+async function saveClasse(val) {
+  val = val.trim() || CLASSE_DEFAULT;
+  const display = document.createElement('div');
+  display.id = 'classe-text';
+  display.className = 'classe-text';
+  display.textContent = val;
+  display.onclick = editClasse;
+  document.querySelector('.classe-input').replaceWith(display);
+  setStatus('saving');
+  await window.db.from('caderno_respostas')
+    .upsert({ campo: 'identidade-declaracao', valor: val }, { onConflict: 'campo' });
+  setStatus('saved');
+}
+
+// ── VISÃO 2031 ─────────────────────────────────
+function diasDesde(d) {
+  if (!d) return null;
+  const diff = Math.floor((Date.now() - new Date(d)) / 86400000);
+  if (diff === 0) return 'hoje';
+  if (diff === 1) return 'há 1 dia';
+  return `há ${diff} dias`;
+}
+
+function renderVisao() {
+  const grid = document.getElementById('visao-grid');
+  if (!areas.length) {
+    grid.innerHTML = `<div style="grid-column:1/-1;font-size:13px;color:var(--text-muted)">
+      Nenhuma área cadastrada. <a href="areas.html" style="color:var(--acc-text)">Criar áreas →</a></div>`;
+    return;
+  }
+  grid.innerHTML = areas.map(a => {
+    const atualizado = diasDesde(a.ultima_atualizacao);
+    return `<div class="visao-item" style="border-left-color:${a.cor}" onclick="openVisaoModal('${a.id}')">
+      <div class="visao-item-header">
+        <i class="ti ${a.icone}" style="color:${a.cor}" aria-hidden="true"></i>
+        <span class="visao-item-nome">${a.nome}</span>
+        ${atualizado ? `<span class="visao-item-atualizado">${atualizado}</span>` : ''}
+      </div>
+      ${a.visao_2031
+        ? `<div class="visao-item-texto">${a.visao_2031}</div>`
+        : `<div class="visao-item-vazia">Sem visão definida — clique para adicionar</div>`}
+    </div>`;
+  }).join('');
+}
+
+function openVisaoModal(id) {
+  editingAreaId = id;
+  const a = areas.find(x => x.id === id);
+  if (!a) return;
+  document.getElementById('modal-visao-title').innerHTML =
+    `<i class="ti ${a.icone}" style="color:${a.cor};margin-right:8px" aria-hidden="true"></i>${a.nome} · Visão 2031`;
+  document.getElementById('modal-visao-input').value = a.visao_2031 || '';
+  document.getElementById('modal-visao').style.display = 'flex';
+  setTimeout(() => document.getElementById('modal-visao-input').focus(), 50);
+}
+
+function closeVisaoModal() {
+  document.getElementById('modal-visao').style.display = 'none';
+  editingAreaId = null;
+}
+
+async function saveVisao() {
+  if (!editingAreaId || !window.db) return;
+  const val = document.getElementById('modal-visao-input').value.trim();
+  setStatus('saving');
+  await window.db.from('areas').update({
+    visao_2031: val,
+    ultima_atualizacao: todayISO(),
+    atualizado_em: new Date().toISOString(),
+  }).eq('id', editingAreaId);
+  const a = areas.find(x => x.id === editingAreaId);
+  if (a) { a.visao_2031 = val; a.ultima_atualizacao = todayISO(); }
+  setStatus('saved');
+  closeVisaoModal();
+  renderVisao();
+}
+
+// ── ANTI-PADRÕES ───────────────────────────────
+function renderAntipadroes() {
+  document.getElementById('antipadroes-list').innerHTML = antipadroes.map((ap, i) => `
+    <div class="antipadrao-item">
+      <div class="antipadrao-check${ap.ativo?' on':''}" onclick="toggleAntipadrao(${i})">
+        ${ap.ativo ? '<i class="ti ti-check"></i>' : ''}
+      </div>
+      <span class="antipadrao-texto${ap.ativo?' on':''}">${ap.texto}</span>
+      <button class="antipadrao-del" onclick="removeAntipadrao(${i})" title="Remover">
+        <i class="ti ti-x" style="font-size:12px" aria-hidden="true"></i>
+      </button>
+    </div>`).join('');
+}
+
+function toggleAntipadrao(i) {
+  antipadroes[i].ativo = !antipadroes[i].ativo;
+  renderAntipadroes();
+  saveAntipadroes();
+}
+
+function addAntipadrao() {
+  const input = document.getElementById('novo-antipadrao');
+  const texto = input.value.trim();
+  if (!texto) return;
+  const maxId = antipadroes.length ? Math.max(...antipadroes.map(a => a.id)) : 0;
+  antipadroes.push({ id: maxId + 1, texto, ativo: false });
+  input.value = '';
+  renderAntipadroes();
+  saveAntipadroes();
+}
+
+function removeAntipadrao(i) {
+  antipadroes.splice(i, 1);
+  renderAntipadroes();
+  saveAntipadroes();
+}
+
+async function saveAntipadroes() {
+  if (!window.db) return;
+  setStatus('saving');
+  await window.db.from('caderno_respostas')
+    .upsert({ campo: 'identidade-antipadroes', valor: JSON.stringify(antipadroes) }, { onConflict: 'campo' });
+  setStatus('saved');
+}
+
+// ── CARTA 2031 ─────────────────────────────────
+function debounceSave(campo, valor) {
+  clearTimeout(saveTimers[campo]);
+  setStatus('saving');
+  saveTimers[campo] = setTimeout(async () => {
+    await window.db.from('caderno_respostas')
+      .upsert({ campo, valor }, { onConflict: 'campo' });
+    const now = new Date();
+    document.getElementById('carta-meta').innerHTML =
+      `<i class="ti ti-clock" style="font-size:11px"></i> Última edição: ${now.toLocaleDateString('pt-BR',{day:'2-digit',month:'short',year:'numeric'})}`;
+    setStatus('saved');
+  }, 900);
+}
+</script>
+</body>
+</html>
