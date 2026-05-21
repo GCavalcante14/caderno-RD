@@ -195,7 +195,7 @@ const CLIENT_ID = '460365706463-5n6rqjknp7deui0jl3jbeq852ibqedcc.apps.googleuser
 const SCOPES    = 'https://www.googleapis.com/auth/calendar.readonly';
 // API key removida — OAuth Bearer token é suficiente para todas as chamadas
 
-let gapiReady = false, gisReady = false;
+let gisReady = false;
 let tokenClient = null;
 let accessToken = null;
 let refreshTimer = null;
@@ -208,32 +208,9 @@ let hiddenCals  = new Set(JSON.parse(localStorage.getItem('cal-hidden')  || '[]'
 const MONTHS = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho',
                 'Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
 
-// ── GAPI INIT ─────────────────────────────────
-function onGapiLoad() {
-  gapi.load('client', async () => {
-    try {
-      // apiKey necessário para o gapi.client.request() rotear corretamente
-      await gapi.client.init({});
-    } catch(e) { console.warn('gapi init (non-fatal):', e); }
-    gapiReady = true;
-    tryRestore();
-  });
-}
-
-function onGisLoad() {
-  tokenClient = google.accounts.oauth2.initTokenClient({
-    client_id: CLIENT_ID,
-    scope: SCOPES,
-    callback: onToken,
-  });
-  gisReady = true;
-  tryRestore();
-}
 
 // ── RESTORE / SILENT REFRESH ──────────────────
 function tryRestore() {
-  if (!gapiReady || !gisReady) return;
-
   const saved  = localStorage.getItem('goog-token');
   const expiry = parseInt(localStorage.getItem('goog-expiry') || '0');
   const valid  = saved && Date.now() < expiry;
@@ -241,7 +218,6 @@ function tryRestore() {
   if (valid) {
     // Token ainda válido — usa direto
     accessToken = saved;
-    gapi.client.setToken({ access_token: saved });
     scheduleRefresh(expiry - Date.now());
     showCalendar();
   } else if (saved) {
@@ -272,7 +248,7 @@ function scheduleRefresh(msUntilExpiry) {
 
 // ── AUTH ──────────────────────────────────────
 function connectGoogle() {
-  if (!gapiReady || !gisReady) { alert('Aguarde carregar...'); return; }
+  if (!gisReady) { alert('Aguarde carregar...'); return; }
   hideBanner();
   // prompt:'consent' = sempre mostra tela de permissão (garante refresh_token)
   tokenClient.requestAccessToken({ prompt: 'consent' });
@@ -288,7 +264,6 @@ function onToken(resp) {
   }
 
   accessToken = resp.access_token;
-  gapi.client.setToken({ access_token: resp.access_token });
   localStorage.setItem('goog-token', resp.access_token);
 
   const expiry = Date.now() + resp.expires_in * 1000;
@@ -302,8 +277,6 @@ function onToken(resp) {
 function disconnect() {
   if (!confirm('Desconectar Google Agenda?')) return;
   clearTimeout(refreshTimer);
-  if (accessToken) google.accounts.oauth2.revoke(accessToken);
-  gapi.client.setToken(null);
   accessToken = null;
   localStorage.removeItem('goog-token');
   localStorage.removeItem('goog-expiry');
@@ -339,9 +312,7 @@ function hideBanner() {
 
 // ── API — fetch() com Bearer token ───────────
 async function gcal(path, params = {}) {
-  const token = accessToken
-    || gapi.client.getToken()?.access_token
-    || localStorage.getItem('goog-token');
+  const token = accessToken || localStorage.getItem('goog-token');
 
   if (!token) { showConnect(); throw new Error('Sem token'); }
 
@@ -658,8 +629,7 @@ function ftDT(iso) { const d=new Date(iso),M=['jan','fev','mar','abr','mai','jun
 function setLoading(v) { document.getElementById('cal-loading').style.display=v?'flex':'none'; if(v) document.getElementById('cal-grid').innerHTML=''; }
 </script>
 
-<!-- Google APIs carregam DEPOIS para que onGapiLoad/onGisLoad já estejam definidos -->
-<script src="https://apis.google.com/js/api.js" onload="onGapiLoad()"></script>
+<!-- GIS carrega DEPOIS para que onGisLoad já esteja definido -->
 <script src="https://accounts.google.com/gsi/client" onload="onGisLoad()"></script>
 </body>
 </html>
