@@ -344,7 +344,8 @@ function gcal(path, params = {}) {
     if (!token) { showConnect(); reject(new Error('Sem token')); return; }
 
     const qs  = new URLSearchParams(params).toString();
-    const url = `https://www.googleapis.com/calendar/v3${path}?key=${API_KEY}${qs ? '&'+qs : ''}`;
+    // Sem API key — Bearer token OAuth é suficiente e evita conflito com restrições de domínio
+    const url = `https://www.googleapis.com/calendar/v3${path}${qs ? '?'+qs : ''}`;
 
     const xhr = new XMLHttpRequest();
     xhr.open('GET', url, true);
