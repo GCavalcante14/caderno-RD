@@ -209,6 +209,17 @@ const MONTHS = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho',
                 'Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
 
 
+// ── GIS INIT ──────────────────────────────────
+function onGisLoad() {
+  tokenClient = google.accounts.oauth2.initTokenClient({
+    client_id: CLIENT_ID,
+    scope: SCOPES,
+    callback: onToken,
+  });
+  gisReady = true;
+  tryRestore();
+}
+
 // ── RESTORE / SILENT REFRESH ──────────────────
 function tryRestore() {
   const saved  = localStorage.getItem('goog-token');
