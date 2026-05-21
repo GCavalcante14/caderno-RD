@@ -1,0 +1,575 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>Residência · LifeOS</title>
+<script>(function(){
+  var t=localStorage.getItem('rd-theme')||'light';
+  var a=localStorage.getItem('lp-accent');
+  document.documentElement.setAttribute('data-theme',t);
+  if(a) document.documentElement.style.setProperty('--acc',a);
+})()</script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.30.0/dist/tabler-icons.min.css">
+<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="lifeos.css">
+<style>
+/* Estágio atual */
+.estagio-card{
+  background:linear-gradient(135deg,var(--acc-soft) 0%,var(--surface) 100%);
+  border:1px solid var(--acc);border-radius:var(--radius);padding:1.4rem;
+  margin-bottom:1.2rem;display:flex;gap:1.2rem;align-items:flex-start;flex-wrap:wrap;
+}
+.estagio-icon{width:52px;height:52px;border-radius:12px;background:var(--acc);
+  display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.estagio-icon i{font-size:26px;color:#fff;}
+.estagio-info{flex:1;min-width:0;}
+.estagio-nome{font-size:18px;font-weight:800;color:var(--text);line-height:1.2;margin-bottom:4px;}
+.estagio-esp{font-size:13px;color:var(--acc-text);font-weight:600;margin-bottom:.5rem;}
+.estagio-meta{display:flex;gap:12px;flex-wrap:wrap;}
+.estagio-meta-item{font-size:12px;color:var(--text-muted);display:flex;align-items:center;gap:4px;}
+.estagio-meta-item i{font-size:13px;}
+.estagio-stats{display:flex;gap:.8rem;margin-top:.8rem;flex-wrap:wrap;}
+.estat{background:var(--surface);border:1px solid var(--border);border-radius:8px;
+  padding:.6rem .9rem;text-align:center;}
+.estat-val{font-size:20px;font-weight:800;color:var(--acc-text);}
+.estat-label{font-size:10px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.05em;}
+
+/* Mini calendário */
+.mini-cal{display:grid;grid-template-columns:repeat(7,1fr);gap:2px;}
+.mini-cal-head{font-size:9px;font-weight:700;text-transform:uppercase;color:var(--text-muted);
+  text-align:center;padding:4px 0;}
+.mini-cal-day{font-size:11px;text-align:center;padding:5px 2px;border-radius:5px;
+  cursor:default;font-weight:500;color:var(--text2);}
+.mini-cal-day.other{color:var(--text-muted);opacity:.4;}
+.mini-cal-day.today{background:var(--acc);color:#fff;font-weight:700;}
+.mini-cal-day.plantao{background:rgba(138,37,64,.15);color:#CC8899;font-weight:700;}
+.mini-cal-day.today.plantao{background:var(--acc);color:#fff;}
+.cal-legend{display:flex;gap:12px;margin-top:.6rem;flex-wrap:wrap;}
+.cal-legend-item{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--text-muted);}
+.cal-legend-dot{width:10px;height:10px;border-radius:3px;}
+
+/* Lições */
+.licao-item{padding:.7rem 0;border-bottom:1px solid var(--border);display:flex;gap:10px;align-items:flex-start;}
+.licao-item:last-child{border-bottom:none;}
+.licao-data{font-size:11px;color:var(--text-muted);white-space:nowrap;min-width:70px;margin-top:1px;}
+.licao-texto{font-size:13px;color:var(--text2);line-height:1.5;flex:1;}
+
+/* Hábitos carreira */
+.hab-grid-14{overflow-x:auto;}
+.hab-row{display:flex;align-items:center;gap:6px;margin-bottom:5px;}
+.hab-row-name{font-size:12px;color:var(--text2);width:120px;flex-shrink:0;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.hab-row-days{display:flex;gap:3px;}
+.hab-dot{width:16px;height:16px;border-radius:4px;flex-shrink:0;}
+.hab-dot.done{background:var(--acc);}
+.hab-dot.miss{background:var(--surface2);border:1px solid var(--border);}
+.hab-dot.future{background:transparent;border:1px dashed var(--border);}
+.hab-day-labels{display:flex;gap:3px;margin-left:126px;margin-bottom:4px;}
+.hab-day-label{width:16px;font-size:9px;color:var(--text-muted);text-align:center;}
+
+/* Dúvidas */
+.duvida-item{display:flex;align-items:flex-start;gap:10px;padding:7px 0;
+  border-bottom:1px solid var(--border);}
+.duvida-item:last-child{border-bottom:none;}
+.duvida-check{width:18px;height:18px;border-radius:5px;border:2px solid var(--border);
+  flex-shrink:0;cursor:pointer;display:flex;align-items:center;justify-content:center;
+  transition:all .15s;margin-top:1px;}
+.duvida-check.on{background:var(--acc);border-color:var(--acc);}
+.duvida-check.on i{color:#fff;font-size:11px;}
+.duvida-texto{font-size:13px;color:var(--text2);flex:1;line-height:1.4;}
+.duvida-texto.on{color:var(--text-muted);text-decoration:line-through;}
+.duvida-del{background:none;border:none;color:var(--text-muted);cursor:pointer;
+  opacity:0;transition:opacity .1s;padding:2px 4px;}
+.duvida-item:hover .duvida-del{opacity:1;}
+.add-duvida-row{display:flex;gap:.5rem;margin-top:.7rem;}
+.add-duvida-row input{flex:1;padding:.4rem .7rem;border:1px solid var(--border);border-radius:7px;
+  background:var(--surface2);color:var(--text);font-size:13px;font-family:inherit;outline:none;}
+.add-duvida-row input:focus{border-color:var(--acc);}
+.add-duvida-row button{padding:.4rem .8rem;border-radius:7px;border:none;
+  background:var(--acc);color:#fff;font-size:13px;cursor:pointer;}
+
+/* OKRs carreira */
+.okr-mini{display:flex;align-items:center;gap:10px;padding:.6rem 0;border-bottom:1px solid var(--border);}
+.okr-mini:last-child{border-bottom:none;}
+.okr-mini-icon{width:28px;height:28px;border-radius:7px;display:flex;align-items:center;
+  justify-content:center;flex-shrink:0;}
+.okr-mini-icon i{font-size:14px;color:#fff;}
+.okr-mini-nome{font-size:13px;font-weight:600;color:var(--text2);flex:1;}
+.okr-mini-bar{width:80px;height:5px;border-radius:3px;background:var(--surface2);overflow:hidden;}
+.okr-mini-fill{height:100%;border-radius:3px;}
+.okr-mini-pct{font-size:11px;font-weight:700;color:var(--text-muted);min-width:32px;text-align:right;}
+
+/* Ver link */
+.ver-link{font-size:12px;color:var(--acc-text);text-decoration:none;
+  display:inline-flex;align-items:center;gap:4px;margin-top:.5rem;}
+.ver-link:hover{text-decoration:underline;}
+</style>
+</head>
+<body>
+
+<div id="sb-overlay" class="sb-overlay" onclick="closeSidebar()"></div>
+<div class="app-shell">
+  <div id="sidebar" class="sidebar"></div>
+  <div class="main-area">
+    <div class="page-content">
+
+      <div class="page-header">
+        <div class="page-header-left">
+          <div class="page-role"><i class="ti ti-stethoscope" aria-hidden="true"></i> Residência — visão clínica e profissional</div>
+          <h1 class="page-title">Dashboard Médico</h1>
+          <p class="page-subtitle">R2 · Instituto da Criança · HC-USP</p>
+        </div>
+      </div>
+
+      <!-- Estágio atual -->
+      <div id="estagio-section"></div>
+
+      <div class="two-col">
+
+        <!-- COLUNA ESQUERDA -->
+        <div style="display:flex;flex-direction:column;gap:1.2rem">
+
+          <!-- Lições de medicina -->
+          <div class="lo-card">
+            <div class="lo-card-header">
+              <i class="ti ti-bulb" aria-hidden="true"></i>
+              <span class="lo-card-title">Lições de Medicina</span>
+              <a href="diario.html" class="ver-link" style="margin-left:auto">
+                Ver diário <i class="ti ti-arrow-right" style="font-size:11px"></i>
+              </a>
+            </div>
+            <div class="lo-card-body" id="licoes-list">
+              <div style="font-size:13px;color:var(--text-muted)">Carregando...</div>
+            </div>
+          </div>
+
+          <!-- Hábitos de carreira -->
+          <div class="lo-card">
+            <div class="lo-card-header">
+              <i class="ti ti-briefcase" aria-hidden="true"></i>
+              <span class="lo-card-title">Hábitos de Carreira</span>
+              <a href="habitos.html" class="ver-link" style="margin-left:auto">
+                Ver todos <i class="ti ti-arrow-right" style="font-size:11px"></i>
+              </a>
+            </div>
+            <div class="lo-card-body" id="habitos-carreira">
+              <div style="font-size:13px;color:var(--text-muted)">Carregando...</div>
+            </div>
+          </div>
+
+          <!-- OKRs de carreira -->
+          <div class="lo-card">
+            <div class="lo-card-header">
+              <i class="ti ti-target" aria-hidden="true"></i>
+              <span class="lo-card-title">OKRs de Carreira</span>
+              <a href="okrs.html" class="ver-link" style="margin-left:auto">
+                Ver OKRs <i class="ti ti-arrow-right" style="font-size:11px"></i>
+              </a>
+            </div>
+            <div class="lo-card-body" id="okrs-carreira">
+              <div style="font-size:13px;color:var(--text-muted)">Carregando...</div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- COLUNA DIREITA -->
+        <div style="display:flex;flex-direction:column;gap:1.2rem">
+
+          <!-- Plantões do mês -->
+          <div class="lo-card">
+            <div class="lo-card-header">
+              <i class="ti ti-calendar" aria-hidden="true"></i>
+              <span class="lo-card-title">Plantões do Mês</span>
+              <span id="plantao-count" style="margin-left:auto;font-size:12px;color:var(--text-muted)"></span>
+            </div>
+            <div class="lo-card-body" id="plantao-cal">
+              <div style="font-size:13px;color:var(--text-muted);font-style:italic">
+                <i class="ti ti-calendar-off" style="font-size:14px"></i>
+                Conecte o Google Calendar para ver plantões automaticamente.
+                <a href="calendario.html" style="color:var(--acc-text);display:block;margin-top:4px">
+                  Ir para Calendário →
+                </a>
+              </div>
+            </div>
+          </div>
+
+          <!-- Dúvidas clínicas -->
+          <div class="lo-card">
+            <div class="lo-card-header">
+              <i class="ti ti-help" aria-hidden="true"></i>
+              <span class="lo-card-title">Dúvidas Clínicas</span>
+            </div>
+            <div class="lo-card-body">
+              <p style="font-size:12px;color:var(--text-muted);margin-bottom:.7rem;line-height:1.5">
+                Questões abertas para resolver. Marque como resolvida quando encontrar a resposta.
+              </p>
+              <div id="duvidas-list"></div>
+              <div class="add-duvida-row">
+                <input type="text" id="nova-duvida" placeholder="Nova dúvida clínica..."
+                  onkeydown="if(event.key==='Enter')addDuvida()">
+                <button onclick="addDuvida()"><i class="ti ti-plus"></i></button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Progresso Caderno RD -->
+          <div class="lo-card">
+            <div class="lo-card-header">
+              <i class="ti ti-brain" aria-hidden="true"></i>
+              <span class="lo-card-title">Caderno RD</span>
+              <a href="index.html" class="ver-link" style="margin-left:auto">
+                Abrir <i class="ti ti-arrow-right" style="font-size:11px"></i>
+              </a>
+            </div>
+            <div class="lo-card-body" id="caderno-progress">
+              <div style="font-size:13px;color:var(--text-muted)">Carregando...</div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script src="nav.js"></script>
+<script src="lifeos-core.js"></script>
+<script>
+let duvidas = [];
+let areas = [], habitos = [], habitoChecks = {};
+
+const DNAMES_SHORT = ['D','S','T','Q','Q','S','S'];
+
+// ── INIT ───────────────────────────────────────
+window.addEventListener('DOMContentLoaded', async () => {
+  initSupabase();
+  await Promise.all([
+    loadAreas(),
+    loadEstagio(),
+    loadLicoes(),
+    loadDuvidas(),
+    loadCadernoProgress(),
+  ]);
+  renderMiniCal();
+});
+
+async function loadAreas() {
+  if (!window.db) { await new Promise(r=>setTimeout(r,1200)); initSupabase(); }
+  const { data } = await window.db.from('areas').select('*').eq('ativo',true).order('ordem');
+  areas = data || [];
+  const carreiraArea = areas.find(a => a.nome.toLowerCase().includes('carreira') || a.nome.toLowerCase().includes('trabalho'));
+  await Promise.all([
+    loadHabitosCarreira(),
+    loadOkrsCarreira(carreiraArea?.id),
+  ]);
+}
+
+// ── ESTÁGIO ATUAL ──────────────────────────────
+async function loadEstagio() {
+  if (!window.db) return;
+  const { data } = await window.db.from('projetos')
+    .select('*').eq('tipo','estagio').eq('status','ativo').order('criado_em').limit(1);
+  const p = data?.[0];
+  const el = document.getElementById('estagio-section');
+
+  if (!p) {
+    el.innerHTML = `<div style="background:var(--surface);border:1px solid var(--border);
+      border-radius:var(--radius);padding:1rem 1.2rem;margin-bottom:1.2rem;
+      font-size:13px;color:var(--text-muted);display:flex;align-items:center;gap:8px">
+      <i class="ti ti-stethoscope" style="font-size:16px"></i>
+      Nenhum estágio ativo. <a href="projetos.html" style="color:var(--acc-text)">Cadastrar estágio →</a>
+    </div>`;
+    return;
+  }
+
+  let habs = []; try { habs = JSON.parse(p.habilidades||'[]'); } catch {}
+  const habDone = habs.filter(h=>h.done).length;
+  const diasRest = p.data_fim ? Math.max(0, Math.ceil((new Date(p.data_fim+'T12:00:00')-new Date())/86400000)) : null;
+  const diasTotal = (p.data_inicio && p.data_fim)
+    ? Math.ceil((new Date(p.data_fim+'T12:00:00')-new Date(p.data_inicio+'T12:00:00'))/86400000)
+    : null;
+  const diasDecor = diasTotal && diasRest !== null ? diasTotal - diasRest : null;
+  const pct = diasTotal ? Math.round(((diasDecor||0)/diasTotal)*100) : null;
+
+  el.innerHTML = `<div class="estagio-card">
+    <div class="estagio-icon"><i class="ti ${p.icone||'ti-stethoscope'}" aria-hidden="true"></i></div>
+    <div class="estagio-info">
+      <div class="estagio-nome">${p.nome}</div>
+      ${p.especialidade ? `<div class="estagio-esp"><i class="ti ti-microscope" style="font-size:12px"></i> ${p.especialidade}</div>` : ''}
+      <div class="estagio-meta">
+        ${p.supervisor ? `<span class="estagio-meta-item"><i class="ti ti-user"></i>${p.supervisor}</span>` : ''}
+        ${diasRest !== null ? `<span class="estagio-meta-item"><i class="ti ti-calendar"></i>${diasRest} dias restantes</span>` : ''}
+        ${pct !== null ? `<span class="estagio-meta-item"><i class="ti ti-progress"></i>${pct}% concluído</span>` : ''}
+      </div>
+      <div class="estagio-stats">
+        ${habs.length ? `<div class="estat">
+          <div class="estat-val">${habDone}/${habs.length}</div>
+          <div class="estat-label">Habilidades</div>
+        </div>` : ''}
+        ${diasRest !== null ? `<div class="estat">
+          <div class="estat-val">${diasRest}</div>
+          <div class="estat-label">Dias restantes</div>
+        </div>` : ''}
+        ${diasDecor !== null ? `<div class="estat">
+          <div class="estat-val">${diasDecor}</div>
+          <div class="estat-label">Dias vividos</div>
+        </div>` : ''}
+      </div>
+    </div>
+    <a href="projetos.html" style="font-size:11px;color:var(--acc-text);text-decoration:none;
+      white-space:nowrap;align-self:flex-start">
+      Ver detalhes <i class="ti ti-arrow-right" style="font-size:11px"></i>
+    </a>
+  </div>`;
+}
+
+// ── LIÇÕES DE MEDICINA ─────────────────────────
+async function loadLicoes() {
+  if (!window.db) return;
+  const { data } = await window.db.from('diario')
+    .select('data,licao_medicina')
+    .not('licao_medicina','is',null)
+    .neq('licao_medicina','')
+    .order('data',{ascending:false})
+    .limit(5);
+
+  const el = document.getElementById('licoes-list');
+  if (!data?.length) {
+    el.innerHTML = `<div style="font-size:13px;color:var(--text-muted)">
+      Nenhuma lição registrada ainda. Escreva no <a href="diario.html" style="color:var(--acc-text)">Diário</a>.</div>`;
+    return;
+  }
+  el.innerHTML = data.map(d => {
+    const dt = new Date(d.data+'T12:00:00').toLocaleDateString('pt-BR',{day:'2-digit',month:'short'});
+    return `<div class="licao-item">
+      <span class="licao-data">${dt}</span>
+      <span class="licao-texto">${d.licao_medicina}</span>
+    </div>`;
+  }).join('');
+}
+
+// ── HÁBITOS DE CARREIRA ────────────────────────
+async function loadHabitosCarreira() {
+  if (!window.db) return;
+  const { data: hList } = await window.db.from('habitos')
+    .select('*').eq('ativo',true).eq('reino','carreira');
+  habitos = hList || [];
+  if (!habitos.length) {
+    document.getElementById('habitos-carreira').innerHTML =
+      `<div style="font-size:13px;color:var(--text-muted)">Nenhum hábito de carreira.
+      <a href="habitos.html" style="color:var(--acc-text)">Criar →</a></div>`;
+    return;
+  }
+
+  const hoje = todayISO();
+  const h14  = addDays(hoje, -13);
+  const days  = Array.from({length:14},(_,i)=>addDays(h14,i));
+  const ids   = habitos.map(h=>h.id);
+
+  const { data: chks } = await window.db.from('habito_checks')
+    .select('habito_id,data,concluido').in('habito_id',ids)
+    .gte('data',h14).lte('data',hoje).eq('concluido',true);
+
+  const checkSet = new Set((chks||[]).map(c=>`${c.habito_id}:${c.data}`));
+
+  const dayLabels = days.map(d => {
+    const dt = new Date(d+'T12:00:00');
+    return `<div class="hab-day-label">${dt.getDate()}</div>`;
+  }).join('');
+
+  const rows = habitos.map(h => {
+    const dots = days.map(d => {
+      const isFuture = d > hoje;
+      const done     = checkSet.has(`${h.id}:${d}`);
+      return `<div class="hab-dot ${isFuture?'future':done?'done':'miss'}" title="${d}"></div>`;
+    }).join('');
+    return `<div class="hab-row">
+      <span class="hab-row-name" title="${h.nome}">
+        <i class="ti ${h.icone}" style="color:${h.cor};font-size:12px;margin-right:3px"></i>${h.nome}
+      </span>
+      <div class="hab-row-days">${dots}</div>
+    </div>`;
+  }).join('');
+
+  document.getElementById('habitos-carreira').innerHTML = `
+    <div class="hab-grid-14">
+      <div class="hab-day-labels">${dayLabels}</div>
+      ${rows}
+    </div>`;
+}
+
+// ── OKRs DE CARREIRA ───────────────────────────
+async function loadOkrsCarreira(areaId) {
+  if (!window.db) return;
+  const el = document.getElementById('okrs-carreira');
+
+  if (!areaId) {
+    el.innerHTML = `<div style="font-size:13px;color:var(--text-muted)">Área de Carreira não encontrada.</div>`;
+    return;
+  }
+
+  const { data: objs } = await window.db.from('objetivos')
+    .select('*').eq('area_id',areaId).eq('status','ativo');
+  if (!objs?.length) {
+    el.innerHTML = `<div style="font-size:13px;color:var(--text-muted)">Nenhum OKR de carreira.
+      <a href="okrs.html" style="color:var(--acc-text)">Criar →</a></div>`;
+    return;
+  }
+
+  const ids = objs.map(o=>o.id);
+  const { data: ks } = await window.db.from('keys').select('*').in('objetivo_id',ids);
+  const keysMap = {};
+  (ks||[]).forEach(k=>(keysMap[k.objetivo_id]=keysMap[k.objetivo_id]||[]).push(k));
+
+  const carreiraArea = areas.find(a=>a.id===areaId);
+  const cor = carreiraArea?.cor || 'var(--acc)';
+
+  el.innerHTML = objs.map(o => {
+    const oKeys = keysMap[o.id]||[];
+    const pct   = oKeys.length
+      ? Math.round(oKeys.reduce((s,k)=>s+(k.valor_alvo>0?Math.min(100,(k.valor_atual/k.valor_alvo)*100):0),0)/oKeys.length)
+      : (o.progresso||0);
+    return `<div class="okr-mini">
+      <div class="okr-mini-icon" style="background:${cor}">
+        <i class="ti ${o.icone}" aria-hidden="true"></i>
+      </div>
+      <span class="okr-mini-nome">${o.nome}</span>
+      <div class="okr-mini-bar"><div class="okr-mini-fill" style="width:${pct}%;background:${cor}"></div></div>
+      <span class="okr-mini-pct">${pct}%</span>
+    </div>`;
+  }).join('');
+}
+
+// ── MINI CALENDÁRIO ────────────────────────────
+function renderMiniCal() {
+  const hoje = new Date();
+  const y = hoje.getFullYear(), m = hoje.getMonth();
+  const first = new Date(y,m,1), last = new Date(y,m+1,0);
+  const off = (first.getDay()+6)%7;
+  const total = Math.ceil((off+last.getDate())/7)*7;
+  const mesNome = hoje.toLocaleDateString('pt-BR',{month:'long',year:'numeric'});
+
+  document.getElementById('plantao-count').textContent = mesNome;
+
+  let html = '<div class="mini-cal">';
+  html += DNAMES_SHORT.map(d=>`<div class="mini-cal-head">${d}</div>`).join('');
+
+  for (let i=0; i<total; i++) {
+    const d = new Date(y,m,1+i-off);
+    const cur = d.getMonth()===m;
+    const isT = d.toISOString().split('T')[0]===todayISO();
+    let cls = 'mini-cal-day';
+    if (!cur) cls += ' other';
+    if (isT)  cls += ' today';
+    html += `<div class="${cls}">${cur?d.getDate():''}</div>`;
+  }
+  html += '</div>';
+  html += `<div class="cal-legend">
+    <div class="cal-legend-item"><div class="cal-legend-dot" style="background:var(--acc)"></div>Hoje</div>
+    <div class="cal-legend-item"><div class="cal-legend-dot" style="background:rgba(138,37,64,.2);border:1px solid #CC8899"></div>Plantão (Google Calendar)</div>
+  </div>`;
+  html += `<p style="font-size:11px;color:var(--text-muted);margin-top:.6rem;font-style:italic">
+    Plantões aparecem automaticamente quando o Google Calendar estiver conectado.
+    <a href="calendario.html" style="color:var(--acc-text)">Conectar →</a>
+  </p>`;
+
+  document.getElementById('plantao-cal').innerHTML = html;
+}
+
+// ── DÚVIDAS CLÍNICAS ───────────────────────────
+async function loadDuvidas() {
+  if (!window.db) return;
+  const { data } = await window.db.from('caderno_respostas')
+    .select('valor').eq('campo','medico-duvidas').maybeSingle();
+  try { duvidas = JSON.parse(data?.valor||'[]'); } catch { duvidas = []; }
+  renderDuvidas();
+}
+
+function renderDuvidas() {
+  const pendentes = duvidas.filter(d=>!d.resolvida);
+  const resolvidas = duvidas.filter(d=>d.resolvida);
+  let html = [...pendentes,...resolvidas].map((d,i) => {
+    const idx = duvidas.indexOf(d);
+    return `<div class="duvida-item">
+      <div class="duvida-check${d.resolvida?' on':''}" onclick="toggleDuvida(${idx})">
+        ${d.resolvida?'<i class="ti ti-check"></i>':''}
+      </div>
+      <span class="duvida-texto${d.resolvida?' on':''}">${d.texto}</span>
+      <button class="duvida-del" onclick="removeDuvida(${idx})">
+        <i class="ti ti-x" style="font-size:11px"></i>
+      </button>
+    </div>`;
+  }).join('');
+  if (!duvidas.length) html = `<div style="font-size:13px;color:var(--text-muted);padding:.3rem 0">Nenhuma dúvida pendente.</div>`;
+  document.getElementById('duvidas-list').innerHTML = html;
+}
+
+function addDuvida() {
+  const input = document.getElementById('nova-duvida');
+  const texto = input.value.trim();
+  if (!texto) return;
+  duvidas.unshift({ id: Date.now(), texto, resolvida: false });
+  input.value = '';
+  renderDuvidas();
+  saveDuvidas();
+}
+
+function toggleDuvida(idx) {
+  duvidas[idx].resolvida = !duvidas[idx].resolvida;
+  renderDuvidas();
+  saveDuvidas();
+}
+
+function removeDuvida(idx) {
+  duvidas.splice(idx,1);
+  renderDuvidas();
+  saveDuvidas();
+}
+
+async function saveDuvidas() {
+  if (!window.db) return;
+  await window.db.from('caderno_respostas')
+    .upsert({campo:'medico-duvidas',valor:JSON.stringify(duvidas)},{onConflict:'campo'});
+}
+
+// ── CADERNO RD PROGRESS ────────────────────────
+async function loadCadernoProgress() {
+  if (!window.db) return;
+  const semanas = [
+    { num:1, label:'S1 · Sono',             href:'index.html?s=1' },
+    { num:2, label:'S2 · Hábitos',          href:'index.html?s=2' },
+    { num:3, label:'S3 · Foco',             href:'index.html?s=3' },
+    { num:4, label:'S4 · Estresse',         href:'index.html?s=4' },
+    { num:5, label:'S5 · Movimento',        href:'index.html?s=5' },
+    { num:6, label:'S6 · Nutrição',         href:'index.html?s=6' },
+    { num:7, label:'S7 · Mente',            href:'index.html?s=7' },
+    { num:8, label:'S8 · Relacionamentos',  href:'index.html?s=8' },
+  ];
+
+  const keys = semanas.map(s=>`s${s.num}-progresso`);
+  const { data } = await window.db.from('caderno_respostas')
+    .select('campo,valor').in('campo',keys);
+  const progMap = {};
+  (data||[]).forEach(r=>{ progMap[r.campo]=parseInt(r.valor)||0; });
+
+  document.getElementById('caderno-progress').innerHTML = semanas.map(s => {
+    const pct = progMap[`s${s.num}-progresso`] || 0;
+    const color = pct>=80?'#1D9E75':pct>=40?'#C8A030':'var(--acc)';
+    return `<div style="display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid var(--border)">
+      <a href="${s.href}" style="font-size:12px;color:var(--text2);text-decoration:none;flex:1;
+        white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${s.label}</a>
+      <div style="width:80px;height:4px;border-radius:2px;background:var(--surface2);overflow:hidden">
+        <div style="height:100%;width:${pct}%;background:${color};border-radius:2px"></div>
+      </div>
+      <span style="font-size:11px;font-weight:700;color:${color};min-width:28px;text-align:right">${pct}%</span>
+    </div>`;
+  }).join('');
+}
+</script>
+</body>
+</html>

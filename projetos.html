@@ -1,0 +1,641 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>Projetos · LifeOS</title>
+<script>(function(){
+  var t=localStorage.getItem('rd-theme')||'light';
+  var a=localStorage.getItem('lp-accent');
+  document.documentElement.setAttribute('data-theme',t);
+  if(a) document.documentElement.style.setProperty('--acc',a);
+})()</script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.30.0/dist/tabler-icons.min.css">
+<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="lifeos.css">
+<style>
+/* Filtros */
+.filter-bar{display:flex;gap:.5rem;flex-wrap:wrap;margin-bottom:1.2rem;align-items:center;}
+.filter-group{display:flex;gap:.3rem;background:var(--surface2);border-radius:8px;padding:3px;}
+.filter-btn{padding:4px 12px;border-radius:6px;border:none;background:transparent;
+  color:var(--text-muted);font-size:12px;font-weight:500;cursor:pointer;
+  font-family:inherit;transition:all .15s;}
+.filter-btn.active{background:var(--surface);color:var(--text);font-weight:600;
+  box-shadow:0 1px 3px rgba(0,0,0,.1);}
+.filter-divider{width:1px;background:var(--border);margin:4px 2px;}
+
+/* Lista de projetos */
+.proj-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);
+  margin-bottom:.8rem;overflow:hidden;transition:box-shadow .15s;}
+.proj-card:hover{box-shadow:0 3px 14px rgba(0,0,0,.07);}
+.proj-card-header{display:flex;align-items:center;gap:10px;padding:.9rem 1.2rem;cursor:pointer;}
+.proj-icon{width:34px;height:34px;border-radius:9px;display:flex;align-items:center;
+  justify-content:center;flex-shrink:0;}
+.proj-icon i{font-size:17px;color:#fff;}
+.proj-nome{font-size:14px;font-weight:700;color:var(--text);flex:1;}
+.proj-tipo-badge{font-size:10px;font-weight:700;padding:2px 8px;border-radius:10px;}
+.proj-tipo-projeto{background:rgba(24,95,165,.12);color:#185FA5;}
+.proj-tipo-estagio{background:rgba(138,37,64,.12);color:#8A2540;}
+.proj-status-badge{font-size:10px;font-weight:600;padding:2px 8px;border-radius:10px;}
+.pst-ativo{background:rgba(29,158,117,.12);color:#1D9E75;}
+.pst-pausado{background:rgba(180,140,40,.12);color:#C8A030;}
+.pst-concluido{background:rgba(24,95,165,.12);color:#185FA5;}
+.pst-arquivado{background:rgba(150,150,150,.12);color:#999;}
+
+.proj-meta{display:flex;align-items:center;gap:12px;padding:0 1.2rem .7rem;flex-wrap:wrap;}
+.proj-meta-item{display:flex;align-items:center;gap:4px;font-size:11px;color:var(--text-muted);}
+.proj-meta-item i{font-size:12px;}
+.proj-proxima{font-size:12px;color:var(--acc-text);background:var(--acc-soft);
+  padding:3px 10px;border-radius:6px;margin:0 1.2rem .8rem;display:inline-block;}
+
+/* Detalhe expandido */
+.proj-detail{border-top:1px solid var(--border);padding:1rem 1.2rem;}
+.detail-section{margin-bottom:1rem;}
+.detail-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;
+  color:var(--text-muted);margin-bottom:.4rem;}
+.detail-text{font-size:13px;color:var(--text2);line-height:1.5;}
+.detail-textarea{width:100%;padding:.5rem .7rem;border:1px solid var(--border);border-radius:8px;
+  background:var(--surface2);color:var(--text);font-size:13px;font-family:inherit;
+  outline:none;resize:vertical;min-height:72px;box-sizing:border-box;line-height:1.6;}
+.detail-textarea:focus{border-color:var(--acc);}
+.detail-input{width:100%;padding:.4rem .7rem;border:1px solid var(--border);border-radius:8px;
+  background:var(--surface2);color:var(--text);font-size:13px;font-family:inherit;
+  outline:none;box-sizing:border-box;}
+.detail-input:focus{border-color:var(--acc);}
+
+/* Habilidades e casos (estágio) */
+.hab-item{display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid var(--border);}
+.hab-check{width:17px;height:17px;border-radius:4px;border:2px solid var(--border);
+  flex-shrink:0;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s;}
+.hab-check.on{background:var(--acc);border-color:var(--acc);}
+.hab-check.on i{color:#fff;font-size:10px;}
+.hab-text{font-size:12px;color:var(--text2);flex:1;}
+.hab-text.on{color:var(--text-muted);text-decoration:line-through;}
+.hab-del{background:none;border:none;color:var(--text-muted);cursor:pointer;opacity:0;transition:opacity .1s;}
+.hab-item:hover .hab-del{opacity:1;}
+.add-hab-row{display:flex;gap:.4rem;margin-top:.5rem;}
+.add-hab-row input{flex:1;padding:.35rem .6rem;border:1px solid var(--border);border-radius:6px;
+  background:var(--surface2);color:var(--text);font-size:12px;font-family:inherit;outline:none;}
+.add-hab-row input:focus{border-color:var(--acc);}
+.add-hab-row button{padding:.35rem .7rem;border-radius:6px;border:none;
+  background:var(--acc);color:#fff;font-size:12px;cursor:pointer;}
+
+.caso-item{padding:6px 0;border-bottom:1px solid var(--border);font-size:12px;color:var(--text2);
+  display:flex;align-items:flex-start;gap:6px;}
+.caso-del{background:none;border:none;color:var(--text-muted);cursor:pointer;opacity:0;flex-shrink:0;}
+.caso-item:hover .caso-del{opacity:1;}
+
+.proj-actions{display:flex;gap:.5rem;padding:.6rem 1.2rem;border-top:1px solid var(--border);}
+.btn-ghost{padding:4px 10px;border-radius:6px;border:1px solid var(--border);
+  background:transparent;color:var(--text-muted);font-size:11px;cursor:pointer;
+  font-family:inherit;display:flex;align-items:center;gap:4px;transition:all .15s;}
+.btn-ghost:hover{border-color:var(--acc);color:var(--acc-text);}
+.btn-ghost-danger{border-color:transparent;color:#E05555;}
+.btn-ghost-danger:hover{border-color:#E05555;background:transparent;}
+
+/* Modal novo projeto */
+.mo{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:200;
+  display:flex;align-items:center;justify-content:center;backdrop-filter:blur(3px);}
+.mo-box{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);
+  padding:1.5rem;width:100%;max-width:480px;max-height:90vh;overflow-y:auto;position:relative;}
+.mo-close{position:absolute;top:12px;right:12px;width:28px;height:28px;border-radius:6px;
+  border:1px solid var(--border);background:var(--surface2);color:var(--text-muted);
+  cursor:pointer;display:flex;align-items:center;justify-content:center;}
+.mo-title{font-size:16px;font-weight:700;color:var(--text);margin-bottom:1.2rem;}
+.fl{margin-bottom:.9rem;}
+.fl label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;
+  color:var(--text-muted);display:block;margin-bottom:.35rem;}
+.fi{width:100%;padding:.45rem .7rem;border:1px solid var(--border);border-radius:8px;
+  background:var(--surface2);color:var(--text);font-size:13px;font-family:inherit;
+  outline:none;box-sizing:border-box;}
+.fi:focus{border-color:var(--acc);}
+.fsel{width:100%;padding:.45rem .7rem;border:1px solid var(--border);border-radius:8px;
+  background:var(--surface2);color:var(--text);font-size:13px;font-family:inherit;
+  outline:none;cursor:pointer;}
+.fsel:focus{border-color:var(--acc);}
+.fta{width:100%;padding:.45rem .7rem;border:1px solid var(--border);border-radius:8px;
+  background:var(--surface2);color:var(--text);font-size:13px;font-family:inherit;
+  outline:none;resize:vertical;min-height:60px;box-sizing:border-box;}
+.fta:focus{border-color:var(--acc);}
+.frow{display:flex;gap:.7rem;}
+.frow .fl{flex:1;}
+.mo-actions{display:flex;gap:.6rem;justify-content:flex-end;margin-top:1.2rem;
+  padding-top:.9rem;border-top:1px solid var(--border);}
+.btn-p{padding:.42rem 1.1rem;border-radius:8px;border:none;background:var(--acc);
+  color:#fff;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;}
+.btn-s{padding:.42rem 1rem;border-radius:8px;border:1px solid var(--border);
+  background:var(--surface2);color:var(--text-muted);font-size:13px;cursor:pointer;font-family:inherit;}
+.btn-d{padding:.42rem 1rem;border-radius:8px;border:1px solid #E05555;
+  background:transparent;color:#E05555;font-size:13px;cursor:pointer;
+  font-family:inherit;margin-right:auto;}
+
+/* Tipo picker */
+.tipo-grid{display:grid;grid-template-columns:1fr 1fr;gap:.7rem;margin-bottom:1rem;}
+.tipo-btn{padding:1rem;border-radius:10px;border:1px solid var(--border);
+  background:var(--surface2);cursor:pointer;text-align:center;transition:all .15s;}
+.tipo-btn:hover{border-color:var(--acc);}
+.tipo-btn.active{border-color:var(--acc);background:var(--acc-soft);}
+.tipo-btn i{font-size:24px;display:block;margin-bottom:.4rem;color:var(--acc);}
+.tipo-btn-label{font-size:13px;font-weight:700;color:var(--text);}
+.tipo-btn-sub{font-size:11px;color:var(--text-muted);margin-top:2px;}
+
+.add-btn{display:flex;align-items:center;gap:7px;padding:.45rem 1rem;border-radius:8px;
+  border:1px solid var(--border);background:var(--surface);color:var(--text);
+  font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;transition:border-color .15s;}
+.add-btn:hover{border-color:var(--acc);color:var(--acc-text);}
+</style>
+</head>
+<body>
+
+<div id="sb-overlay" class="sb-overlay" onclick="closeSidebar()"></div>
+<div class="app-shell">
+  <div id="sidebar" class="sidebar"></div>
+  <div class="main-area">
+    <div class="page-content">
+
+      <div class="page-header">
+        <div class="page-header-left">
+          <div class="page-role"><i class="ti ti-rocket" aria-hidden="true"></i> O Arquiteto — campanhas com começo, meio e fim</div>
+          <h1 class="page-title">Projetos</h1>
+          <p class="page-subtitle">Iniciativas com intenção e prazo</p>
+        </div>
+        <button class="add-btn" onclick="openModal()">
+          <i class="ti ti-plus" aria-hidden="true"></i> Novo Projeto
+        </button>
+      </div>
+
+      <!-- Filtros -->
+      <div class="filter-bar">
+        <div class="filter-group" id="filter-status">
+          <button class="filter-btn active" data-val="ativo"     onclick="setStatus(this)">Ativos</button>
+          <button class="filter-btn"         data-val="pausado"   onclick="setStatus(this)">Em pausa</button>
+          <button class="filter-btn"         data-val="concluido" onclick="setStatus(this)">Concluídos</button>
+          <button class="filter-btn"         data-val="arquivado" onclick="setStatus(this)">Arquivados</button>
+          <button class="filter-btn"         data-val=""          onclick="setStatus(this)">Todos</button>
+        </div>
+        <div class="filter-divider"></div>
+        <div class="filter-group" id="filter-tipo">
+          <button class="filter-btn active" data-val=""         onclick="setTipo(this)">Todos os tipos</button>
+          <button class="filter-btn"         data-val="projeto"  onclick="setTipo(this)">Projeto</button>
+          <button class="filter-btn"         data-val="estagio"  onclick="setTipo(this)">Estágio</button>
+        </div>
+      </div>
+
+      <!-- Lista -->
+      <div id="proj-list">
+        <div style="text-align:center;padding:2rem;color:var(--text-muted);font-size:13px">
+          Carregando projetos...
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- Modal -->
+<div class="mo" id="modal" style="display:none" onclick="if(event.target===this)closeModal()">
+  <div class="mo-box">
+    <button class="mo-close" onclick="closeModal()"><i class="ti ti-x"></i></button>
+    <div class="mo-title" id="modal-title">Novo Projeto</div>
+    <div id="modal-body"></div>
+    <div class="mo-actions" id="modal-actions"></div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script src="nav.js"></script>
+<script src="lifeos-core.js"></script>
+<script src="icon-picker.js"></script>
+<script>
+let projetos = [], areas = [], objetivos = [];
+let filtroStatus = 'ativo', filtroTipo = '';
+let expandido = {};
+let editingId = null;
+let modalStep = 1, modalTipo = 'projeto';
+let currentIcon = 'ti-rocket';
+let saveTimers = {};
+
+const ST = {
+  ativo:     { label:'Ativo',      cls:'pst-ativo'     },
+  pausado:   { label:'Em pausa',   cls:'pst-pausado'   },
+  concluido: { label:'Concluído',  cls:'pst-concluido' },
+  arquivado: { label:'Arquivado',  cls:'pst-arquivado' },
+};
+
+// ── INIT ───────────────────────────────────────
+window.addEventListener('DOMContentLoaded', async () => {
+  initSupabase();
+  await Promise.all([loadAreas(), loadObjetivos()]);
+  await loadProjetos();
+});
+
+async function loadAreas() {
+  if (!window.db) { await new Promise(r=>setTimeout(r,1200)); initSupabase(); }
+  const { data } = await window.db.from('areas').select('*').eq('ativo',true).order('ordem');
+  areas = data || [];
+}
+
+async function loadObjetivos() {
+  if (!window.db) return;
+  const { data } = await window.db.from('objetivos').select('*').eq('status','ativo');
+  objetivos = data || [];
+}
+
+async function loadProjetos() {
+  if (!window.db) return;
+  const { data } = await window.db.from('projetos').select('*').order('ordem');
+  projetos = data || [];
+  renderLista();
+}
+
+// ── FILTROS ────────────────────────────────────
+function setStatus(btn) {
+  document.querySelectorAll('#filter-status .filter-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  filtroStatus = btn.dataset.val;
+  renderLista();
+}
+
+function setTipo(btn) {
+  document.querySelectorAll('#filter-tipo .filter-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  filtroTipo = btn.dataset.val;
+  renderLista();
+}
+
+// ── RENDER ─────────────────────────────────────
+function renderLista() {
+  let list = projetos;
+  if (filtroStatus) list = list.filter(p=>p.status===filtroStatus);
+  if (filtroTipo)   list = list.filter(p=>p.tipo===filtroTipo);
+
+  const el = document.getElementById('proj-list');
+  if (!list.length) {
+    el.innerHTML = `<div style="text-align:center;padding:2.5rem;color:var(--text-muted);font-size:13px">
+      Nenhum projeto. <button onclick="openModal()" style="background:none;border:none;color:var(--acc-text);cursor:pointer;font-family:inherit;font-size:13px">Criar →</button></div>`;
+    return;
+  }
+
+  el.innerHTML = list.map(p => {
+    const area = areas.find(a=>a.id===p.area_id);
+    const obj  = objetivos.find(o=>o.id===p.objetivo_id);
+    const st   = ST[p.status] || ST.ativo;
+    const cor  = area?.cor || 'var(--acc)';
+    const open = expandido[p.id];
+    const estagio = p.tipo === 'estagio';
+
+    const diasRestantes = p.data_fim ? (() => {
+      const diff = Math.ceil((new Date(p.data_fim+'T12:00:00') - new Date()) / 86400000);
+      return diff > 0 ? `${diff} dias restantes` : diff === 0 ? 'Termina hoje' : `Encerrou há ${-diff} dias`;
+    })() : null;
+
+    let habilidades = [], casos = [];
+    try { habilidades = JSON.parse(p.habilidades||'[]'); } catch {}
+    try { casos = JSON.parse(p.casos_marcantes||'[]'); } catch {}
+    const habDone = habilidades.filter(h=>h.done).length;
+
+    return `<div class="proj-card" id="proj-${p.id}">
+      <div class="proj-card-header" onclick="toggleProj('${p.id}')">
+        <div class="proj-icon" style="background:${cor}">
+          <i class="ti ${p.icone}" aria-hidden="true"></i>
+        </div>
+        <span class="proj-nome">${p.nome}</span>
+        <span class="proj-tipo-badge proj-tipo-${p.tipo}">${estagio?'Estágio':'Projeto'}</span>
+        <span class="proj-status-badge ${st.cls}">${st.label}</span>
+        <i class="ti ${open?'ti-chevron-up':'ti-chevron-down'}" style="font-size:13px;color:var(--text-muted)"></i>
+      </div>
+
+      <div class="proj-meta">
+        ${area ? `<span class="proj-meta-item"><i class="ti ${area.icone}" style="color:${cor}"></i>${area.nome.split(' ')[0]}</span>` : ''}
+        ${obj  ? `<span class="proj-meta-item"><i class="ti ti-target"></i>${obj.nome}</span>` : ''}
+        ${diasRestantes ? `<span class="proj-meta-item"><i class="ti ti-calendar"></i>${diasRestantes}</span>` : ''}
+        ${estagio && habilidades.length ? `<span class="proj-meta-item"><i class="ti ti-checkbox"></i>${habDone}/${habilidades.length} habilidades</span>` : ''}
+        ${estagio && p.especialidade ? `<span class="proj-meta-item"><i class="ti ti-stethoscope"></i>${p.especialidade}</span>` : ''}
+      </div>
+
+      ${p.proxima_acao ? `<div class="proj-proxima"><i class="ti ti-arrow-right" style="font-size:11px"></i> ${p.proxima_acao}</div>` : ''}
+
+      ${open ? renderDetalhe(p, area, habilidades, casos) : ''}
+
+      ${open ? `<div class="proj-actions">
+        <button class="btn-ghost" onclick="openModal('${p.id}')"><i class="ti ti-pencil"></i> Editar</button>
+        <button class="btn-ghost btn-ghost-danger" onclick="deleteProj('${p.id}')"><i class="ti ti-trash"></i></button>
+      </div>` : ''}
+    </div>`;
+  }).join('');
+}
+
+function renderDetalhe(p, area, habilidades, casos) {
+  const estagio = p.tipo === 'estagio';
+  let html = '<div class="proj-detail">';
+
+  if (p.descricao) {
+    html += `<div class="detail-section">
+      <div class="detail-label">Descrição</div>
+      <div class="detail-text">${p.descricao}</div>
+    </div>`;
+  }
+
+  html += `<div class="detail-section">
+    <div class="detail-label">Próxima ação</div>
+    <input class="detail-input" value="${p.proxima_acao||''}" placeholder="Qual é o próximo passo concreto?"
+      onchange="saveField('${p.id}','proxima_acao',this.value)">
+  </div>`;
+
+  if (estagio) {
+    if (p.supervisor) {
+      html += `<div class="detail-section">
+        <div class="detail-label">Supervisor / Preceptor</div>
+        <div class="detail-text">${p.supervisor}</div>
+      </div>`;
+    }
+
+    // Habilidades
+    html += `<div class="detail-section">
+      <div class="detail-label">Habilidades a desenvolver</div>
+      ${habilidades.map((h,i)=>`
+        <div class="hab-item">
+          <div class="hab-check${h.done?' on':''}" onclick="toggleHab('${p.id}',${i})">
+            ${h.done?'<i class="ti ti-check"></i>':''}
+          </div>
+          <span class="hab-text${h.done?' on':''}">${h.texto}</span>
+          <button class="hab-del" onclick="removeHab('${p.id}',${i})"><i class="ti ti-x" style="font-size:11px"></i></button>
+        </div>`).join('')}
+      <div class="add-hab-row">
+        <input type="text" id="hab-input-${p.id}" placeholder="Adicionar habilidade..."
+          onkeydown="if(event.key==='Enter')addHab('${p.id}')">
+        <button onclick="addHab('${p.id}')"><i class="ti ti-plus"></i></button>
+      </div>
+    </div>`;
+
+    // Casos marcantes
+    html += `<div class="detail-section">
+      <div class="detail-label">Casos marcantes</div>
+      ${casos.map((c,i)=>`
+        <div class="caso-item">
+          <i class="ti ti-chevron-right" style="font-size:11px;color:var(--text-muted);flex-shrink:0;margin-top:2px"></i>
+          <span style="flex:1">${c}</span>
+          <button class="caso-del" onclick="removeCaso('${p.id}',${i})"><i class="ti ti-x" style="font-size:11px"></i></button>
+        </div>`).join('')}
+      <div class="add-hab-row">
+        <input type="text" id="caso-input-${p.id}" placeholder="Adicionar caso marcante..."
+          onkeydown="if(event.key==='Enter')addCaso('${p.id}')">
+        <button onclick="addCaso('${p.id}')"><i class="ti ti-plus"></i></button>
+      </div>
+    </div>`;
+
+    // Avaliação (só quando concluído)
+    if (p.status === 'concluido') {
+      html += `<div class="detail-section">
+        <div class="detail-label">Avaliação do estágio</div>
+        <textarea class="detail-textarea" id="aval-${p.id}"
+          placeholder="O que aprendeu? O que faria diferente? Como foi o crescimento?"
+          oninput="debounceSave('${p.id}','descricao',this.value)">${p.descricao||''}</textarea>
+      </div>`;
+    }
+  }
+
+  html += '</div>';
+  return html;
+}
+
+function toggleProj(id) {
+  expandido[id] = !expandido[id];
+  renderLista();
+}
+
+// ── HABILIDADES & CASOS ────────────────────────
+function getProj(id) { return projetos.find(p=>p.id===id); }
+
+async function toggleHab(projId, idx) {
+  const p = getProj(projId);
+  let habs = []; try { habs = JSON.parse(p.habilidades||'[]'); } catch {}
+  habs[idx].done = !habs[idx].done;
+  p.habilidades = JSON.stringify(habs);
+  await window.db.from('projetos').update({ habilidades: p.habilidades }).eq('id', projId);
+  renderLista();
+}
+
+async function addHab(projId) {
+  const input = document.getElementById(`hab-input-${projId}`);
+  const texto = input?.value?.trim();
+  if (!texto) return;
+  const p = getProj(projId);
+  let habs = []; try { habs = JSON.parse(p.habilidades||'[]'); } catch {}
+  habs.push({ texto, done: false });
+  p.habilidades = JSON.stringify(habs);
+  await window.db.from('projetos').update({ habilidades: p.habilidades }).eq('id', projId);
+  renderLista();
+}
+
+async function removeHab(projId, idx) {
+  const p = getProj(projId);
+  let habs = []; try { habs = JSON.parse(p.habilidades||'[]'); } catch {}
+  habs.splice(idx, 1);
+  p.habilidades = JSON.stringify(habs);
+  await window.db.from('projetos').update({ habilidades: p.habilidades }).eq('id', projId);
+  renderLista();
+}
+
+async function addCaso(projId) {
+  const input = document.getElementById(`caso-input-${projId}`);
+  const texto = input?.value?.trim();
+  if (!texto) return;
+  const p = getProj(projId);
+  let casos = []; try { casos = JSON.parse(p.casos_marcantes||'[]'); } catch {}
+  casos.push(texto);
+  p.casos_marcantes = JSON.stringify(casos);
+  await window.db.from('projetos').update({ casos_marcantes: p.casos_marcantes }).eq('id', projId);
+  renderLista();
+}
+
+async function removeCaso(projId, idx) {
+  const p = getProj(projId);
+  let casos = []; try { casos = JSON.parse(p.casos_marcantes||'[]'); } catch {}
+  casos.splice(idx, 1);
+  p.casos_marcantes = JSON.stringify(casos);
+  await window.db.from('projetos').update({ casos_marcantes: p.casos_marcantes }).eq('id', projId);
+  renderLista();
+}
+
+async function saveField(projId, field, value) {
+  const p = getProj(projId);
+  if (p) p[field] = value;
+  await window.db.from('projetos').update({ [field]: value, atualizado_em: new Date().toISOString() }).eq('id', projId);
+}
+
+function debounceSave(projId, field, value) {
+  clearTimeout(saveTimers[projId+field]);
+  saveTimers[projId+field] = setTimeout(() => saveField(projId, field, value), 900);
+}
+
+// ── MODAL ──────────────────────────────────────
+function openModal(id) {
+  editingId  = id || null;
+  modalStep  = editingId ? 2 : 1;
+  modalTipo  = editingId ? (getProj(id)?.tipo || 'projeto') : 'projeto';
+  currentIcon = editingId ? (getProj(id)?.icone || 'ti-rocket') : 'ti-rocket';
+  renderModalStep();
+  document.getElementById('modal').style.display = 'flex';
+}
+
+function closeModal() {
+  document.getElementById('modal').style.display = 'none';
+  editingId = null;
+}
+
+function renderModalStep() {
+  const p = editingId ? getProj(editingId) : null;
+  document.getElementById('modal-title').textContent = p ? 'Editar Projeto' : 'Novo Projeto';
+
+  if (modalStep === 1) {
+    document.getElementById('modal-body').innerHTML = `
+      <div class="tipo-grid">
+        <button class="tipo-btn${modalTipo==='projeto'?' active':''}" onclick="selectTipo('projeto')">
+          <i class="ti ti-rocket"></i>
+          <div class="tipo-btn-label">Projeto comum</div>
+          <div class="tipo-btn-sub">Iniciativa com objetivo e prazo</div>
+        </button>
+        <button class="tipo-btn${modalTipo==='estagio'?' active':''}" onclick="selectTipo('estagio')">
+          <i class="ti ti-stethoscope"></i>
+          <div class="tipo-btn-label">Estágio da residência</div>
+          <div class="tipo-btn-sub">Com habilidades e casos</div>
+        </button>
+      </div>`;
+    document.getElementById('modal-actions').innerHTML = `
+      <button class="btn-s" onclick="closeModal()">Cancelar</button>
+      <button class="btn-p" onclick="modalStep=2;renderModalStep()">Próximo <i class="ti ti-arrow-right"></i></button>`;
+  } else {
+    const estagio = modalTipo === 'estagio';
+    document.getElementById('modal-body').innerHTML = `
+      <div class="frow">
+        <div class="fl" style="flex:0 0 auto">
+          <label>Ícone</label>
+          <button class="btn-ghost" onclick="pickIcon()" style="padding:6px 10px">
+            <i class="ti ${currentIcon}" id="proj-icon-prev" style="font-size:18px"></i> Escolher
+          </button>
+        </div>
+        <div class="fl">
+          <label>Nome</label>
+          <input class="fi" id="f-nome" type="text" value="${p?.nome||''}" placeholder="Nome do projeto">
+        </div>
+      </div>
+      <div class="frow">
+        <div class="fl">
+          <label>Área</label>
+          <select class="fsel" id="f-area">
+            <option value="">Sem área</option>
+            ${areas.map(a=>`<option value="${a.id}"${p?.area_id===a.id?' selected':''}>${a.nome}</option>`).join('')}
+          </select>
+        </div>
+        <div class="fl">
+          <label>Status</label>
+          <select class="fsel" id="f-status">
+            ${Object.entries(ST).map(([k,v])=>`<option value="${k}"${p?.status===k?' selected':''}>${v.label}</option>`).join('')}
+          </select>
+        </div>
+      </div>
+      <div class="fl">
+        <label>Objetivo vinculado</label>
+        <select class="fsel" id="f-obj">
+          <option value="">Sem objetivo</option>
+          ${objetivos.map(o=>`<option value="${o.id}"${p?.objetivo_id===o.id?' selected':''}>${o.nome}</option>`).join('')}
+        </select>
+      </div>
+      <div class="fl">
+        <label>Próxima ação</label>
+        <input class="fi" id="f-proxima" type="text" value="${p?.proxima_acao||''}" placeholder="Qual é o próximo passo?">
+      </div>
+      <div class="frow">
+        <div class="fl">
+          <label>Início</label>
+          <input class="fi" id="f-inicio" type="date" value="${p?.data_inicio||''}">
+        </div>
+        <div class="fl">
+          <label>Fim previsto</label>
+          <input class="fi" id="f-fim" type="date" value="${p?.data_fim||''}">
+        </div>
+      </div>
+      <div class="fl">
+        <label>Descrição</label>
+        <textarea class="fta" id="f-desc">${p?.descricao||''}</textarea>
+      </div>
+      ${estagio ? `
+      <div class="frow">
+        <div class="fl">
+          <label>Especialidade</label>
+          <input class="fi" id="f-esp" type="text" value="${p?.especialidade||''}" placeholder="Ex: Cardiologia pediátrica">
+        </div>
+        <div class="fl">
+          <label>Supervisor / Preceptor</label>
+          <input class="fi" id="f-sup" type="text" value="${p?.supervisor||''}" placeholder="Nome do supervisor">
+        </div>
+      </div>` : ''}`;
+
+    document.getElementById('modal-actions').innerHTML = `
+      ${p ? `<button class="btn-d" onclick="deleteProj('${p.id}')"><i class="ti ti-trash"></i> Excluir</button>` : ''}
+      <button class="btn-s" onclick="${p?'closeModal()':'modalStep=1;renderModalStep()'}">
+        ${p ? 'Cancelar' : '<i class="ti ti-arrow-left"></i> Voltar'}
+      </button>
+      <button class="btn-p" onclick="saveProj()">Salvar</button>`;
+  }
+}
+
+function selectTipo(tipo) {
+  modalTipo = tipo;
+  currentIcon = tipo === 'estagio' ? 'ti-stethoscope' : 'ti-rocket';
+  document.querySelectorAll('.tipo-btn').forEach(b=>b.classList.remove('active'));
+  document.querySelector(`.tipo-btn[onclick*="${tipo}"]`)?.classList.add('active');
+}
+
+function pickIcon() {
+  if (typeof openIconPicker === 'function') {
+    openIconPicker(icon => {
+      currentIcon = icon;
+      document.getElementById('proj-icon-prev').className = `ti ${icon}`;
+    }, currentIcon);
+  }
+}
+
+async function saveProj() {
+  const nome = document.getElementById('f-nome')?.value?.trim();
+  if (!nome) { alert('Nome é obrigatório'); return; }
+
+  const estagio = modalTipo === 'estagio';
+  const payload = {
+    nome,
+    tipo:         modalTipo,
+    icone:        currentIcon,
+    area_id:      document.getElementById('f-area')?.value    || null,
+    objetivo_id:  document.getElementById('f-obj')?.value     || null,
+    status:       document.getElementById('f-status')?.value  || 'ativo',
+    proxima_acao: document.getElementById('f-proxima')?.value?.trim() || '',
+    data_inicio:  document.getElementById('f-inicio')?.value  || null,
+    data_fim:     document.getElementById('f-fim')?.value     || null,
+    descricao:    document.getElementById('f-desc')?.value?.trim()    || '',
+    especialidade:estagio ? (document.getElementById('f-esp')?.value?.trim()||'') : '',
+    supervisor:   estagio ? (document.getElementById('f-sup')?.value?.trim()||'') : '',
+    atualizado_em: new Date().toISOString(),
+  };
+
+  if (editingId) {
+    await window.db.from('projetos').update(payload).eq('id', editingId);
+  } else {
+    const maxOrdem = projetos.length ? Math.max(...projetos.map(p=>p.ordem||0)) : 0;
+    await window.db.from('projetos').insert({ ...payload, ordem: maxOrdem+1 });
+  }
+
+  closeModal();
+  await loadProjetos();
+}
+
+async function deleteProj(id) {
+  if (!confirm('Excluir este projeto?')) return;
+  await window.db.from('projetos').delete().eq('id', id);
+  closeModal();
+  await loadProjetos();
+}
+</script>
+</body>
+</html>
