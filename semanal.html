@@ -5,8 +5,13 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <title>Semanal · LifeOS</title>
-<!-- Aplica tema antes de renderizar -->
-<script>(function(){var t=localStorage.getItem('rd-theme')||'light';document.documentElement.setAttribute('data-theme',t);})()</script>
+<!-- Bug 1 fix: tema + accent antes de renderizar -->
+<script>(function(){
+  var t=localStorage.getItem('rd-theme')||'light';
+  var a=localStorage.getItem('lp-accent');
+  document.documentElement.setAttribute('data-theme',t);
+  if(a) document.documentElement.style.setProperty('--acc',a);
+})()</script>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.30.0/dist/tabler-icons.min.css">
 <link rel="stylesheet" href="style.css">
 <link rel="stylesheet" href="lifeos.css">
@@ -39,34 +44,32 @@
         <button class="date-nav-today" onclick="goCurrentWeek()">Esta semana</button>
       </div>
 
-      <!-- Mood Strip -->
+      <!-- 7 Mini-cards + chips -->
       <div class="lo-card" style="margin-bottom:1.2rem">
         <div class="lo-card-header">
           <i class="ti ti-mood-happy" aria-hidden="true"></i>
-          <span class="lo-card-title">Humor da semana</span>
+          <span class="lo-card-title">Visão da semana</span>
         </div>
         <div class="lo-card-body">
-          <div class="mood-strip" id="mood-strip">
+          <div id="mini-cards-row"
+            style="display:flex;gap:8px;overflow-x:auto;padding-bottom:4px;-webkit-overflow-scrolling:touch">
             <div style="font-size:13px;color:var(--text-muted)">Carregando...</div>
+          </div>
+          <div class="summary-row" id="summary-chips"
+            style="margin-top:1rem;padding-top:0.8rem;border-top:1px solid var(--border)">
+            <div style="font-size:13px;color:var(--text-muted)">Carregando dados...</div>
           </div>
         </div>
       </div>
 
-      <!-- Summary + Habits -->
-      <div class="two-col" style="margin-bottom:1.2rem">
-        <div class="lo-card">
-          <div class="lo-card-header"><i class="ti ti-chart-line" aria-hidden="true"></i><span class="lo-card-title">Resumo da semana</span></div>
-          <div class="lo-card-body">
-            <div class="summary-row" id="summary-chips">
-              <div style="font-size:13px;color:var(--text-muted)">Carregando dados dos diários...</div>
-            </div>
-          </div>
+      <!-- Hábitos da semana -->
+      <div class="lo-card" style="margin-bottom:1.2rem">
+        <div class="lo-card-header">
+          <i class="ti ti-checkbox" aria-hidden="true"></i>
+          <span class="lo-card-title">Hábitos da semana</span>
         </div>
-        <div class="lo-card">
-          <div class="lo-card-header"><i class="ti ti-checkbox" aria-hidden="true"></i><span class="lo-card-title">Hábitos da semana</span></div>
-          <div class="lo-card-body" style="padding:0.5rem 1.2rem">
-            <div id="habit-week-summary"><div style="font-size:13px;color:var(--text-muted)">Carregando...</div></div>
-          </div>
+        <div class="lo-card-body" style="padding:0.5rem 1.2rem">
+          <div id="habit-week-summary"><div style="font-size:13px;color:var(--text-muted)">Carregando...</div></div>
         </div>
       </div>
 
@@ -132,18 +135,16 @@
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <script src="nav.js"></script>
+<script src="lifeos-core.js"></script>
 <script>
 let currentWeekStart = weekStart(todayISO());
 let weekEntry = {};
-let diarios = {};
-let habitos = [];
-let checks = {};
+let diarios   = {};
+let habitos   = [];
+let checks    = {};
 let saveTimers = {};
 
-const EMOJIS = {1:'😢',2:'🙁',3:'😐',4:'🙂',5:'😄'};
-const DNAMES  = ['Seg','Ter','Qua','Qui','Sex','Sáb','Dom'];
-
-// ── INIT — cache primeiro ─────────────────────
+// ── INIT ───────────────────────────────────────
 window.addEventListener('DOMContentLoaded', () => {
   loadFromCache(currentWeekStart);
   renderPage();
@@ -151,52 +152,38 @@ window.addEventListener('DOMContentLoaded', () => {
   syncFromSupabase(currentWeekStart);
 });
 
-function cacheKeyWeek(ws) { return 'lo-semanal-' + ws; }
+const cacheKeyWeek = ws => 'lo-semanal-' + ws;
 
 function loadFromCache(ws) {
   try {
     weekEntry = JSON.parse(localStorage.getItem(cacheKeyWeek(ws)) || '{}');
     habitos   = JSON.parse(localStorage.getItem('lo-habitos') || '[]');
     checks    = JSON.parse(localStorage.getItem('lo-checks-14d') || '{}');
-    // Diarios from individual day caches
-    const days = weekDays(ws);
-    diarios = {};
-    days.forEach(d => {
+    diarios   = {};
+    weekDays(ws).forEach(d => {
       try { diarios[d] = JSON.parse(localStorage.getItem('lo-diario-' + d) || 'null'); } catch {}
     });
   } catch(e) {}
 }
 
 async function syncFromSupabase(ws) {
-  if (!window.db) await new Promise(r => setTimeout(r, 1500));
-  initSupabase();
+  if (!window.db) { await new Promise(r => setTimeout(r, 1500)); initSupabase(); }
   if (!window.db) return;
-
-  const days = weekDays(ws);
-  const sunday = days[6];
-
+  const days = weekDays(ws), sunday = days[6];
   try {
-    // Weekly entry
     const { data: wr } = await window.db.from('revisao_semanal')
       .select('*').eq('semana_inicio', ws).maybeSingle();
     if (wr) { weekEntry = wr; localStorage.setItem(cacheKeyWeek(ws), JSON.stringify(wr)); }
 
-    // Diarios
-    const { data: drs } = await window.db.from('diario')
-      .select('*').gte('data', ws).lte('data', sunday);
+    const { data: drs } = await window.db.from('diario').select('*').gte('data',ws).lte('data',sunday);
     diarios = {};
-    (drs||[]).forEach(d => {
-      diarios[d.data] = d;
-      localStorage.setItem('lo-diario-' + d.data, JSON.stringify(d));
-    });
+    (drs||[]).forEach(d => { diarios[d.data]=d; localStorage.setItem('lo-diario-'+d.data, JSON.stringify(d)); });
 
-    // Habitos + checks
     const { data: hList } = await window.db.from('habitos').select('*').eq('ativo',true).order('ordem');
-    if (hList) { habitos = hList; localStorage.setItem('lo-habitos', JSON.stringify(hList)); }
+    if (hList) { habitos=hList; localStorage.setItem('lo-habitos',JSON.stringify(hList)); }
 
-    const { data: hc } = await window.db.from('habito_checks')
-      .select('*').gte('data', ws).lte('data', sunday);
-    (hc||[]).forEach(c => checks[`${c.habito_id}:${c.data}`] = c.concluido);
+    const { data: hc } = await window.db.from('habito_checks').select('*').gte('data',ws).lte('data',sunday);
+    (hc||[]).forEach(c => checks[`${c.habito_id}:${c.data}`]=c.concluido);
 
     renderPage();
   } catch(e) { console.warn(e); }
@@ -209,47 +196,86 @@ function goWeek(n) {
   renderPage();
   syncFromSupabase(currentWeekStart);
 }
-function goCurrentWeek() {
-  currentWeekStart = weekStart(todayISO());
-  goWeek(0);
-}
+function goCurrentWeek() { currentWeekStart = weekStart(todayISO()); goWeek(0); }
 
 // ── RENDER ─────────────────────────────────────
 function renderPage() {
-  const days = weekDays(currentWeekStart);
-  const sunday = days[6];
-  const fmt = d => new Date(d+'T12:00:00').toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit'});
+  const days = weekDays(currentWeekStart), sunday = days[6];
+  const fmt  = d => new Date(d+'T12:00:00').toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit'});
   document.getElementById('week-display').textContent = `${fmt(currentWeekStart)} → ${fmt(sunday)}`;
-  renderMood(days);
-  renderSummary(days);
+  renderMiniCards(days);
+  renderSummaryChips(days);
   renderHabitSummary(days);
   renderFields();
 }
 
-function renderMood(days) {
-  document.getElementById('mood-strip').innerHTML = days.map((d,i) => {
-    const e = diarios[d];
-    const humor = e?.humor;
-    return `<div class="mood-day${!humor?' empty':''}">
-      <div class="mood-day-label">${DNAMES[i]}</div>
-      <span class="mood-day-emoji">${humor ? EMOJIS[humor] : '·'}</span>
+// ── 7 MINI-CARDS ───────────────────────────────
+function renderMiniCards(days) {
+  document.getElementById('mini-cards-row').innerHTML = days.map((d, i) => {
+    const e        = diarios[d];
+    const humor    = e?.humor    || 0;
+    const tipo     = e?.tipo_dia || '';
+    const sono     = e?.horas_sono != null ? parseFloat(e.horas_sono) : null;
+    const dayNum   = new Date(d+'T12:00:00').getDate();
+    const isToday_ = d === todayISO();
+
+    const moodCfg = humor > 0 ? MOOD_ICONS[humor-1] : null;
+    const moodEl  = moodCfg
+      ? `<i class="ti ${moodCfg.icon}" style="font-size:20px;color:${moodCfg.color}" aria-hidden="true"></i>`
+      : `<span style="font-size:18px;color:var(--border)">·</span>`;
+
+    const tipoCor = tipo && TIPO_DIA[tipo] ? TIPO_DIA[tipo].color : 'var(--border)';
+    const tipoDot = `<span title="${tipo||'Sem tipo'}"
+      style="width:7px;height:7px;border-radius:50%;background:${tipoCor};display:inline-block"></span>`;
+
+    const sonoPct = sono ? Math.min(100,(sono/10)*100) : 0;
+    const barColor = sonoColor(sono);
+    const sonoBar = `
+      <div style="width:100%;height:4px;border-radius:2px;background:var(--surface2);overflow:hidden;margin:3px 0 2px">
+        <div style="height:100%;width:${sonoPct}%;background:${barColor};border-radius:2px"></div>
+      </div>
+      <div style="font-size:10px;color:var(--text-muted);text-align:center">${formatSono(sono)}</div>`;
+
+    const habitDone  = habitos.filter(h => checks[`${h.id}:${d}`]).length;
+    const habitTotal = habitos.length;
+    const habitColor = habitTotal===0 ? 'var(--text-muted)'
+      : habitDone===habitTotal ? '#1D9E75'
+      : habitDone>0 ? 'var(--text2)' : 'var(--text-muted)';
+
+    return `<div style="
+      flex:1;min-width:72px;max-width:110px;
+      background:${e?'var(--surface)':'var(--surface2)'};
+      border:1.5px solid ${isToday_?'var(--acc)':'var(--border)'};
+      border-radius:10px;padding:10px 6px 8px;
+      display:flex;flex-direction:column;align-items:center;gap:4px;
+      opacity:${e||isToday_?'1':'.45'}">
+      <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;
+                  color:${isToday_?'var(--acc-text)':'var(--text-muted)'}">${DNAMES[i]}</div>
+      <div style="font-size:17px;font-weight:700;color:var(--text);line-height:1">${dayNum}</div>
+      ${tipoDot}
+      <div style="margin:1px 0">${moodEl}</div>
+      <div style="width:100%">${sonoBar}</div>
+      ${habitTotal>0?`<div style="font-size:11px;font-weight:600;color:${habitColor}">${habitDone}/${habitTotal}</div>`:''}
     </div>`;
   }).join('');
 }
 
-function renderSummary(days) {
+// ── CHIPS DE MÉDIA ─────────────────────────────
+function renderSummaryChips(days) {
   const entries = days.map(d=>diarios[d]).filter(Boolean);
-  const avg = arr => arr.length ? (arr.reduce((s,v)=>s+v,0)/arr.length).toFixed(1) : '—';
+  const avg = arr => arr.length ? arr.reduce((s,v)=>s+v,0)/arr.length : null;
   const sonoAvg = avg(entries.map(e=>e.horas_sono).filter(v=>v!=null));
   const qualAvg = avg(entries.map(e=>e.sono_qualidade).filter(v=>v!=null));
   const intAvg  = avg(entries.map(e=>e.intencionalidade).filter(v=>v!=null));
+
   document.getElementById('summary-chips').innerHTML = `
-    <div class="summary-chip"><i class="ti ti-moon" aria-hidden="true"></i><span class="summary-chip-value">${sonoAvg}h</span><span class="summary-chip-label">sono médio</span></div>
-    <div class="summary-chip"><i class="ti ti-zzz" aria-hidden="true"></i><span class="summary-chip-value">${qualAvg}/5</span><span class="summary-chip-label">qualidade</span></div>
-    <div class="summary-chip"><i class="ti ti-bolt" aria-hidden="true"></i><span class="summary-chip-value">${intAvg}/5</span><span class="summary-chip-label">intencionalidade</span></div>
+    <div class="summary-chip"><i class="ti ti-moon" aria-hidden="true"></i><span class="summary-chip-value">${formatSono(sonoAvg)}</span><span class="summary-chip-label">sono médio</span></div>
+    <div class="summary-chip"><i class="ti ti-zzz" aria-hidden="true"></i><span class="summary-chip-value">${qualAvg!==null?qualAvg.toFixed(1)+'/5':'—'}</span><span class="summary-chip-label">qualidade</span></div>
+    <div class="summary-chip"><i class="ti ti-bolt" aria-hidden="true"></i><span class="summary-chip-value">${intAvg!==null?intAvg.toFixed(1)+'/5':'—'}</span><span class="summary-chip-label">intencionalidade</span></div>
     <div class="summary-chip"><i class="ti ti-calendar-check" aria-hidden="true"></i><span class="summary-chip-value">${entries.length}/7</span><span class="summary-chip-label">dias registrados</span></div>`;
 }
 
+// ── HÁBITOS ────────────────────────────────────
 function renderHabitSummary(days) {
   if (!habitos.length) {
     document.getElementById('habit-week-summary').innerHTML =
@@ -259,21 +285,24 @@ function renderHabitSummary(days) {
   document.getElementById('habit-week-summary').innerHTML = habitos.map(h => {
     const done = days.filter(d=>checks[`${h.id}:${d}`]).length;
     const pct  = Math.round((done/7)*100);
-    const color = pct>=70 ? 'var(--acc)' : pct>=40 ? 'var(--amber-text)' : 'var(--red)';
+    const color = pct>=70?'var(--acc)':pct>=40?'var(--amber-text)':'var(--red)';
     return `<div style="display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid var(--border)">
       <i class="ti ${h.icone}" style="color:${h.cor};font-size:14px" aria-hidden="true"></i>
       <span style="font-size:12px;flex:1;color:var(--text2)">${h.nome}</span>
-      <span style="font-size:12px;font-weight:700;color:${color}">${done}/7</span>
+      <div style="width:80px;height:4px;border-radius:2px;background:var(--surface2);overflow:hidden;margin-right:6px">
+        <div style="height:100%;width:${pct}%;background:${color};border-radius:2px"></div>
+      </div>
+      <span style="font-size:12px;font-weight:700;color:${color};min-width:24px;text-align:right">${done}/7</span>
     </div>`;
   }).join('');
 }
 
+// ── CAMPOS ─────────────────────────────────────
 function renderFields() {
   [['padrao-semana','padrao_semana'],['okrs-check','okrs_check'],
    ['projetos-check','projetos_check'],['prioridades','prioridades'],
    ['reflexao-pos','reflexao_pos']].forEach(([id,k]) => {
-    const el = document.getElementById(id);
-    if (el) el.value = weekEntry[k] || '';
+    const el = document.getElementById(id); if (el) el.value = weekEntry[k] || '';
   });
 }
 
@@ -283,36 +312,21 @@ function debounceSave(field, value) {
   setStatus('saving');
   saveTimers[field] = setTimeout(() => saveField(field, value), 800);
 }
-
 async function saveField(field, value) {
   weekEntry[field] = value;
   localStorage.setItem(cacheKeyWeek(currentWeekStart), JSON.stringify(weekEntry));
   if (!window.db) return;
   try {
     if (weekEntry.id) {
-      await window.db.from('revisao_semanal').update({[field]:value}).eq('id', weekEntry.id);
+      await window.db.from('revisao_semanal').update({[field]:value}).eq('id',weekEntry.id);
     } else {
       const { data } = await window.db.from('revisao_semanal')
         .upsert({semana_inicio:currentWeekStart,[field]:value},{onConflict:'semana_inicio'})
         .select().single();
-      if (data) { weekEntry = data; localStorage.setItem(cacheKeyWeek(currentWeekStart), JSON.stringify(data)); }
+      if (data) { weekEntry=data; localStorage.setItem(cacheKeyWeek(currentWeekStart),JSON.stringify(data)); }
     }
     setStatus('saved');
   } catch(e) { setStatus('error'); }
-}
-
-function setStatus(s) {
-  const el = document.getElementById('save-status');
-  if (!el) return;
-  const m = {
-    idle:   ['<i class="ti ti-circle-dot"></i> Pronto','idle'],
-    saving: ['<i class="ti ti-loader"></i> Salvando…','saving'],
-    saved:  ['<i class="ti ti-circle-check"></i> Salvo','saved'],
-    error:  ['<i class="ti ti-wifi-off"></i> Erro','error'],
-  };
-  const [h,c]=m[s]||m.idle;
-  el.innerHTML=h; el.className='save-status '+c;
-  if(s==='saved') setTimeout(()=>setStatus('idle'),2000);
 }
 </script>
 </body>
