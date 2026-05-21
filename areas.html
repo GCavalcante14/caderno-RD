@@ -16,56 +16,79 @@
 <link rel="stylesheet" href="lifeos.css">
 <style>
 .areas-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:1.2rem;}
-@media(max-width:700px){.areas-grid{grid-template-columns:1fr;}}
+@media(max-width:680px){.areas-grid{grid-template-columns:1fr;}}
 
-.area-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:1.2rem;cursor:pointer;transition:border-color .15s,box-shadow .15s;position:relative;overflow:hidden;}
-.area-card:hover{border-color:var(--acc);box-shadow:0 4px 16px rgba(0,0,0,.08);}
-.area-card-accent{position:absolute;top:0;left:0;width:4px;height:100%;border-radius:var(--radius) 0 0 var(--radius);}
-.area-card-header{display:flex;align-items:center;gap:10px;margin-bottom:.7rem;}
-.area-icon{width:36px;height:36px;border-radius:9px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
-.area-icon i{font-size:18px;color:#fff;}
-.area-name{font-size:15px;font-weight:700;color:var(--text);flex:1;}
-.area-badge{font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;white-space:nowrap;}
-.area-visao{font-size:12px;color:var(--text2);line-height:1.5;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;margin-bottom:.7rem;}
-.area-footer{display:flex;align-items:center;justify-content:space-between;}
-.area-score{display:flex;align-items:center;gap:6px;}
-.area-score-bar{width:80px;height:5px;border-radius:3px;background:var(--surface2);overflow:hidden;}
-.area-score-fill{height:100%;border-radius:3px;transition:width .3s;}
-.area-score-num{font-size:11px;font-weight:700;color:var(--text-muted);}
-.area-edit-btn{font-size:11px;color:var(--acc-text);background:var(--acc-soft);border:none;padding:3px 10px;border-radius:20px;cursor:pointer;font-family:inherit;font-weight:600;}
+.area-card{
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:var(--radius);padding:1.2rem 1.2rem 1rem;
+  cursor:pointer;transition:border-color .15s,box-shadow .15s;
+  position:relative;overflow:hidden;
+  border-left:4px solid transparent;
+}
+.area-card:hover{box-shadow:0 4px 20px rgba(0,0,0,.08);}
 
-/* Roda da Vida */
-.roda-container{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:1.5rem;margin-bottom:1.2rem;}
-.roda-title{font-size:13px;font-weight:700;color:var(--text);margin-bottom:1rem;display:flex;align-items:center;gap:8px;}
-.roda-svg-wrap{max-width:420px;margin:0 auto;}
+.area-card-top{display:flex;align-items:center;gap:10px;margin-bottom:.6rem;}
+.area-icon{width:34px;height:34px;border-radius:9px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.area-icon i{font-size:17px;color:#fff;}
+.area-name{font-size:15px;font-weight:700;color:var(--text);flex:1;line-height:1.2;}
+.area-eq{font-size:12px;font-weight:700;padding:2px 8px;border-radius:20px;}
+
+.area-narrativa{font-size:12px;color:var(--text-muted);font-style:italic;margin-bottom:.8rem;line-height:1.4;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+
+.dim-row{display:flex;align-items:center;gap:8px;margin-bottom:5px;}
+.dim-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;
+  color:var(--text-muted);width:88px;flex-shrink:0;}
+.dim-bar{flex:1;height:5px;border-radius:3px;background:var(--surface2);overflow:hidden;}
+.dim-fill{height:100%;border-radius:3px;transition:width .4s;}
+.dim-val{font-size:11px;font-weight:700;color:var(--text-muted);width:16px;text-align:right;flex-shrink:0;}
+
+.area-footer{display:flex;align-items:center;justify-content:space-between;margin-top:.8rem;
+  padding-top:.7rem;border-top:1px solid var(--border);}
+.area-atualizado{font-size:11px;color:var(--text-muted);}
+.area-entrar{font-size:11px;font-weight:600;color:var(--acc-text);background:var(--acc-soft);
+  border:none;padding:3px 10px;border-radius:20px;cursor:pointer;font-family:inherit;}
 
 /* Modal */
-.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:200;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(3px);}
-.modal-box{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:1.5rem;width:100%;max-width:460px;max-height:90vh;overflow-y:auto;position:relative;}
-.modal-close{position:absolute;top:12px;right:12px;width:28px;height:28px;border-radius:6px;border:1px solid var(--border);background:var(--surface2);color:var(--text-muted);cursor:pointer;display:flex;align-items:center;justify-content:center;}
-.modal-title{font-size:16px;font-weight:700;color:var(--text);margin-bottom:1.2rem;}
-.form-field{margin-bottom:1rem;}
-.form-label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--text-muted);margin-bottom:.4rem;display:block;}
-.form-input{width:100%;padding:.5rem .7rem;border:1px solid var(--border);border-radius:8px;background:var(--surface2);color:var(--text);font-size:13px;font-family:inherit;outline:none;box-sizing:border-box;}
-.form-input:focus{border-color:var(--acc);}
-.form-select{width:100%;padding:.5rem .7rem;border:1px solid var(--border);border-radius:8px;background:var(--surface2);color:var(--text);font-size:13px;font-family:inherit;outline:none;cursor:pointer;}
-.form-textarea{width:100%;padding:.5rem .7rem;border:1px solid var(--border);border-radius:8px;background:var(--surface2);color:var(--text);font-size:13px;font-family:inherit;outline:none;resize:vertical;min-height:72px;box-sizing:border-box;}
-.form-textarea:focus{border-color:var(--acc);}
-.form-row{display:flex;gap:.8rem;}
-.form-row .form-field{flex:1;}
-.modal-actions{display:flex;gap:.6rem;justify-content:flex-end;margin-top:1.2rem;padding-top:1rem;border-top:1px solid var(--border);}
-.btn-primary{padding:.45rem 1.1rem;border-radius:8px;border:none;background:var(--acc);color:#fff;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;}
-.btn-secondary{padding:.45rem 1rem;border-radius:8px;border:1px solid var(--border);background:var(--surface2);color:var(--text-muted);font-size:13px;cursor:pointer;font-family:inherit;}
-.btn-danger{padding:.45rem 1rem;border-radius:8px;border:1px solid #E05555;background:transparent;color:#E05555;font-size:13px;cursor:pointer;font-family:inherit;margin-right:auto;}
-
-.icon-preview-btn{display:flex;align-items:center;gap:8px;padding:.45rem .8rem;border:1px solid var(--border);border-radius:8px;background:var(--surface2);cursor:pointer;font-family:inherit;font-size:13px;color:var(--text);}
-.icon-preview-btn i{font-size:18px;}
-
-.score-row{display:flex;align-items:center;gap:10px;}
-.score-slider{flex:1;accent-color:var(--acc);}
-.score-val{font-size:14px;font-weight:700;color:var(--acc-text);min-width:20px;text-align:center;}
-
-.add-btn{display:flex;align-items:center;gap:8px;padding:.5rem 1.1rem;border-radius:8px;border:1px solid var(--border);background:var(--surface);color:var(--text);font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;transition:border-color .15s;}
+.mo{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:200;
+  display:flex;align-items:center;justify-content:center;backdrop-filter:blur(3px);}
+.mo-box{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);
+  padding:1.5rem;width:100%;max-width:440px;max-height:90vh;overflow-y:auto;position:relative;}
+.mo-close{position:absolute;top:12px;right:12px;width:28px;height:28px;border-radius:6px;
+  border:1px solid var(--border);background:var(--surface2);color:var(--text-muted);
+  cursor:pointer;display:flex;align-items:center;justify-content:center;}
+.mo-title{font-size:16px;font-weight:700;color:var(--text);margin-bottom:1.2rem;}
+.fl{margin-bottom:.9rem;}
+.fl label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;
+  color:var(--text-muted);display:block;margin-bottom:.35rem;}
+.fi{width:100%;padding:.45rem .7rem;border:1px solid var(--border);border-radius:8px;
+  background:var(--surface2);color:var(--text);font-size:13px;font-family:inherit;
+  outline:none;box-sizing:border-box;}
+.fi:focus{border-color:var(--acc);}
+.fta{width:100%;padding:.45rem .7rem;border:1px solid var(--border);border-radius:8px;
+  background:var(--surface2);color:var(--text);font-size:13px;font-family:inherit;
+  outline:none;resize:vertical;min-height:64px;box-sizing:border-box;}
+.fta:focus{border-color:var(--acc);}
+.frow{display:flex;gap:.7rem;}
+.frow .fl{flex:1;}
+.slider-row{display:flex;align-items:center;gap:10px;}
+.slider-row input[type=range]{flex:1;accent-color:var(--acc);}
+.slider-val{font-size:13px;font-weight:700;color:var(--acc-text);min-width:18px;text-align:center;}
+.mo-actions{display:flex;gap:.6rem;justify-content:flex-end;margin-top:1.2rem;
+  padding-top:.9rem;border-top:1px solid var(--border);}
+.btn-p{padding:.42rem 1.1rem;border-radius:8px;border:none;background:var(--acc);
+  color:#fff;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;}
+.btn-s{padding:.42rem 1rem;border-radius:8px;border:1px solid var(--border);
+  background:var(--surface2);color:var(--text-muted);font-size:13px;cursor:pointer;font-family:inherit;}
+.btn-d{padding:.42rem 1rem;border-radius:8px;border:1px solid #E05555;
+  background:transparent;color:#E05555;font-size:13px;cursor:pointer;font-family:inherit;margin-right:auto;}
+.icon-btn{display:flex;align-items:center;gap:7px;padding:.4rem .7rem;
+  border:1px solid var(--border);border-radius:8px;background:var(--surface2);
+  cursor:pointer;font-family:inherit;font-size:13px;color:var(--text);}
+.icon-btn i{font-size:17px;}
+.add-btn{display:flex;align-items:center;gap:7px;padding:.45rem 1rem;border-radius:8px;
+  border:1px solid var(--border);background:var(--surface);color:var(--text);
+  font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;transition:border-color .15s;}
 .add-btn:hover{border-color:var(--acc);color:var(--acc-text);}
 </style>
 </head>
@@ -74,7 +97,6 @@
 <div id="sb-overlay" class="sb-overlay" onclick="closeSidebar()"></div>
 <div class="app-shell">
   <div id="sidebar" class="sidebar"></div>
-
   <div class="main-area">
     <div class="page-content">
 
@@ -82,28 +104,15 @@
         <div class="page-header-left">
           <div class="page-role"><i class="ti ti-map" aria-hidden="true"></i> O Arquiteto — vê o mapa inteiro</div>
           <h1 class="page-title">Áreas</h1>
-          <p class="page-subtitle">Os 6 domínios da sua vida</p>
+          <p class="page-subtitle">Os domínios da sua vida · clique para entrar</p>
         </div>
         <button class="add-btn" onclick="openModal()">
           <i class="ti ti-plus" aria-hidden="true"></i> Nova Área
         </button>
       </div>
 
-      <!-- Roda da Vida -->
-      <div class="roda-container">
-        <div class="roda-title">
-          <i class="ti ti-chart-radar" aria-hidden="true"></i>
-          Roda da Vida
-          <span style="font-size:11px;color:var(--text-muted);font-weight:400;margin-left:4px">— clique num eixo para editar</span>
-        </div>
-        <div class="roda-svg-wrap" id="roda-wrap">
-          <div style="text-align:center;color:var(--text-muted);font-size:13px;padding:2rem">Carregando...</div>
-        </div>
-      </div>
-
-      <!-- Grid de áreas -->
       <div class="areas-grid" id="areas-grid">
-        <div style="grid-column:1/-1;text-align:center;padding:2rem;color:var(--text-muted);font-size:13px">
+        <div style="grid-column:1/-1;text-align:center;padding:3rem;color:var(--text-muted);font-size:13px">
           Carregando áreas...
         </div>
       </div>
@@ -112,62 +121,80 @@
   </div>
 </div>
 
-<!-- Modal de criação/edição -->
-<div class="modal-overlay" id="modal" style="display:none" onclick="onOverlayClick(event)">
-  <div class="modal-box">
-    <button class="modal-close" onclick="closeModal()"><i class="ti ti-x"></i></button>
-    <div class="modal-title" id="modal-title">Nova Área</div>
+<!-- Modal -->
+<div class="mo" id="modal" style="display:none" onclick="if(event.target===this)closeModal()">
+  <div class="mo-box">
+    <button class="mo-close" onclick="closeModal()"><i class="ti ti-x"></i></button>
+    <div class="mo-title" id="modal-title">Nova Área</div>
 
-    <div class="form-row">
-      <div class="form-field" style="flex:0 0 auto">
-        <label class="form-label">Ícone</label>
-        <button class="icon-preview-btn" id="icon-btn" onclick="pickIcon()">
-          <i class="ti ti-map" id="icon-preview"></i>
-          <span>Escolher</span>
+    <div class="frow">
+      <div class="fl" style="flex:0 0 auto">
+        <label>Ícone</label>
+        <button class="icon-btn" onclick="pickIcon()">
+          <i class="ti ti-map" id="icon-prev"></i> Escolher
         </button>
       </div>
-      <div class="form-field">
-        <label class="form-label">Nome</label>
-        <input class="form-input" id="f-nome" type="text" placeholder="Ex: Saúde & Vitalidade">
+      <div class="fl">
+        <label>Nome</label>
+        <input class="fi" id="f-nome" type="text" placeholder="Nome da área">
       </div>
     </div>
 
-    <div class="form-row">
-      <div class="form-field">
-        <label class="form-label">Cor</label>
-        <input class="form-input" id="f-cor" type="color" value="#8A2540" style="padding:2px 4px;height:36px;cursor:pointer;">
+    <div class="frow">
+      <div class="fl" style="flex:0 0 80px">
+        <label>Cor</label>
+        <input class="fi" id="f-cor" type="color" value="#8A2540" style="padding:2px 4px;height:36px;cursor:pointer">
       </div>
-      <div class="form-field">
-        <label class="form-label">Status</label>
-        <select class="form-select" id="f-status">
-          <option value="expansao">📈 Expansão</option>
-          <option value="manutencao" selected>🛡️ Manutenção</option>
-          <option value="latente">💤 Latente</option>
-          <option value="crise">🚨 Crise</option>
-        </select>
+      <div class="fl">
+        <label>Narrativa <span style="font-weight:400;text-transform:none">(sou alguém que...)</span></label>
+        <input class="fi" id="f-narrativa" type="text" placeholder="Frase comportamental curta">
       </div>
     </div>
 
-    <div class="form-field">
-      <label class="form-label">Score na Roda (1–10)</label>
-      <div class="score-row">
-        <input class="score-slider" id="f-score" type="range" min="1" max="10" value="5"
-          oninput="document.getElementById('score-display').textContent=this.value">
-        <span class="score-val" id="score-display">5</span>
+    <div class="fl">
+      <label>Paz Mental <span style="font-weight:400;text-transform:none">— como me sinto nessa área agora?</span></label>
+      <div class="slider-row">
+        <input type="range" min="1" max="10" value="5" id="f-paz"
+          oninput="document.getElementById('paz-v').textContent=this.value">
+        <span class="slider-val" id="paz-v">5</span>
+      </div>
+    </div>
+    <div class="fl">
+      <label>Ação <span style="font-weight:400;text-transform:none">— o quanto atuei esta semana?</span></label>
+      <div class="slider-row">
+        <input type="range" min="1" max="10" value="5" id="f-acao"
+          oninput="document.getElementById('acao-v').textContent=this.value">
+        <span class="slider-val" id="acao-v">5</span>
+      </div>
+    </div>
+    <div class="fl">
+      <label>Satisfação <span style="font-weight:400;text-transform:none">— estou satisfeito com esse nível?</span></label>
+      <div class="slider-row">
+        <input type="range" min="1" max="10" value="5" id="f-sat"
+          oninput="document.getElementById('sat-v').textContent=this.value">
+        <span class="slider-val" id="sat-v">5</span>
+      </div>
+    </div>
+    <div class="fl">
+      <label>Preocupação <span style="font-weight:400;text-transform:none">— o quanto estou preocupado?</span></label>
+      <div class="slider-row">
+        <input type="range" min="1" max="10" value="5" id="f-preo"
+          oninput="document.getElementById('preo-v').textContent=this.value">
+        <span class="slider-val" id="preo-v">5</span>
       </div>
     </div>
 
-    <div class="form-field">
-      <label class="form-label">Visão 2031</label>
-      <textarea class="form-textarea" id="f-visao" placeholder="Como essa área estará em 2031?"></textarea>
+    <div class="fl">
+      <label>Visão 2031</label>
+      <textarea class="fta" id="f-visao" placeholder="Como essa área estará em 2031?"></textarea>
     </div>
 
-    <div class="modal-actions">
-      <button class="btn-danger" id="btn-delete" style="display:none" onclick="deleteArea()">
+    <div class="mo-actions">
+      <button class="btn-d" id="btn-del" style="display:none" onclick="deleteArea()">
         <i class="ti ti-trash"></i> Excluir
       </button>
-      <button class="btn-secondary" onclick="closeModal()">Cancelar</button>
-      <button class="btn-primary" onclick="saveArea()">Salvar</button>
+      <button class="btn-s" onclick="closeModal()">Cancelar</button>
+      <button class="btn-p" onclick="saveArea()">Salvar</button>
     </div>
   </div>
 </div>
@@ -181,12 +208,25 @@ let areas = [];
 let editingId = null;
 let currentIcon = 'ti-map';
 
-const STATUS = {
-  crise:      { label:'🚨 Crise',       bg:'rgba(220,50,50,0.12)',   color:'#E05555' },
-  expansao:   { label:'📈 Expansão',    bg:'rgba(29,158,117,0.12)',  color:'#1D9E75' },
-  manutencao: { label:'🛡️ Manutenção', bg:'rgba(24,95,165,0.12)',   color:'#185FA5' },
-  latente:    { label:'💤 Latente',     bg:'rgba(150,150,150,0.12)', color:'#999'    },
-};
+// ── EQUILÍBRIO ─────────────────────────────────
+function calcEq(a) {
+  const pos = (a.paz_mental + a.satisfacao + a.acao) / 3;
+  const neg = a.preocupacao * 0.4;
+  return Math.max(0, Math.min(10, (pos - neg + 10) / 2)).toFixed(1);
+}
+
+function eqColor(eq) {
+  const v = parseFloat(eq);
+  return v >= 7 ? '#1D9E75' : v >= 5 ? '#C8A030' : '#8A2540';
+}
+
+function diasDesde(dateStr) {
+  if (!dateStr) return 'nunca atualizado';
+  const diff = Math.floor((Date.now() - new Date(dateStr)) / 86400000);
+  if (diff === 0) return 'atualizado hoje';
+  if (diff === 1) return 'há 1 dia';
+  return `há ${diff} dias`;
+}
 
 // ── INIT ───────────────────────────────────────
 window.addEventListener('DOMContentLoaded', async () => {
@@ -195,139 +235,86 @@ window.addEventListener('DOMContentLoaded', async () => {
 });
 
 async function loadAreas() {
-  if (!window.db) { await new Promise(r=>setTimeout(r,1200)); initSupabase(); }
+  if (!window.db) { await new Promise(r => setTimeout(r, 1200)); initSupabase(); }
   if (!window.db) return;
-  const { data } = await window.db.from('areas').select('*').eq('ativo',true).order('ordem');
+  const { data, error } = await window.db.from('areas').select('*').eq('ativo', true).order('ordem');
+  if (error) { console.error(error); return; }
   areas = data || [];
   renderGrid();
-  renderRoda();
 }
 
-// ── RENDER GRID ────────────────────────────────
+// ── RENDER ─────────────────────────────────────
+const DIMS = [
+  { key:'paz_mental',  label:'Paz Mental',  color:'#185FA5' },
+  { key:'acao',        label:'Ação',         color:'#1D9E75' },
+  { key:'satisfacao',  label:'Satisfação',   color:'#6B35A0' },
+  { key:'preocupacao', label:'Preocupação',  color:'#E05555' },
+];
+
 function renderGrid() {
   const grid = document.getElementById('areas-grid');
   if (!areas.length) {
-    grid.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:2rem;color:var(--text-muted);font-size:13px">
-      Nenhuma área cadastrada.</div>`;
+    grid.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:3rem;color:var(--text-muted);font-size:13px">
+      Nenhuma área. <button onclick="openModal()" style="background:none;border:none;color:var(--acc-text);cursor:pointer;font-family:inherit;font-size:13px">Criar primeira área →</button></div>`;
     return;
   }
   grid.innerHTML = areas.map(a => {
-    const st = STATUS[a.status] || STATUS.manutencao;
-    const scorePct = ((a.score||5)/10)*100;
-    return `<div class="area-card" onclick="openModal('${a.id}')">
-      <div class="area-card-accent" style="background:${a.cor}"></div>
-      <div class="area-card-header">
+    const eq = calcEq(a);
+    const eqC = eqColor(eq);
+    const dims = DIMS.map(d => `
+      <div class="dim-row">
+        <span class="dim-label">${d.label}</span>
+        <div class="dim-bar"><div class="dim-fill" style="width:${(a[d.key]||5)*10}%;background:${d.color}"></div></div>
+        <span class="dim-val">${a[d.key]||5}</span>
+      </div>`).join('');
+
+    return `<div class="area-card" style="border-left-color:${a.cor}" onclick="goDetalhe('${a.id}')">
+      <div class="area-card-top">
         <div class="area-icon" style="background:${a.cor}">
           <i class="ti ${a.icone}" aria-hidden="true"></i>
         </div>
         <span class="area-name">${a.nome}</span>
-        <span class="area-badge" style="background:${st.bg};color:${st.color}">${st.label}</span>
+        <span class="area-eq" style="background:${eqC}22;color:${eqC}">${eq}</span>
       </div>
-      <div class="area-visao">${a.visao_2031 || '<em style="color:var(--text-muted)">Sem visão definida</em>'}</div>
+      ${a.narrativa ? `<div class="area-narrativa">"${a.narrativa}"</div>` : ''}
+      <div>${dims}</div>
       <div class="area-footer">
-        <div class="area-score">
-          <div class="area-score-bar">
-            <div class="area-score-fill" style="width:${scorePct}%;background:${a.cor}"></div>
-          </div>
-          <span class="area-score-num">${a.score||5}/10</span>
-        </div>
-        <button class="area-edit-btn" onclick="event.stopPropagation();openModal('${a.id}')">
-          Editar →
+        <span class="area-atualizado"><i class="ti ti-clock" style="font-size:11px" aria-hidden="true"></i> ${diasDesde(a.ultima_atualizacao)}</span>
+        <button class="area-entrar" onclick="event.stopPropagation();goDetalhe('${a.id}')">
+          Entrar <i class="ti ti-arrow-right" style="font-size:11px" aria-hidden="true"></i>
         </button>
       </div>
     </div>`;
   }).join('');
 }
 
-// ── RODA DA VIDA (SVG puro) ────────────────────
-function renderRoda() {
-  const wrap = document.getElementById('roda-wrap');
-  if (!areas.length) { wrap.innerHTML = ''; return; }
-
-  const cx=210, cy=210, r=150, n=areas.length||6;
-  const pad = 60; // padding para labels
-  const W = (cx+r+pad)*2, H = (cy+r+pad)*2;
-
-  function pt(i, scale) {
-    const angle = -Math.PI/2 + i*(2*Math.PI/n);
-    return { x: cx + r*scale*Math.cos(angle), y: cy + r*scale*Math.sin(angle) };
-  }
-
-  // Rings
-  let rings = '';
-  for (let lv=1; lv<=5; lv++) {
-    const pts = areas.map((_,i) => { const p=pt(i,lv/5); return `${p.x},${p.y}`; }).join(' ');
-    rings += `<polygon points="${pts}" fill="none" stroke="var(--border)" stroke-width="1" opacity=".6"/>`;
-  }
-
-  // Axes
-  let axes = '';
-  areas.forEach((_,i) => {
-    const p = pt(i,1);
-    axes += `<line x1="${cx}" y1="${cy}" x2="${p.x}" y2="${p.y}" stroke="var(--border)" stroke-width="1" opacity=".6"/>`;
-  });
-
-  // Data polygon
-  const dataPts = areas.map((a,i) => { const p=pt(i,(a.score||5)/10); return `${p.x},${p.y}`; }).join(' ');
-  const dataEl = `<polygon points="${dataPts}" fill="var(--acc)" fill-opacity=".2" stroke="var(--acc)" stroke-width="2.5" stroke-linejoin="round"/>`;
-
-  // Dots on data points
-  let dots = '';
-  areas.forEach((a,i) => {
-    const p = pt(i,(a.score||5)/10);
-    dots += `<circle cx="${p.x}" cy="${p.y}" r="4" fill="var(--acc)" stroke="var(--surface)" stroke-width="2"/>`;
-  });
-
-  // Labels (icon + name)
-  let labels = '';
-  areas.forEach((a,i) => {
-    const lp = pt(i, 1.32);
-    const angle = -Math.PI/2 + i*(2*Math.PI/n);
-    const anchor = Math.abs(Math.cos(angle)) < 0.1 ? 'middle' : Math.cos(angle) > 0 ? 'start' : 'end';
-    const shortName = a.nome.split(' ')[0];
-    labels += `
-      <g onclick="openModal('${a.id}')" style="cursor:pointer">
-        <text x="${lp.x}" y="${lp.y - 7}" text-anchor="${anchor}" font-size="11.5"
-          font-weight="600" fill="var(--text2)" font-family="inherit">${shortName}</text>
-        <text x="${lp.x}" y="${lp.y + 9}" text-anchor="${anchor}" font-size="10"
-          fill="var(--text-muted)" font-family="inherit">${a.score||5}/10</text>
-      </g>`;
-  });
-
-  // Center score
-  const avgScore = areas.length ? (areas.reduce((s,a)=>s+(a.score||5),0)/areas.length).toFixed(1) : '—';
-  const center = `
-    <text x="${cx}" y="${cy-6}" text-anchor="middle" font-size="20" font-weight="700"
-      fill="var(--acc-text)" font-family="inherit">${avgScore}</text>
-    <text x="${cx}" y="${cy+12}" text-anchor="middle" font-size="10"
-      fill="var(--text-muted)" font-family="inherit">média</text>`;
-
-  wrap.innerHTML = `
-    <svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg" style="width:100%;max-width:420px;display:block;margin:0 auto">
-      <g transform="translate(${pad},${pad})">
-        ${rings}${axes}${dataEl}${dots}${labels}${center}
-      </g>
-    </svg>`;
+function goDetalhe(id) {
+  window.location.href = `area-detalhe.html?id=${id}`;
 }
 
 // ── MODAL ──────────────────────────────────────
 function openModal(id) {
   editingId = id || null;
-  const area = id ? areas.find(a=>a.id===id) : null;
-  const isEdit = !!area;
+  const a = id ? areas.find(x => x.id === id) : null;
 
-  document.getElementById('modal-title').textContent = isEdit ? 'Editar Área' : 'Nova Área';
-  document.getElementById('btn-delete').style.display = isEdit && !area.padrao ? 'inline-flex' : 'none';
+  document.getElementById('modal-title').textContent = a ? 'Editar Área' : 'Nova Área';
+  document.getElementById('btn-del').style.display = (a && !a.padrao) ? 'inline-flex' : 'none';
 
-  currentIcon = area?.icone || 'ti-map';
-  document.getElementById('icon-preview').className = `ti ${currentIcon}`;
-  document.getElementById('f-nome').value   = area?.nome       || '';
-  document.getElementById('f-cor').value    = area?.cor        || '#8A2540';
-  document.getElementById('f-status').value = area?.status     || 'manutencao';
-  document.getElementById('f-visao').value  = area?.visao_2031 || '';
-  const score = area?.score || 5;
-  document.getElementById('f-score').value  = score;
-  document.getElementById('score-display').textContent = score;
+  currentIcon = a?.icone || 'ti-map';
+  document.getElementById('icon-prev').className = `ti ${currentIcon}`;
+  document.getElementById('f-nome').value      = a?.nome       || '';
+  document.getElementById('f-cor').value       = a?.cor        || '#8A2540';
+  document.getElementById('f-narrativa').value = a?.narrativa  || '';
+  document.getElementById('f-visao').value     = a?.visao_2031 || '';
+
+  const setSlider = (id, valId, val) => {
+    document.getElementById(id).value = val;
+    document.getElementById(valId).textContent = val;
+  };
+  setSlider('f-paz',  'paz-v',  a?.paz_mental  || 5);
+  setSlider('f-acao', 'acao-v', a?.acao         || 5);
+  setSlider('f-sat',  'sat-v',  a?.satisfacao   || 5);
+  setSlider('f-preo', 'preo-v', a?.preocupacao  || 5);
 
   document.getElementById('modal').style.display = 'flex';
 }
@@ -337,15 +324,11 @@ function closeModal() {
   editingId = null;
 }
 
-function onOverlayClick(e) {
-  if (e.target.id === 'modal') closeModal();
-}
-
 function pickIcon() {
   if (typeof openIconPicker === 'function') {
     openIconPicker(icon => {
       currentIcon = icon;
-      document.getElementById('icon-preview').className = `ti ${icon}`;
+      document.getElementById('icon-prev').className = `ti ${icon}`;
     }, currentIcon);
   }
 }
@@ -356,20 +339,24 @@ async function saveArea() {
 
   const payload = {
     nome,
-    icone:      currentIcon,
-    cor:        document.getElementById('f-cor').value,
-    status:     document.getElementById('f-status').value,
-    visao_2031: document.getElementById('f-visao').value.trim(),
-    score:      parseInt(document.getElementById('f-score').value),
-    atualizado_em: new Date().toISOString(),
+    icone:             currentIcon,
+    cor:               document.getElementById('f-cor').value,
+    narrativa:         document.getElementById('f-narrativa').value.trim(),
+    visao_2031:        document.getElementById('f-visao').value.trim(),
+    paz_mental:        parseInt(document.getElementById('f-paz').value),
+    acao:              parseInt(document.getElementById('f-acao').value),
+    satisfacao:        parseInt(document.getElementById('f-sat').value),
+    preocupacao:       parseInt(document.getElementById('f-preo').value),
+    ultima_atualizacao: todayISO(),
+    atualizado_em:     new Date().toISOString(),
   };
 
   if (!window.db) return;
   if (editingId) {
     await window.db.from('areas').update(payload).eq('id', editingId);
   } else {
-    const maxOrdem = areas.length ? Math.max(...areas.map(a=>a.ordem||0)) : 0;
-    await window.db.from('areas').insert({ ...payload, ordem: maxOrdem+1 });
+    const maxOrdem = areas.length ? Math.max(...areas.map(a => a.ordem || 0)) : 0;
+    await window.db.from('areas').insert({ ...payload, ordem: maxOrdem + 1 });
   }
 
   closeModal();
@@ -377,8 +364,7 @@ async function saveArea() {
 }
 
 async function deleteArea() {
-  if (!editingId) return;
-  if (!confirm('Excluir esta área?')) return;
+  if (!editingId || !confirm('Excluir esta área?')) return;
   await window.db.from('areas').update({ ativo: false }).eq('id', editingId);
   closeModal();
   await loadAreas();
