@@ -1,0 +1,542 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>Área · LifeOS</title>
+<script>(function(){
+  var t=localStorage.getItem('rd-theme')||'light';
+  var a=localStorage.getItem('lp-accent');
+  document.documentElement.setAttribute('data-theme',t);
+  if(a) document.documentElement.style.setProperty('--acc',a);
+})()</script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.30.0/dist/tabler-icons.min.css">
+<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="lifeos.css">
+<style>
+/* Cabeçalho da área */
+.area-hero{display:flex;align-items:center;gap:14px;margin-bottom:1.4rem;}
+.area-hero-icon{width:48px;height:48px;border-radius:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.area-hero-icon i{font-size:24px;color:#fff;}
+.area-hero-info{flex:1;}
+.area-hero-name{font-size:22px;font-weight:800;color:var(--text);line-height:1.1;}
+.area-hero-sub{font-size:12px;color:var(--text-muted);margin-top:2px;}
+.back-btn{display:inline-flex;align-items:center;gap:5px;font-size:12px;color:var(--text-muted);
+  background:none;border:none;cursor:pointer;font-family:inherit;padding:0;margin-bottom:1rem;}
+.back-btn:hover{color:var(--text);}
+
+/* Equilíbrio */
+.eq-card{padding:1.2rem;border-radius:var(--radius);border:1px solid var(--border);
+  background:var(--surface);margin-bottom:1.2rem;display:flex;align-items:center;gap:1.2rem;}
+.eq-num{font-size:36px;font-weight:800;line-height:1;}
+.eq-label{font-size:13px;font-weight:600;margin-bottom:2px;}
+.eq-sub{font-size:11px;color:var(--text-muted);}
+
+/* Dimensões */
+.dims-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);
+  padding:1.2rem;margin-bottom:1.2rem;}
+.dim-row{display:flex;align-items:center;gap:10px;padding:6px 0;cursor:pointer;border-radius:8px;
+  margin:0 -8px;padding-left:8px;padding-right:8px;transition:background .1s;}
+.dim-row:hover{background:var(--surface2);}
+.dim-label{font-size:12px;font-weight:600;color:var(--text2);width:100px;flex-shrink:0;}
+.dim-bar{flex:1;height:7px;border-radius:4px;background:var(--surface2);overflow:hidden;}
+.dim-fill{height:100%;border-radius:4px;transition:width .4s;}
+.dim-val{font-size:13px;font-weight:700;color:var(--text);width:20px;text-align:right;flex-shrink:0;}
+.dim-edit{font-size:11px;color:var(--text-muted);opacity:0;transition:opacity .1s;}
+.dim-row:hover .dim-edit{opacity:1;}
+
+/* Slider inline */
+.dim-slider-wrap{padding:10px 8px;background:var(--surface2);border-radius:8px;margin:4px 0;}
+.dim-slider-inner{display:flex;align-items:center;gap:10px;}
+.dim-slider-inner input[type=range]{flex:1;accent-color:var(--acc);}
+.dim-slider-val{font-size:14px;font-weight:700;color:var(--acc-text);min-width:22px;text-align:center;}
+.save-dims-btn{margin-top:8px;padding:5px 14px;border-radius:7px;border:none;background:var(--acc);
+  color:#fff;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;}
+
+/* Narrativa inline */
+.narrativa-display{font-size:14px;color:var(--text2);font-style:italic;cursor:text;
+  padding:6px 8px;border-radius:6px;border:1px solid transparent;transition:border-color .1s;}
+.narrativa-display:hover{border-color:var(--border);}
+.narrativa-input{width:100%;padding:6px 8px;border:1px solid var(--acc);border-radius:6px;
+  background:var(--surface2);color:var(--text);font-size:14px;font-family:inherit;
+  font-style:italic;outline:none;box-sizing:border-box;}
+
+/* Visão 2031 */
+.visao-textarea{width:100%;padding:.6rem .8rem;border:1px solid var(--border);border-radius:8px;
+  background:var(--surface2);color:var(--text);font-size:13px;font-family:inherit;
+  outline:none;resize:vertical;min-height:80px;box-sizing:border-box;line-height:1.6;}
+.visao-textarea:focus{border-color:var(--acc);}
+
+/* Hábitos */
+.habito-chip{display:flex;align-items:center;gap:8px;padding:7px 10px;
+  border-radius:8px;background:var(--surface2);margin-bottom:6px;}
+.habito-chip i{font-size:14px;}
+.habito-chip-name{font-size:13px;color:var(--text2);flex:1;}
+.habito-chip-pct{font-size:11px;font-weight:700;}
+
+/* Reflexões */
+.reflexao-item{padding:.8rem;border-radius:8px;background:var(--surface2);
+  border:1px solid var(--border);margin-bottom:.7rem;}
+.reflexao-meta{font-size:10px;color:var(--text-muted);margin-bottom:4px;
+  display:flex;align-items:center;gap:8px;}
+.reflexao-texto{font-size:13px;color:var(--text2);line-height:1.5;}
+.reflexao-dims{display:flex;gap:8px;margin-top:6px;flex-wrap:wrap;}
+.reflexao-dim-badge{font-size:10px;padding:2px 7px;border-radius:10px;background:var(--surface);
+  border:1px solid var(--border);color:var(--text-muted);}
+
+.nova-reflexao-btn{display:flex;align-items:center;gap:7px;padding:.45rem 1rem;border-radius:8px;
+  border:1px dashed var(--border);background:transparent;color:var(--text-muted);
+  font-size:13px;cursor:pointer;font-family:inherit;width:100%;justify-content:center;
+  transition:border-color .15s,color .15s;}
+.nova-reflexao-btn:hover{border-color:var(--acc);color:var(--acc-text);}
+.reflexao-form{padding:.8rem;border-radius:8px;border:1px solid var(--acc);
+  background:var(--surface2);margin-bottom:.7rem;}
+.reflexao-textarea{width:100%;padding:.5rem .7rem;border:1px solid var(--border);border-radius:7px;
+  background:var(--surface);color:var(--text);font-size:13px;font-family:inherit;
+  outline:none;resize:vertical;min-height:72px;box-sizing:border-box;margin-bottom:.6rem;}
+.reflexao-textarea:focus{border-color:var(--acc);}
+.reflexao-form-actions{display:flex;gap:.5rem;justify-content:flex-end;}
+.btn-sm-p{padding:.35rem .9rem;border-radius:7px;border:none;background:var(--acc);
+  color:#fff;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;}
+.btn-sm-s{padding:.35rem .8rem;border-radius:7px;border:1px solid var(--border);
+  background:transparent;color:var(--text-muted);font-size:12px;cursor:pointer;font-family:inherit;}
+
+.section-title{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;
+  color:var(--text-muted);margin-bottom:.8rem;display:flex;align-items:center;gap:7px;}
+</style>
+</head>
+<body>
+
+<div id="sb-overlay" class="sb-overlay" onclick="closeSidebar()"></div>
+<div class="app-shell">
+  <div id="sidebar" class="sidebar"></div>
+  <div class="main-area">
+    <div class="page-content">
+
+      <button class="back-btn" onclick="window.location.href='areas.html'">
+        <i class="ti ti-arrow-left" aria-hidden="true"></i> Voltar para Áreas
+      </button>
+
+      <!-- Hero -->
+      <div class="area-hero" id="area-hero">
+        <div class="lo-loading"><div class="lo-spinner"></div><span>Carregando...</span></div>
+      </div>
+
+      <!-- Equilíbrio -->
+      <div class="eq-card" id="eq-card" style="display:none">
+        <div>
+          <div class="eq-num" id="eq-num">—</div>
+          <div style="font-size:10px;color:var(--text-muted);margin-top:2px">equilíbrio</div>
+        </div>
+        <div style="flex:1;border-left:1px solid var(--border);padding-left:1.2rem">
+          <div class="eq-label" id="eq-label">—</div>
+          <div class="eq-sub" id="eq-sub">—</div>
+        </div>
+      </div>
+
+      <div class="two-col">
+        <!-- COLUNA ESQUERDA -->
+        <div style="display:flex;flex-direction:column;gap:1.2rem">
+
+          <!-- Dimensões -->
+          <div class="lo-card" id="dims-card" style="display:none">
+            <div class="lo-card-header">
+              <i class="ti ti-adjustments-horizontal" aria-hidden="true"></i>
+              <span class="lo-card-title">Dimensões</span>
+              <span style="font-size:11px;color:var(--text-muted);margin-left:auto">clique para ajustar</span>
+            </div>
+            <div class="lo-card-body" style="padding:.5rem 1.2rem" id="dims-body"></div>
+            <div id="dims-save-row" style="display:none;padding:.5rem 1.2rem 1rem">
+              <button class="save-dims-btn" onclick="saveDims()">
+                <i class="ti ti-check"></i> Salvar dimensões
+              </button>
+            </div>
+          </div>
+
+          <!-- Narrativa -->
+          <div class="lo-card" id="narrativa-card" style="display:none">
+            <div class="lo-card-header">
+              <i class="ti ti-quote" aria-hidden="true"></i>
+              <span class="lo-card-title">Narrativa</span>
+            </div>
+            <div class="lo-card-body">
+              <div style="font-size:11px;color:var(--text-muted);margin-bottom:.4rem">Sou alguém que...</div>
+              <div id="narrativa-display" class="narrativa-display" onclick="editNarrativa()">
+                Clique para definir sua narrativa
+              </div>
+            </div>
+          </div>
+
+          <!-- Hábitos -->
+          <div class="lo-card" id="habitos-card" style="display:none">
+            <div class="lo-card-header">
+              <i class="ti ti-checkbox" aria-hidden="true"></i>
+              <span class="lo-card-title">Hábitos vinculados</span>
+            </div>
+            <div class="lo-card-body" style="padding:.5rem 1.2rem" id="habitos-body">
+              <div style="font-size:13px;color:var(--text-muted)">Carregando...</div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- COLUNA DIREITA -->
+        <div style="display:flex;flex-direction:column;gap:1.2rem">
+
+          <!-- Visão 2031 -->
+          <div class="lo-card" id="visao-card" style="display:none">
+            <div class="lo-card-header">
+              <i class="ti ti-telescope" aria-hidden="true"></i>
+              <span class="lo-card-title">Visão 2031</span>
+              <div class="save-status idle" id="save-status" style="margin-left:auto">
+                <i class="ti ti-circle-dot"></i> Pronto
+              </div>
+            </div>
+            <div class="lo-card-body">
+              <textarea class="visao-textarea" id="visao-input"
+                placeholder="Como essa área estará em 2031?"
+                oninput="debounceSave('visao_2031', this.value)"></textarea>
+            </div>
+          </div>
+
+          <!-- Reflexões -->
+          <div class="lo-card" id="reflexoes-card" style="display:none">
+            <div class="lo-card-header">
+              <i class="ti ti-writing" aria-hidden="true"></i>
+              <span class="lo-card-title">Reflexões</span>
+            </div>
+            <div class="lo-card-body">
+              <div id="reflexoes-list"></div>
+              <div id="reflexao-form-wrap" style="display:none">
+                <div class="reflexao-form">
+                  <textarea class="reflexao-textarea" id="reflexao-texto"
+                    placeholder="O que está acontecendo nessa área? Como você se sente?"></textarea>
+                  <div class="reflexao-form-actions">
+                    <button class="btn-sm-s" onclick="cancelReflexao()">Cancelar</button>
+                    <button class="btn-sm-p" onclick="salvarReflexao()">Salvar reflexão</button>
+                  </div>
+                </div>
+              </div>
+              <button class="nova-reflexao-btn" id="nova-reflexao-btn" onclick="abrirReflexao()">
+                <i class="ti ti-plus" aria-hidden="true"></i> Nova reflexão
+              </button>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script src="nav.js"></script>
+<script src="lifeos-core.js"></script>
+<script>
+const areaId = new URLSearchParams(window.location.search).get('id');
+let area = null;
+let habitos = [];
+let reflexoes = [];
+let dimsChanged = {};
+let saveTimers = {};
+
+const DIMS = [
+  { key:'paz_mental',  label:'Paz Mental',  color:'#185FA5', pergunta:'Como me sinto nessa área?' },
+  { key:'acao',        label:'Ação',         color:'#1D9E75', pergunta:'O quanto atuei esta semana?' },
+  { key:'satisfacao',  label:'Satisfação',   color:'#6B35A0', pergunta:'Estou satisfeito com esse nível?' },
+  { key:'preocupacao', label:'Preocupação',  color:'#E05555', pergunta:'O quanto estou preocupado?' },
+];
+
+const REINO_MAP = {
+  'Saúde & Vitalidade':  'saude',
+  'Trabalho & Carreira': 'carreira',
+  'Finanças':            'financas',
+  'Relacionamentos':     'relacionamentos',
+  'Aprendizado':         'aprendizado',
+  'Impacto & Legado':    'legado',
+};
+
+function calcEq(a) {
+  const pos = (a.paz_mental + a.satisfacao + a.acao) / 3;
+  const neg = a.preocupacao * 0.4;
+  return Math.max(0, Math.min(10, (pos - neg + 10) / 2)).toFixed(1);
+}
+
+// ── INIT ───────────────────────────────────────
+window.addEventListener('DOMContentLoaded', async () => {
+  if (!areaId) { window.location.href = 'areas.html'; return; }
+  initSupabase();
+  await loadArea();
+  await loadHabitos();
+  await loadReflexoes();
+});
+
+async function loadArea() {
+  if (!window.db) { await new Promise(r => setTimeout(r, 1200)); initSupabase(); }
+  const { data } = await window.db.from('areas').select('*').eq('id', areaId).single();
+  if (!data) { window.location.href = 'areas.html'; return; }
+  area = data;
+  renderArea();
+}
+
+async function loadHabitos() {
+  if (!window.db) return;
+  const reino = REINO_MAP[area?.nome] || '';
+  const { data } = await window.db.from('habitos').select('*').eq('ativo', true).eq('reino', reino);
+  habitos = data || [];
+
+  // Busca % consistência 14 dias
+  const hoje = todayISO();
+  const h14  = addDays(hoje, -13);
+  const ids  = habitos.map(h => h.id);
+  let checks = [];
+  if (ids.length) {
+    const { data: chk } = await window.db.from('habito_checks')
+      .select('habito_id,concluido').in('habito_id', ids)
+      .gte('data', h14).lte('data', hoje).eq('concluido', true);
+    checks = chk || [];
+  }
+
+  const countMap = {};
+  checks.forEach(c => { countMap[c.habito_id] = (countMap[c.habito_id] || 0) + 1; });
+
+  renderHabitos(countMap);
+}
+
+async function loadReflexoes() {
+  if (!window.db) return;
+  const { data } = await window.db.from('area_reflexoes')
+    .select('*').eq('area_id', areaId).order('criado_em', { ascending: false }).limit(10);
+  reflexoes = data || [];
+  renderReflexoes();
+}
+
+// ── RENDER ─────────────────────────────────────
+function renderArea() {
+  document.title = `${area.nome} · LifeOS`;
+
+  // Hero
+  document.getElementById('area-hero').innerHTML = `
+    <div class="area-hero-icon" style="background:${area.cor}">
+      <i class="ti ${area.icone}" aria-hidden="true"></i>
+    </div>
+    <div class="area-hero-info">
+      <div class="area-hero-name">${area.nome}</div>
+      <div class="area-hero-sub">
+        <i class="ti ti-clock" style="font-size:11px"></i>
+        Última atualização: ${diasDesde(area.ultima_atualizacao)}
+      </div>
+    </div>`;
+
+  // Equilíbrio
+  const eq = calcEq(area);
+  const eqV = parseFloat(eq);
+  const eqColor = eqV >= 7 ? '#1D9E75' : eqV >= 5 ? '#C8A030' : '#8A2540';
+  const eqLabel = eqV >= 7 ? 'Área em equilíbrio' : eqV >= 5 ? 'Atenção recomendada' : 'Área precisa de foco';
+  const eqSub   = eqV >= 7 ? 'Continue o que está fazendo' : eqV >= 5 ? 'Observe o que está puxando para baixo' : 'Considere reorganizar prioridades aqui';
+
+  document.getElementById('eq-num').textContent  = eq;
+  document.getElementById('eq-num').style.color  = eqColor;
+  document.getElementById('eq-label').textContent = eqLabel;
+  document.getElementById('eq-label').style.color = eqColor;
+  document.getElementById('eq-sub').textContent   = eqSub;
+  document.getElementById('eq-card').style.display = 'flex';
+
+  // Dimensões
+  renderDims();
+  document.getElementById('dims-card').style.display = '';
+
+  // Narrativa
+  const nd = document.getElementById('narrativa-display');
+  nd.textContent = area.narrativa || 'Clique para definir sua narrativa';
+  nd.style.color = area.narrativa ? 'var(--text2)' : 'var(--text-muted)';
+  document.getElementById('narrativa-card').style.display = '';
+
+  // Visão 2031
+  document.getElementById('visao-input').value = area.visao_2031 || '';
+  document.getElementById('visao-card').style.display = '';
+
+  // Cards restantes
+  document.getElementById('habitos-card').style.display   = '';
+  document.getElementById('reflexoes-card').style.display = '';
+}
+
+function renderDims() {
+  document.getElementById('dims-body').innerHTML = DIMS.map(d => {
+    const val = dimsChanged[d.key] !== undefined ? dimsChanged[d.key] : (area[d.key] || 5);
+    return `<div class="dim-row" onclick="toggleSlider('${d.key}')">
+      <span class="dim-label">${d.label}</span>
+      <div class="dim-bar"><div class="dim-fill" id="fill-${d.key}"
+        style="width:${val*10}%;background:${d.color}"></div></div>
+      <span class="dim-val" id="val-${d.key}">${val}</span>
+      <i class="ti ti-pencil dim-edit" aria-hidden="true"></i>
+    </div>
+    <div class="dim-slider-wrap" id="slider-${d.key}" style="display:none">
+      <div style="font-size:11px;color:var(--text-muted);margin-bottom:5px">${d.pergunta}</div>
+      <div class="dim-slider-inner">
+        <input type="range" min="1" max="10" value="${val}"
+          oninput="onDimChange('${d.key}', this.value, '${d.color}')">
+        <span class="dim-slider-val" id="sval-${d.key}">${val}</span>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function toggleSlider(key) {
+  const wrap = document.getElementById(`slider-${key}`);
+  const isOpen = wrap.style.display !== 'none';
+  // Fecha todos
+  DIMS.forEach(d => document.getElementById(`slider-${d.key}`).style.display = 'none');
+  if (!isOpen) wrap.style.display = 'block';
+}
+
+function onDimChange(key, val, color) {
+  val = parseInt(val);
+  dimsChanged[key] = val;
+  document.getElementById(`val-${key}`).textContent  = val;
+  document.getElementById(`sval-${key}`).textContent = val;
+  document.getElementById(`fill-${key}`).style.width = `${val*10}%`;
+  document.getElementById('dims-save-row').style.display = 'block';
+
+  // Atualiza equilíbrio ao vivo
+  const tmp = { ...area, ...dimsChanged };
+  const eq = calcEq(tmp);
+  const eqV = parseFloat(eq);
+  const eqColor = eqV >= 7 ? '#1D9E75' : eqV >= 5 ? '#C8A030' : '#8A2540';
+  document.getElementById('eq-num').textContent = eq;
+  document.getElementById('eq-num').style.color = eqColor;
+}
+
+async function saveDims() {
+  if (!Object.keys(dimsChanged).length) return;
+  const payload = { ...dimsChanged, ultima_atualizacao: todayISO(), atualizado_em: new Date().toISOString() };
+  await window.db.from('areas').update(payload).eq('id', areaId);
+  Object.assign(area, dimsChanged);
+  dimsChanged = {};
+  document.getElementById('dims-save-row').style.display = 'none';
+  DIMS.forEach(d => document.getElementById(`slider-${d.key}`).style.display = 'none');
+}
+
+// ── NARRATIVA INLINE ───────────────────────────
+function editNarrativa() {
+  const display = document.getElementById('narrativa-display');
+  const val = area.narrativa || '';
+  display.outerHTML = `<input class="narrativa-input" id="narrativa-input"
+    value="${val.replace(/"/g,'&quot;')}" placeholder="Sou alguém que..."
+    onblur="saveNarrativa(this.value)" onkeydown="if(event.key==='Enter')this.blur()">`;
+  document.getElementById('narrativa-input').focus();
+}
+
+async function saveNarrativa(val) {
+  val = val.trim();
+  area.narrativa = val;
+  await window.db.from('areas').update({ narrativa: val, ultima_atualizacao: todayISO() }).eq('id', areaId);
+  const input = document.getElementById('narrativa-input');
+  const display = document.createElement('div');
+  display.id = 'narrativa-display';
+  display.className = 'narrativa-display';
+  display.textContent = val || 'Clique para definir sua narrativa';
+  display.style.color = val ? 'var(--text2)' : 'var(--text-muted)';
+  display.onclick = editNarrativa;
+  input.replaceWith(display);
+}
+
+// ── VISÃO 2031 ─────────────────────────────────
+function debounceSave(field, value) {
+  clearTimeout(saveTimers[field]);
+  setStatus('saving');
+  saveTimers[field] = setTimeout(async () => {
+    area[field] = value;
+    await window.db.from('areas').update({ [field]: value, ultima_atualizacao: todayISO() }).eq('id', areaId);
+    setStatus('saved');
+  }, 900);
+}
+
+// ── HÁBITOS ────────────────────────────────────
+function renderHabitos(countMap) {
+  const body = document.getElementById('habitos-body');
+  if (!habitos.length) {
+    body.innerHTML = `<div style="font-size:13px;color:var(--text-muted);padding:.3rem 0">
+      Nenhum hábito vinculado.
+      <a href="habitos.html" style="color:var(--acc-text)">Criar hábito →</a></div>`;
+    return;
+  }
+  body.innerHTML = habitos.map(h => {
+    const done = countMap[h.id] || 0;
+    const pct  = Math.round((done / 14) * 100);
+    const color = pct >= 70 ? '#1D9E75' : pct >= 40 ? '#C8A030' : '#E05555';
+    return `<div class="habito-chip">
+      <i class="ti ${h.icone}" style="color:${h.cor}" aria-hidden="true"></i>
+      <span class="habito-chip-name">${h.nome}</span>
+      <span class="habito-chip-pct" style="color:${color}">${pct}%</span>
+    </div>`;
+  }).join('');
+}
+
+// ── REFLEXÕES ──────────────────────────────────
+function renderReflexoes() {
+  const list = document.getElementById('reflexoes-list');
+  if (!reflexoes.length) {
+    list.innerHTML = `<div style="font-size:13px;color:var(--text-muted);margin-bottom:.8rem">
+      Nenhuma reflexão ainda. Registre o que está acontecendo nessa área.</div>`;
+    return;
+  }
+  list.innerHTML = reflexoes.map(r => {
+    const data = new Date(r.criado_em).toLocaleDateString('pt-BR', {day:'2-digit',month:'short',year:'numeric'});
+    const dims = DIMS.filter(d => r[d.key]).map(d =>
+      `<span class="reflexao-dim-badge">${d.label}: ${r[d.key]}</span>`).join('');
+    return `<div class="reflexao-item">
+      <div class="reflexao-meta">
+        <i class="ti ti-calendar" style="font-size:11px" aria-hidden="true"></i> ${data}
+      </div>
+      <div class="reflexao-texto">${r.texto}</div>
+      ${dims ? `<div class="reflexao-dims">${dims}</div>` : ''}
+    </div>`;
+  }).join('');
+}
+
+function abrirReflexao() {
+  document.getElementById('reflexao-form-wrap').style.display = 'block';
+  document.getElementById('nova-reflexao-btn').style.display = 'none';
+  document.getElementById('reflexao-texto').focus();
+}
+
+function cancelReflexao() {
+  document.getElementById('reflexao-form-wrap').style.display = 'none';
+  document.getElementById('nova-reflexao-btn').style.display = 'flex';
+  document.getElementById('reflexao-texto').value = '';
+}
+
+async function salvarReflexao() {
+  const texto = document.getElementById('reflexao-texto').value.trim();
+  if (!texto) return;
+
+  const payload = {
+    area_id:    areaId,
+    texto,
+    paz_mental:  area.paz_mental,
+    acao:        area.acao,
+    satisfacao:  area.satisfacao,
+    preocupacao: area.preocupacao,
+  };
+
+  await window.db.from('area_reflexoes').insert(payload);
+  await window.db.from('areas').update({ ultima_atualizacao: todayISO() }).eq('id', areaId);
+
+  cancelReflexao();
+  await loadReflexoes();
+}
+
+// ── UTILS ──────────────────────────────────────
+function diasDesde(dateStr) {
+  if (!dateStr) return 'nunca atualizado';
+  const diff = Math.floor((Date.now() - new Date(dateStr)) / 86400000);
+  if (diff === 0) return 'hoje';
+  if (diff === 1) return 'há 1 dia';
+  return `há ${diff} dias`;
+}
+</script>
+</body>
+</html>
