@@ -191,9 +191,9 @@
 <script src="nav.js"></script>
 <script src="lifeos-core.js"></script>
 <script>
-const CLIENT_ID = '512480734565-6k267l936s0p23cqfldi2m3nj4o0ori2.apps.googleusercontent.com';
+const CLIENT_ID = '460365706463-5n6rqjknp7deui0jl3jbeq852ibqedcc.apps.googleusercontent.com';
 const SCOPES    = 'https://www.googleapis.com/auth/calendar.readonly';
-const API_KEY   = 'AIzaSyDd25B3QlstKxLOv_LNomKBal3gJjq4wjg';
+// API key removida — OAuth Bearer token é suficiente para todas as chamadas
 
 let gapiReady = false, gisReady = false;
 let tokenClient = null;
@@ -213,7 +213,7 @@ function onGapiLoad() {
   gapi.load('client', async () => {
     try {
       // apiKey necessário para o gapi.client.request() rotear corretamente
-      await gapi.client.init({ apiKey: API_KEY });
+      await gapi.client.init({});
     } catch(e) { console.warn('gapi init (non-fatal):', e); }
     gapiReady = true;
     tryRestore();
