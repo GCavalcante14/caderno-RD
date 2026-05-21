@@ -1,0 +1,679 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>OKRs · LifeOS</title>
+<script>(function(){
+  var t=localStorage.getItem('rd-theme')||'light';
+  var a=localStorage.getItem('lp-accent');
+  document.documentElement.setAttribute('data-theme',t);
+  if(a) document.documentElement.style.setProperty('--acc',a);
+})()</script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.30.0/dist/tabler-icons.min.css">
+<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="lifeos.css">
+<style>
+/* Ciclo bar */
+.ciclo-bar{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);
+  padding:1rem 1.2rem;margin-bottom:1.2rem;}
+.ciclo-nav{display:flex;align-items:center;gap:8px;margin-bottom:.7rem;}
+.ciclo-nav-btn{width:28px;height:28px;border-radius:7px;border:1px solid var(--border);
+  background:var(--surface2);color:var(--text-muted);cursor:pointer;
+  display:flex;align-items:center;justify-content:center;}
+.ciclo-nav-btn:hover{border-color:var(--acc);color:var(--acc);}
+.ciclo-nome{font-size:15px;font-weight:700;color:var(--text);flex:1;text-align:center;}
+.ciclo-progress-wrap{display:flex;align-items:center;gap:10px;}
+.ciclo-progress-bar{flex:1;height:6px;border-radius:3px;background:var(--surface2);overflow:hidden;}
+.ciclo-progress-fill{height:100%;border-radius:3px;background:var(--acc);transition:width .4s;}
+.ciclo-progress-label{font-size:11px;color:var(--text-muted);white-space:nowrap;}
+
+/* Filtros de área */
+.area-filters{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:1.2rem;}
+.area-filter-btn{padding:4px 12px;border-radius:20px;border:1px solid var(--border);
+  background:transparent;color:var(--text-muted);font-size:12px;font-weight:500;
+  cursor:pointer;font-family:inherit;transition:all .15s;display:flex;align-items:center;gap:5px;}
+.area-filter-btn.active{background:var(--acc);border-color:var(--acc);color:#fff;font-weight:600;}
+.area-filter-btn i{font-size:13px;}
+
+/* Objetivo card */
+.obj-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);
+  margin-bottom:1rem;overflow:hidden;}
+.obj-header{display:flex;align-items:center;gap:10px;padding:1rem 1.2rem .8rem;cursor:pointer;}
+.obj-header:hover{background:var(--surface2);}
+.obj-icon{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;
+  justify-content:center;flex-shrink:0;}
+.obj-icon i{font-size:16px;color:#fff;}
+.obj-nome{font-size:14px;font-weight:700;color:var(--text);flex:1;}
+.obj-metod{font-size:10px;font-weight:700;padding:2px 7px;border-radius:10px;
+  background:var(--surface2);color:var(--text-muted);border:1px solid var(--border);}
+.obj-status-badge{font-size:10px;font-weight:700;padding:2px 8px;border-radius:10px;}
+.obj-progress-row{display:flex;align-items:center;gap:10px;padding:0 1.2rem .8rem;}
+.obj-progress-bar{flex:1;height:5px;border-radius:3px;background:var(--surface2);overflow:hidden;}
+.obj-progress-fill{height:100%;border-radius:3px;transition:width .4s;}
+.obj-progress-pct{font-size:11px;font-weight:700;color:var(--text-muted);min-width:30px;text-align:right;}
+
+/* Key results */
+.keys-section{border-top:1px solid var(--border);padding:.7rem 1.2rem;}
+.kr-item{display:flex;align-items:center;gap:10px;padding:5px 0;}
+.kr-desc{font-size:12px;color:var(--text2);flex:1;}
+.kr-bar{width:80px;height:4px;border-radius:2px;background:var(--surface2);overflow:hidden;flex-shrink:0;}
+.kr-fill{height:100%;border-radius:2px;background:var(--acc);}
+.kr-val{font-size:11px;color:var(--text-muted);white-space:nowrap;min-width:60px;text-align:right;}
+.kr-edit-btn{background:none;border:none;color:var(--text-muted);cursor:pointer;padding:2px 4px;opacity:0;transition:opacity .15s;}
+.kr-item:hover .kr-edit-btn{opacity:1;}
+
+.obj-actions{display:flex;gap:.5rem;padding:.5rem 1.2rem .8rem;border-top:1px solid var(--border);}
+.btn-ghost{padding:3px 10px;border-radius:6px;border:1px solid var(--border);
+  background:transparent;color:var(--text-muted);font-size:11px;cursor:pointer;
+  font-family:inherit;display:flex;align-items:center;gap:4px;transition:all .15s;}
+.btn-ghost:hover{border-color:var(--acc);color:var(--acc-text);}
+
+/* Status cores */
+.st-ativo{background:rgba(29,158,117,.12);color:#1D9E75;}
+.st-pausado{background:rgba(180,140,40,.12);color:#C8A030;}
+.st-concluido{background:rgba(24,95,165,.12);color:#185FA5;}
+.st-cancelado{background:rgba(150,150,150,.12);color:#999;}
+
+/* Modal wizard */
+.mo{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:200;
+  display:flex;align-items:center;justify-content:center;backdrop-filter:blur(3px);}
+.mo-box{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);
+  padding:1.5rem;width:100%;max-width:500px;max-height:90vh;overflow-y:auto;position:relative;}
+.mo-close{position:absolute;top:12px;right:12px;width:28px;height:28px;border-radius:6px;
+  border:1px solid var(--border);background:var(--surface2);color:var(--text-muted);
+  cursor:pointer;display:flex;align-items:center;justify-content:center;}
+.mo-title{font-size:16px;font-weight:700;color:var(--text);margin-bottom:1.2rem;}
+.mo-step{font-size:11px;color:var(--text-muted);margin-bottom:.4rem;}
+.fl{margin-bottom:.9rem;}
+.fl label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;
+  color:var(--text-muted);display:block;margin-bottom:.35rem;}
+.fi{width:100%;padding:.45rem .7rem;border:1px solid var(--border);border-radius:8px;
+  background:var(--surface2);color:var(--text);font-size:13px;font-family:inherit;
+  outline:none;box-sizing:border-box;}
+.fi:focus{border-color:var(--acc);}
+.fsel{width:100%;padding:.45rem .7rem;border:1px solid var(--border);border-radius:8px;
+  background:var(--surface2);color:var(--text);font-size:13px;font-family:inherit;
+  outline:none;cursor:pointer;}
+.fta{width:100%;padding:.45rem .7rem;border:1px solid var(--border);border-radius:8px;
+  background:var(--surface2);color:var(--text);font-size:13px;font-family:inherit;
+  outline:none;resize:vertical;min-height:60px;box-sizing:border-box;}
+.fta:focus,.fsel:focus{border-color:var(--acc);}
+.frow{display:flex;gap:.7rem;}
+.frow .fl{flex:1;}
+.mo-actions{display:flex;gap:.6rem;justify-content:flex-end;margin-top:1.2rem;
+  padding-top:.9rem;border-top:1px solid var(--border);}
+.btn-p{padding:.42rem 1.1rem;border-radius:8px;border:none;background:var(--acc);
+  color:#fff;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;}
+.btn-s{padding:.42rem 1rem;border-radius:8px;border:1px solid var(--border);
+  background:var(--surface2);color:var(--text-muted);font-size:13px;cursor:pointer;font-family:inherit;}
+.btn-d{padding:.42rem 1rem;border-radius:8px;border:1px solid #E05555;
+  background:transparent;color:#E05555;font-size:13px;cursor:pointer;
+  font-family:inherit;margin-right:auto;}
+
+/* Metodologia picker */
+.metod-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:.6rem;margin-bottom:1rem;}
+.metod-btn{padding:.6rem;border-radius:8px;border:1px solid var(--border);
+  background:var(--surface2);cursor:pointer;font-family:inherit;text-align:center;
+  transition:all .15s;}
+.metod-btn:hover{border-color:var(--acc);}
+.metod-btn.active{border-color:var(--acc);background:var(--acc-soft);}
+.metod-btn-label{font-size:12px;font-weight:600;color:var(--text);display:block;margin-top:4px;}
+.metod-btn-sub{font-size:10px;color:var(--text-muted);}
+
+/* KR modal */
+.kr-row-input{display:flex;gap:.5rem;align-items:flex-start;margin-bottom:.5rem;}
+.kr-row-input input{flex:1;padding:.4rem .6rem;border:1px solid var(--border);border-radius:7px;
+  background:var(--surface2);color:var(--text);font-size:12px;font-family:inherit;outline:none;}
+.kr-row-input input:focus{border-color:var(--acc);}
+.kr-row-input .kr-unit{width:60px;}
+.kr-row-del{background:none;border:none;color:var(--text-muted);cursor:pointer;padding:4px;}
+
+.add-btn{display:flex;align-items:center;gap:7px;padding:.45rem 1rem;border-radius:8px;
+  border:1px solid var(--border);background:var(--surface);color:var(--text);
+  font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;transition:border-color .15s;}
+.add-btn:hover{border-color:var(--acc);color:var(--acc-text);}
+</style>
+</head>
+<body>
+
+<div id="sb-overlay" class="sb-overlay" onclick="closeSidebar()"></div>
+<div class="app-shell">
+  <div id="sidebar" class="sidebar"></div>
+  <div class="main-area">
+    <div class="page-content">
+
+      <div class="page-header">
+        <div class="page-header-left">
+          <div class="page-role"><i class="ti ti-target" aria-hidden="true"></i> O Estrategista — metas com prazo real</div>
+          <h1 class="page-title">OKRs</h1>
+          <p class="page-subtitle">Objetivos e Key Results · Ciclos de 6 semanas</p>
+        </div>
+        <button class="add-btn" onclick="openWizard()">
+          <i class="ti ti-plus" aria-hidden="true"></i> Novo Objetivo
+        </button>
+      </div>
+
+      <!-- Ciclo -->
+      <div class="ciclo-bar">
+        <div class="ciclo-nav">
+          <button class="ciclo-nav-btn" onclick="navCiclo(-1)"><i class="ti ti-chevron-left"></i></button>
+          <span class="ciclo-nome" id="ciclo-nome">Carregando...</span>
+          <button class="ciclo-nav-btn" onclick="navCiclo(1)"><i class="ti ti-chevron-right"></i></button>
+        </div>
+        <div class="ciclo-progress-wrap">
+          <div class="ciclo-progress-bar">
+            <div class="ciclo-progress-fill" id="ciclo-fill" style="width:0%"></div>
+          </div>
+          <span class="ciclo-progress-label" id="ciclo-label">—</span>
+        </div>
+      </div>
+
+      <!-- Filtros de área -->
+      <div class="area-filters" id="area-filters">
+        <button class="area-filter-btn active" data-area="" onclick="setFiltro(this, '')">
+          <i class="ti ti-layout-list"></i> Todos
+        </button>
+      </div>
+
+      <!-- Lista de objetivos -->
+      <div id="obj-list">
+        <div style="text-align:center;padding:2rem;color:var(--text-muted);font-size:13px">
+          Carregando objetivos...
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- Modal principal (wizard) -->
+<div class="mo" id="modal" style="display:none" onclick="if(event.target===this)closeModal()">
+  <div class="mo-box">
+    <button class="mo-close" onclick="closeModal()"><i class="ti ti-x"></i></button>
+    <div class="mo-step" id="modal-step"></div>
+    <div class="mo-title" id="modal-title">Novo Objetivo</div>
+    <div id="modal-body"></div>
+    <div class="mo-actions" id="modal-actions"></div>
+  </div>
+</div>
+
+<!-- Modal KR -->
+<div class="mo" id="modal-kr" style="display:none" onclick="if(event.target===this)closeKrModal()">
+  <div class="mo-box">
+    <button class="mo-close" onclick="closeKrModal()"><i class="ti ti-x"></i></button>
+    <div class="mo-title" id="kr-modal-title">Key Result</div>
+    <div id="kr-modal-body"></div>
+    <div class="mo-actions">
+      <button class="btn-d" id="kr-del-btn" style="display:none" onclick="deleteKr()">
+        <i class="ti ti-trash"></i> Excluir
+      </button>
+      <button class="btn-s" onclick="closeKrModal()">Cancelar</button>
+      <button class="btn-p" onclick="saveKr()">Salvar</button>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script src="nav.js"></script>
+<script src="lifeos-core.js"></script>
+<script src="icon-picker.js"></script>
+<script>
+let ciclos = [], cicloIdx = 0;
+let areas  = [], objetivos = [], keys = [];
+let filtroArea = '';
+let wizardStep = 1, wizardMetod = 'livre';
+let editingObjId = null, editingKrId = null, editingKrObjId = null;
+let currentIcon = 'ti-target';
+let objExpandido = {};
+
+const METODS = [
+  { key:'okr',         label:'OKR Clássico', icon:'ti-target',     sub:'O + 3 KRs'       },
+  { key:'smart',       label:'SMART',         icon:'ti-checkbox',   sub:'5 critérios'     },
+  { key:'woop',        label:'WOOP',          icon:'ti-wave-sine',  sub:'Wish→Plan'       },
+  { key:'fear_setting',label:'Fear Setting',  icon:'ti-alert',      sub:'Tim Ferriss'     },
+  { key:'5_porques',   label:'5 Porquês',     icon:'ti-help',       sub:'Causa raiz'      },
+  { key:'livre',       label:'Livre',         icon:'ti-pencil',     sub:'Campo aberto'    },
+];
+
+const STATUS_CFG = {
+  ativo:      { label:'Ativo',      cls:'st-ativo'     },
+  pausado:    { label:'Pausado',    cls:'st-pausado'   },
+  concluido:  { label:'Concluído',  cls:'st-concluido' },
+  cancelado:  { label:'Cancelado',  cls:'st-cancelado' },
+};
+
+// ── INIT ───────────────────────────────────────
+window.addEventListener('DOMContentLoaded', async () => {
+  initSupabase();
+  await Promise.all([loadCiclos(), loadAreas()]);
+  await loadObjetivos();
+});
+
+async function loadCiclos() {
+  if (!window.db) { await new Promise(r=>setTimeout(r,1200)); initSupabase(); }
+  const { data } = await window.db.from('ciclos').select('*').order('inicio');
+  ciclos = data || [];
+  const ativo = ciclos.findIndex(c => c.ativo);
+  cicloIdx = ativo >= 0 ? ativo : ciclos.length - 1;
+  renderCiclo();
+}
+
+async function loadAreas() {
+  if (!window.db) return;
+  const { data } = await window.db.from('areas').select('*').eq('ativo',true).order('ordem');
+  areas = data || [];
+  renderFiltros();
+}
+
+async function loadObjetivos() {
+  if (!window.db || !ciclos.length) return;
+  const ciclo = ciclos[cicloIdx];
+  if (!ciclo) { document.getElementById('obj-list').innerHTML = '<div style="text-align:center;padding:2rem;color:var(--text-muted);font-size:13px">Nenhum ciclo encontrado.</div>'; return; }
+
+  const { data: objs } = await window.db.from('objetivos')
+    .select('*').eq('ciclo_id', ciclo.id).order('ordem');
+  objetivos = objs || [];
+
+  const ids = objetivos.map(o => o.id);
+  if (ids.length) {
+    const { data: ks } = await window.db.from('keys').select('*').in('objetivo_id', ids);
+    keys = ks || [];
+  } else { keys = []; }
+
+  renderObjetivos();
+}
+
+// ── CICLO ──────────────────────────────────────
+function renderCiclo() {
+  const c = ciclos[cicloIdx];
+  if (!c) { document.getElementById('ciclo-nome').textContent = 'Sem ciclo'; return; }
+  document.getElementById('ciclo-nome').textContent = c.nome;
+
+  const inicio = new Date(c.inicio + 'T12:00:00');
+  const fim    = new Date(c.fim    + 'T12:00:00');
+  const hoje   = new Date();
+  const total  = Math.round((fim - inicio) / 86400000);
+  const decor  = Math.min(total, Math.max(0, Math.round((hoje - inicio) / 86400000)));
+  const rest   = Math.max(0, total - decor);
+  const pct    = Math.round((decor / total) * 100);
+
+  document.getElementById('ciclo-fill').style.width = pct + '%';
+  document.getElementById('ciclo-label').textContent =
+    `Dia ${decor} de ${total} · ${pct}% · ${rest} dias restantes`;
+}
+
+function navCiclo(dir) {
+  cicloIdx = Math.max(0, Math.min(ciclos.length - 1, cicloIdx + dir));
+  renderCiclo();
+  loadObjetivos();
+}
+
+// ── FILTROS ────────────────────────────────────
+function renderFiltros() {
+  const wrap = document.getElementById('area-filters');
+  const extra = areas.map(a => `
+    <button class="area-filter-btn" data-area="${a.id}" onclick="setFiltro(this,'${a.id}')">
+      <i class="ti ${a.icone}" style="color:${a.cor}"></i> ${a.nome.split(' ')[0]}
+    </button>`).join('');
+  wrap.innerHTML = `<button class="area-filter-btn active" data-area="" onclick="setFiltro(this,'')">
+    <i class="ti ti-layout-list"></i> Todos</button>` + extra;
+}
+
+function setFiltro(btn, areaId) {
+  document.querySelectorAll('.area-filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  filtroArea = areaId;
+  renderObjetivos();
+}
+
+// ── OBJETIVOS ──────────────────────────────────
+function renderObjetivos() {
+  const list = document.getElementById('obj-list');
+  let objs = filtroArea ? objetivos.filter(o => o.area_id === filtroArea) : objetivos;
+
+  if (!objs.length) {
+    list.innerHTML = `<div style="text-align:center;padding:2.5rem;color:var(--text-muted);font-size:13px">
+      Nenhum objetivo neste ciclo. <button onclick="openWizard()" style="background:none;border:none;color:var(--acc-text);cursor:pointer;font-family:inherit;font-size:13px">Criar →</button></div>`;
+    return;
+  }
+
+  list.innerHTML = objs.map(o => {
+    const area  = areas.find(a => a.id === o.area_id);
+    const oKeys = keys.filter(k => k.objetivo_id === o.id);
+    const st    = STATUS_CFG[o.status] || STATUS_CFG.ativo;
+    const cor   = area?.cor || 'var(--acc)';
+    const pct   = calcProgresso(o, oKeys);
+    const open  = objExpandido[o.id];
+
+    const krsHtml = oKeys.map(k => {
+      const kPct = k.valor_alvo > 0 ? Math.min(100, Math.round((k.valor_atual/k.valor_alvo)*100)) : 0;
+      return `<div class="kr-item">
+        <span class="kr-desc">${k.descricao}</span>
+        <div class="kr-bar"><div class="kr-fill" style="width:${kPct}%;background:${cor}"></div></div>
+        <span class="kr-val">${k.valor_atual}/${k.valor_alvo} ${k.unidade} (${kPct}%)</span>
+        <button class="kr-edit-btn" onclick="openKrModal('${k.id}','${o.id}')">
+          <i class="ti ti-pencil" style="font-size:12px"></i>
+        </button>
+      </div>`;
+    }).join('');
+
+    return `<div class="obj-card">
+      <div class="obj-header" onclick="toggleObj('${o.id}')">
+        <div class="obj-icon" style="background:${cor}">
+          <i class="ti ${o.icone}" aria-hidden="true"></i>
+        </div>
+        <span class="obj-nome">${o.nome}</span>
+        ${area ? `<span style="font-size:11px;color:var(--text-muted)">${area.nome.split(' ')[0]}</span>` : ''}
+        <span class="obj-metod">${METODS.find(m=>m.key===o.metodologia)?.label||o.metodologia}</span>
+        <span class="obj-status-badge ${st.cls}">${st.label}</span>
+        <i class="ti ${open?'ti-chevron-up':'ti-chevron-down'}" style="font-size:13px;color:var(--text-muted)"></i>
+      </div>
+      <div class="obj-progress-row">
+        <div class="obj-progress-bar">
+          <div class="obj-progress-fill" style="width:${pct}%;background:${cor}"></div>
+        </div>
+        <span class="obj-progress-pct">${pct}%</span>
+      </div>
+      ${open ? `
+      <div class="keys-section">
+        ${oKeys.length ? krsHtml : '<div style="font-size:12px;color:var(--text-muted);padding:4px 0">Nenhum Key Result ainda.</div>'}
+      </div>
+      <div class="obj-actions">
+        <button class="btn-ghost" onclick="openKrModal(null,'${o.id}')">
+          <i class="ti ti-plus"></i> Key Result
+        </button>
+        <button class="btn-ghost" onclick="openWizard('${o.id}')">
+          <i class="ti ti-pencil"></i> Editar
+        </button>
+        <button class="btn-ghost" onclick="deleteObj('${o.id}')" style="color:#E05555;border-color:#E05555">
+          <i class="ti ti-trash"></i>
+        </button>
+      </div>` : ''}
+    </div>`;
+  }).join('');
+}
+
+function toggleObj(id) {
+  objExpandido[id] = !objExpandido[id];
+  renderObjetivos();
+}
+
+function calcProgresso(obj, oKeys) {
+  if (!oKeys.length) return obj.progresso || 0;
+  const avg = oKeys.reduce((s,k) => s + (k.valor_alvo > 0 ? Math.min(100,(k.valor_atual/k.valor_alvo)*100) : 0), 0) / oKeys.length;
+  return Math.round(avg);
+}
+
+// ── WIZARD ─────────────────────────────────────
+function openWizard(objId) {
+  editingObjId = objId || null;
+  wizardStep   = editingObjId ? 2 : 1;
+  wizardMetod  = 'livre';
+
+  if (editingObjId) {
+    const o = objetivos.find(x => x.id === editingObjId);
+    if (o) { wizardMetod = o.metodologia; currentIcon = o.icone; }
+  } else {
+    currentIcon = 'ti-target';
+  }
+
+  renderWizardStep();
+  document.getElementById('modal').style.display = 'flex';
+}
+
+function closeModal() {
+  document.getElementById('modal').style.display = 'none';
+  editingObjId = null;
+}
+
+function renderWizardStep() {
+  const isEdit = !!editingObjId;
+  const o = isEdit ? objetivos.find(x => x.id === editingObjId) : null;
+
+  document.getElementById('modal-step').textContent =
+    isEdit ? 'Editar objetivo' : `Passo ${wizardStep} de 3`;
+  document.getElementById('modal-title').textContent =
+    wizardStep === 1 ? 'Qual metodologia usar?' :
+    wizardStep === 2 ? 'Informações do objetivo' : 'Campos específicos';
+
+  if (wizardStep === 1) {
+    document.getElementById('modal-body').innerHTML = `
+      <div class="metod-grid">
+        ${METODS.map(m => `
+          <button class="metod-btn${wizardMetod===m.key?' active':''}" onclick="selectMetod('${m.key}')">
+            <i class="ti ${m.icon}" style="font-size:20px;color:var(--acc)"></i>
+            <span class="metod-btn-label">${m.label}</span>
+            <span class="metod-btn-sub">${m.sub}</span>
+          </button>`).join('')}
+      </div>`;
+    document.getElementById('modal-actions').innerHTML = `
+      <button class="btn-s" onclick="closeModal()">Cancelar</button>
+      <button class="btn-p" onclick="wizardNext()">Próximo <i class="ti ti-arrow-right"></i></button>`;
+
+  } else if (wizardStep === 2) {
+    const ciclo = ciclos[cicloIdx];
+    document.getElementById('modal-body').innerHTML = `
+      <div class="frow">
+        <div class="fl" style="flex:0 0 auto">
+          <label>Ícone</label>
+          <button class="btn-ghost" onclick="pickObjIcon()" style="padding:6px 10px">
+            <i class="ti ${currentIcon}" id="obj-icon-prev" style="font-size:18px"></i> Escolher
+          </button>
+        </div>
+        <div class="fl">
+          <label>Nome do objetivo</label>
+          <input class="fi" id="f-nome" type="text" value="${o?.nome||''}" placeholder="O que quer alcançar?">
+        </div>
+      </div>
+      <div class="frow">
+        <div class="fl">
+          <label>Área</label>
+          <select class="fsel" id="f-area">
+            <option value="">Sem área</option>
+            ${areas.map(a=>`<option value="${a.id}"${o?.area_id===a.id?' selected':''}>${a.nome}</option>`).join('')}
+          </select>
+        </div>
+        <div class="fl">
+          <label>Status</label>
+          <select class="fsel" id="f-status">
+            ${['ativo','pausado','concluido','cancelado'].map(s=>
+              `<option value="${s}"${o?.status===s?' selected':''}>${STATUS_CFG[s].label}</option>`).join('')}
+          </select>
+        </div>
+      </div>
+      <div class="fl">
+        <label>Ciclo</label>
+        <select class="fsel" id="f-ciclo">
+          ${ciclos.map(c=>`<option value="${c.id}"${(o?.ciclo_id||ciclo?.id)===c.id?' selected':''}>${c.nome}</option>`).join('')}
+        </select>
+      </div>`;
+    document.getElementById('modal-actions').innerHTML = `
+      ${isEdit ? `<button class="btn-d" onclick="deleteObj('${editingObjId}')"><i class="ti ti-trash"></i> Excluir</button>` : ''}
+      <button class="btn-s" onclick="${isEdit?'closeModal()':'wizardBack()'}">
+        ${isEdit ? 'Cancelar' : '<i class="ti ti-arrow-left"></i> Voltar'}
+      </button>
+      <button class="btn-p" onclick="${isEdit?'saveObj()':'wizardNext()'}">
+        ${isEdit ? 'Salvar' : 'Próximo <i class="ti ti-arrow-right"></i>'}
+      </button>`;
+
+  } else if (wizardStep === 3) {
+    document.getElementById('modal-body').innerHTML = renderMetodFields(wizardMetod);
+    document.getElementById('modal-actions').innerHTML = `
+      <button class="btn-s" onclick="wizardBack()"><i class="ti ti-arrow-left"></i> Voltar</button>
+      <button class="btn-p" onclick="saveObj()">Salvar objetivo</button>`;
+  }
+}
+
+function selectMetod(key) {
+  wizardMetod = key;
+  document.querySelectorAll('.metod-btn').forEach(b => b.classList.remove('active'));
+  document.querySelector(`.metod-btn[onclick*="${key}"]`)?.classList.add('active');
+}
+
+function wizardNext() { wizardStep++; renderWizardStep(); }
+function wizardBack() { wizardStep--; renderWizardStep(); }
+
+function pickObjIcon() {
+  if (typeof openIconPicker === 'function') {
+    openIconPicker(icon => {
+      currentIcon = icon;
+      document.getElementById('obj-icon-prev').className = `ti ${icon}`;
+    }, currentIcon);
+  }
+}
+
+function renderMetodFields(metod) {
+  const fields = {
+    okr: `
+      <p style="font-size:12px;color:var(--text-muted);margin-bottom:.8rem">
+        Os Key Results serão adicionados após salvar o objetivo.
+      </p>
+      <div class="fl"><label>Objetivo inspirador</label>
+        <textarea class="fta" id="mf-obj" placeholder="Frase aspiracional que descreve o resultado"></textarea></div>`,
+    smart: `
+      <div class="fl"><label>Específico — o que exatamente?</label><textarea class="fta" id="mf-esp"></textarea></div>
+      <div class="fl"><label>Mensurável — como vou medir?</label><textarea class="fta" id="mf-men"></textarea></div>
+      <div class="fl"><label>Atingível — por que é realista?</label><textarea class="fta" id="mf-ati"></textarea></div>
+      <div class="fl"><label>Relevante — qual área serve?</label><textarea class="fta" id="mf-rel"></textarea></div>`,
+    woop: `
+      <div class="fl"><label>Wish — o que desejo alcançar?</label><textarea class="fta" id="mf-wish"></textarea></div>
+      <div class="fl"><label>Outcome — como vai ser quando alcançar?</label><textarea class="fta" id="mf-out"></textarea></div>
+      <div class="fl"><label>Obstacle — maior obstáculo interno?</label><textarea class="fta" id="mf-obs"></textarea></div>
+      <div class="fl"><label>Plan — se [obstáculo], então [ação]</label><textarea class="fta" id="mf-plan"></textarea></div>`,
+    fear_setting: `
+      <div class="fl"><label>O que de pior pode acontecer?</label><textarea class="fta" id="mf-pior"></textarea></div>
+      <div class="fl"><label>Probabilidade (1-10)</label><input class="fi" id="mf-prob" type="number" min="1" max="10" value="5"></div>
+      <div class="fl"><label>O que faria se acontecesse?</label><textarea class="fta" id="mf-plano"></textarea></div>
+      <div class="fl"><label>Qual o custo de NÃO tentar?</label><textarea class="fta" id="mf-custo"></textarea></div>`,
+    '5_porques': `
+      <div class="fl"><label>Por que quero isso?</label><textarea class="fta" id="mf-p1"></textarea></div>
+      <div class="fl"><label>Por que isso importa?</label><textarea class="fta" id="mf-p2"></textarea></div>
+      <div class="fl"><label>Por que esse motivo importa?</label><textarea class="fta" id="mf-p3"></textarea></div>
+      <div class="fl"><label>Por que esse nível importa?</label><textarea class="fta" id="mf-p4"></textarea></div>
+      <div class="fl"><label>Qual é a causa raiz real?</label><textarea class="fta" id="mf-p5"></textarea></div>`,
+    livre: `
+      <div class="fl"><label>Contexto e motivação</label>
+        <textarea class="fta" id="mf-livre" style="min-height:100px" placeholder="Descreva o objetivo livremente"></textarea></div>`,
+  };
+  return fields[metod] || fields.livre;
+}
+
+function buildDescricao() {
+  const metod = wizardMetod;
+  const vals = {};
+  const get = id => document.getElementById(id)?.value?.trim() || '';
+  if (metod==='okr')          vals.obj = get('mf-obj');
+  if (metod==='smart')        { vals.esp=get('mf-esp');vals.men=get('mf-men');vals.ati=get('mf-ati');vals.rel=get('mf-rel'); }
+  if (metod==='woop')         { vals.wish=get('mf-wish');vals.out=get('mf-out');vals.obs=get('mf-obs');vals.plan=get('mf-plan'); }
+  if (metod==='fear_setting') { vals.pior=get('mf-pior');vals.prob=get('mf-prob');vals.plano=get('mf-plano');vals.custo=get('mf-custo'); }
+  if (metod==='5_porques')    { vals.p1=get('mf-p1');vals.p2=get('mf-p2');vals.p3=get('mf-p3');vals.p4=get('mf-p4');vals.p5=get('mf-p5'); }
+  if (metod==='livre')        vals.livre = get('mf-livre');
+  return JSON.stringify(vals);
+}
+
+async function saveObj() {
+  const nome = document.getElementById('f-nome')?.value?.trim();
+  if (!nome) { alert('Nome é obrigatório'); return; }
+  const payload = {
+    nome,
+    icone:       currentIcon,
+    area_id:     document.getElementById('f-area')?.value     || null,
+    ciclo_id:    document.getElementById('f-ciclo')?.value    || null,
+    status:      document.getElementById('f-status')?.value   || 'ativo',
+    metodologia: wizardMetod,
+    descricao:   wizardStep === 3 ? buildDescricao() : (editingObjId ? objetivos.find(x=>x.id===editingObjId)?.descricao || '' : ''),
+    atualizado_em: new Date().toISOString(),
+  };
+  if (editingObjId) {
+    await window.db.from('objetivos').update(payload).eq('id', editingObjId);
+  } else {
+    const maxOrdem = objetivos.length ? Math.max(...objetivos.map(o=>o.ordem||0)) : 0;
+    const { data } = await window.db.from('objetivos').insert({ ...payload, ordem: maxOrdem+1 }).select().single();
+    if (data) objExpandido[data.id] = true;
+  }
+  closeModal();
+  await loadObjetivos();
+}
+
+async function deleteObj(id) {
+  if (!confirm('Excluir este objetivo e seus Key Results?')) return;
+  await window.db.from('objetivos').delete().eq('id', id);
+  closeModal();
+  await loadObjetivos();
+}
+
+// ── KEY RESULTS ────────────────────────────────
+function openKrModal(krId, objId) {
+  editingKrId    = krId;
+  editingKrObjId = objId;
+  const kr = krId ? keys.find(k => k.id === krId) : null;
+
+  document.getElementById('kr-modal-title').textContent = kr ? 'Editar Key Result' : 'Novo Key Result';
+  document.getElementById('kr-del-btn').style.display   = kr ? 'inline-flex' : 'none';
+
+  document.getElementById('kr-modal-body').innerHTML = `
+    <div class="fl">
+      <label>Descrição</label>
+      <input class="fi" id="kr-desc" type="text" value="${kr?.descricao||''}" placeholder="O que mede este resultado?">
+    </div>
+    <div class="frow">
+      <div class="fl">
+        <label>Valor atual</label>
+        <input class="fi" id="kr-atual" type="number" value="${kr?.valor_atual||0}" step="0.1">
+      </div>
+      <div class="fl">
+        <label>Valor alvo</label>
+        <input class="fi" id="kr-alvo" type="number" value="${kr?.valor_alvo||100}" step="0.1">
+      </div>
+      <div class="fl" style="flex:0 0 80px">
+        <label>Unidade</label>
+        <input class="fi" id="kr-unit" type="text" value="${kr?.unidade||'%'}" placeholder="%">
+      </div>
+    </div>
+    <div class="fl">
+      <label>Status</label>
+      <select class="fsel" id="kr-status">
+        ${['ativo','concluido','cancelado'].map(s=>
+          `<option value="${s}"${kr?.status===s?' selected':''}>${STATUS_CFG[s]?.label||s}</option>`).join('')}
+      </select>
+    </div>`;
+
+  document.getElementById('modal-kr').style.display = 'flex';
+}
+
+function closeKrModal() {
+  document.getElementById('modal-kr').style.display = 'none';
+  editingKrId = editingKrObjId = null;
+}
+
+async function saveKr() {
+  const desc = document.getElementById('kr-desc').value.trim();
+  if (!desc) { alert('Descrição obrigatória'); return; }
+  const payload = {
+    descricao:    desc,
+    valor_atual:  parseFloat(document.getElementById('kr-atual').value) || 0,
+    valor_alvo:   parseFloat(document.getElementById('kr-alvo').value)  || 100,
+    unidade:      document.getElementById('kr-unit').value.trim() || '%',
+    status:       document.getElementById('kr-status').value,
+    atualizado_em: new Date().toISOString(),
+  };
+  if (editingKrId) {
+    await window.db.from('keys').update(payload).eq('id', editingKrId);
+  } else {
+    await window.db.from('keys').insert({ ...payload, objetivo_id: editingKrObjId });
+  }
+  closeKrModal();
+  await loadObjetivos();
+}
+
+async function deleteKr() {
+  if (!editingKrId || !confirm('Excluir este Key Result?')) return;
+  await window.db.from('keys').delete().eq('id', editingKrId);
+  closeKrModal();
+  await loadObjetivos();
+}
+</script>
+</body>
+</html>
