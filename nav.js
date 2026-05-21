@@ -1,12 +1,12 @@
 /* ═══════════════════════════════════════════════
-   LifeOS · nav.js v3
+   LifeOS · nav.js v4
    Sidebar + ⌘K Busca Global + Tema
    ═══════════════════════════════════════════════ */
 
 const SUPABASE_URL = 'https://hkrbvgahmvhvcerthler.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_f8BD685R8Tx7clXMKvGvtA_lYu4njJy';
 
-const currentPage = window.location.pathname.split('/').pop() || 'index.html';
+const currentPage = window.location.pathname.split('/').pop().pop() || 'index.html';
 
 // ── NAVEGAÇÃO ────────────────────────────────────
 const NAV_GROUPS = [
@@ -39,36 +39,34 @@ const NAV_GROUPS = [
   {
     label: 'Sistema',
     items: [
-      { href:'areas.html', icon:'ti-map', label:'Áreas', id:'areas.html' },
-      { href:'#', icon:'ti-target',   label:'OKRs',      locked:true },
-      { href:'#', icon:'ti-rocket',   label:'Projetos',  locked:true },
-      { href:'#', icon:'ti-checkbox', label:'Tarefas',   locked:true },
+      { href:'areas.html',            icon:'ti-map',          label:'Áreas',      id:'areas.html'            },
+      { href:'okrs.html',             icon:'ti-target',       label:'OKRs',       id:'okrs.html'             },
+      { href:'projetos.html',         icon:'ti-rocket',       label:'Projetos',   id:'projetos.html'         },
+      { href:'dashboard-medico.html', icon:'ti-stethoscope',  label:'Residência', id:'dashboard-medico.html' },
+      { href:'#', icon:'ti-checkbox', label:'Tarefas', locked:true },
     ]
   },
   {
     label: 'Identidade',
     items: [
-      { href:'valores.html',    icon:'ti-diamond',    label:'Valores',    id:'valores.html'    },
-      { href:'identidade.html', icon:'ti-user-heart', label:'Eu',         id:'identidade.html' },
-      { href:'#', icon:'ti-notebook',   label:'Diário Livre', locked:true },
+      { href:'valores.html',    icon:'ti-diamond',    label:'Valores', id:'valores.html'    },
+      { href:'identidade.html', icon:'ti-user-heart', label:'Eu',      id:'identidade.html' },
+      { href:'#', icon:'ti-notebook', label:'Diário Livre', locked:true },
     ]
   },
 ];
 
-// ── UTILS DE DATA (antes do SEARCH_ITEMS para poder usar aqui) ────
+// ── UTILS DE DATA (antes do SEARCH_ITEMS) ─────────
 function todayISO() { return new Date().toISOString().split('T')[0]; }
-
-function formatDate(iso) {
-  const d = new Date(iso + 'T12:00:00');
-  return d.toLocaleDateString('pt-BR', { weekday:'long', day:'numeric', month:'long' });
-}
-
 function addDays(iso, n) {
   const d = new Date(iso + 'T12:00:00');
   d.setDate(d.getDate() + n);
   return d.toISOString().split('T')[0];
 }
-
+function formatDate(iso) {
+  const d = new Date(iso + 'T12:00:00');
+  return d.toLocaleDateString('pt-BR', { weekday:'long', day:'numeric', month:'long' });
+}
 function weekStart(iso) {
   const d = new Date(iso + 'T12:00:00');
   const day = d.getDay();
@@ -76,29 +74,27 @@ function weekStart(iso) {
   d.setDate(d.getDate() + diff);
   return d.toISOString().split('T')[0];
 }
-
 function weekDays(monday) { return Array.from({length:7},(_,i) => addDays(monday, i)); }
-
 function shortDay(iso) {
   return new Date(iso+'T12:00:00').toLocaleDateString('pt-BR',{weekday:'short'}).replace('.','');
 }
-
 function isToday(iso) { return iso === todayISO(); }
 
 // ── ITENS DO ⌘K ──────────────────────────────────
 const SEARCH_ITEMS = [
-  { label:'Dashboard',      href:'dashboard.html',   icon:'ti-layout-dashboard', cat:'Módulos'      },
-  { label:'Caderno RD',     href:'index.html',        icon:'ti-brain',            cat:'Módulos'      },
-  { label:'Diário',         href:'diario.html',       icon:'ti-calendar-event',   cat:'Módulos'      },
-  { label:'Hábitos',        href:'habitos.html',      icon:'ti-checkbox',         cat:'Módulos'      },
-  { label:'Calendário',     href:'calendario.html',   icon:'ti-calendar',         cat:'Módulos'      },
-  { label:'Semanal',        href:'semanal.html',      icon:'ti-calendar-week',    cat:'Módulos'      },
-  { label:'Configurações',  href:'settings.html',     icon:'ti-settings',         cat:'Sistema'      },
-  { label:'Áreas',      icon:'ti-map',        href:'areas.html',      cat:'Módulos', desc:'Os 6 domínios da vida'  },
-  { label:'Valores',    icon:'ti-diamond',    href:'valores.html',    cat:'Módulos', desc:'Filtro de decisões'      },
-  { label:'Eu',         icon:'ti-user-heart', href:'identidade.html', cat:'Módulos', desc:'Médico Arquiteto'         },
-  { label:'Semana 1 · Sono',    href:'index.html?s=1', icon:'ti-moon',   cat:'Caderno RD'   },
-  { label:'Semana 2 · Hábitos', href:'index.html?s=2', icon:'ti-refresh',cat:'Caderno RD'   },
+  { label:'Dashboard',   href:'dashboard.html',   icon:'ti-layout-dashboard', cat:'Módulos' },
+  { label:'Caderno RD',  href:'index.html',        icon:'ti-brain',            cat:'Módulos' },
+  { label:'Diário',      href:'diario.html',       icon:'ti-calendar-event',   cat:'Módulos' },
+  { label:'Hábitos',     href:'habitos.html',      icon:'ti-checkbox',         cat:'Módulos' },
+  { label:'Calendário',  href:'calendario.html',   icon:'ti-calendar',         cat:'Módulos' },
+  { label:'Semanal',     href:'semanal.html',      icon:'ti-calendar-week',    cat:'Módulos' },
+  { label:'Áreas',       href:'areas.html',        icon:'ti-map',              cat:'Módulos', desc:'Os 6 domínios da vida'   },
+  { label:'OKRs',        href:'okrs.html',         icon:'ti-target',           cat:'Módulos', desc:'Objetivos e Key Results' },
+  { label:'Projetos',    href:'projetos.html',     icon:'ti-rocket',           cat:'Módulos', desc:'Campanhas e estágios'    },
+  { label:'Residência',  href:'dashboard-medico.html', icon:'ti-stethoscope', cat:'Módulos', desc:'Dashboard médico · R2'   },
+  { label:'Valores',     href:'valores.html',      icon:'ti-diamond',          cat:'Módulos', desc:'Filtro de decisões'      },
+  { label:'Eu',          href:'identidade.html',   icon:'ti-user-heart',       cat:'Módulos', desc:'Médico Arquiteto'        },
+  { label:'Configurações', href:'settings.html',   icon:'ti-settings',         cat:'Sistema' },
   {
     label: 'Diário de hoje',
     icon:  'ti-calendar-event',
@@ -139,9 +135,9 @@ function renderNav() {
   NAV_GROUPS.forEach(g => {
     html += `<div class="sb-section">${g.label}</div>`;
     g.items.forEach(item => {
-      const active  = item.id === currentPage;
-      const locked  = item.locked;
-      const badge   = item.badge ? `<span class="sb-badge">${item.badge}</span>` : '';
+      const active = item.id === currentPage;
+      const locked = item.locked;
+      const badge  = item.badge ? `<span class="sb-badge">${item.badge}</span>` : '';
       html += `
         <a href="${locked ? '#' : item.href}"
           class="sb-item${active ? ' active' : ''}${locked ? ' locked' : ''}"
@@ -167,7 +163,6 @@ function renderNav() {
 
   sb.innerHTML = html;
 
-  // Aplica papel guardado
   const prefs = JSON.parse(localStorage.getItem('lifeos-prefs') || '{}');
   if (prefs.papel) {
     const el = document.getElementById('sb-papel');
@@ -253,12 +248,12 @@ function renderResults(q) {
   _searchResults = query
     ? SEARCH_ITEMS.filter(i =>
         i.label.toLowerCase().includes(query) ||
-        i.cat.toLowerCase().includes(query))
+        i.cat.toLowerCase().includes(query) ||
+        (i.desc||'').toLowerCase().includes(query))
     : SEARCH_ITEMS;
 
   _searchIdx = -1;
 
-  // Agrupa por categoria
   const grouped = {};
   _searchResults.forEach(item => {
     if (!grouped[item.cat]) grouped[item.cat] = [];
@@ -319,8 +314,7 @@ function handleSearchKey(e) {
   } else if (e.key === 'Enter') {
     e.preventDefault();
     if (_searchIdx >= 0 && items[_searchIdx]) {
-      const idx = parseInt(items[_searchIdx].dataset.idx);
-      gkSelect(idx);
+      gkSelect(parseInt(items[_searchIdx].dataset.idx));
     } else if (items.length > 0) {
       gkSelect(0);
     }
@@ -339,15 +333,9 @@ function updateSearchHighlight(items) {
 function gkSelect(idx) {
   const item = _searchResults[idx];
   if (!item) return;
-  if (item.action === 'toggleTheme') {
-    toggleTheme();
-    closeSearch();
-    return;
-  }
+  if (item.action === 'toggleTheme') { toggleTheme(); closeSearch(); return; }
   closeSearch();
-  if (item.href && item.href !== '#') {
-    window.location.href = item.href;
-  }
+  if (item.href && item.href !== '#') window.location.href = item.href;
 }
 
 function _gkEsc(e) { if (e.key === 'Escape') closeSearch(); }
@@ -371,7 +359,6 @@ document.addEventListener('DOMContentLoaded', () => {
   initSupabase();
 });
 
-// ⌘K atalho global
 document.addEventListener('keydown', e => {
   if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
     e.preventDefault();
