@@ -39,7 +39,7 @@ const NAV_GROUPS = [
   {
     label: 'Sistema',
     items: [
-      { href:'#', icon:'ti-map',      label:'Áreas',     locked:true },
+      { href:'areas.html', icon:'ti-map', label:'Áreas', id:'areas.html' },
       { href:'#', icon:'ti-target',   label:'OKRs',      locked:true },
       { href:'#', icon:'ti-rocket',   label:'Projetos',  locked:true },
       { href:'#', icon:'ti-checkbox', label:'Tarefas',   locked:true },
@@ -48,8 +48,8 @@ const NAV_GROUPS = [
   {
     label: 'Identidade',
     items: [
-      { href:'#', icon:'ti-diamond',    label:'Valores',    locked:true },
-      { href:'#', icon:'ti-user-heart', label:'Eu',         locked:true },
+      { href:'valores.html',    icon:'ti-diamond',    label:'Valores',    id:'valores.html'    },
+      { href:'identidade.html', icon:'ti-user-heart', label:'Eu',         id:'identidade.html' },
       { href:'#', icon:'ti-notebook',   label:'Diário Livre', locked:true },
     ]
   },
@@ -94,6 +94,9 @@ const SEARCH_ITEMS = [
   { label:'Calendário',     href:'calendario.html',   icon:'ti-calendar',         cat:'Módulos'      },
   { label:'Semanal',        href:'semanal.html',      icon:'ti-calendar-week',    cat:'Módulos'      },
   { label:'Configurações',  href:'settings.html',     icon:'ti-settings',         cat:'Sistema'      },
+  { label:'Áreas',      icon:'ti-map',        href:'areas.html',      cat:'Módulos', desc:'Os 6 domínios da vida'  },
+  { label:'Valores',    icon:'ti-diamond',    href:'valores.html',    cat:'Módulos', desc:'Filtro de decisões'      },
+  { label:'Eu',         icon:'ti-user-heart', href:'identidade.html', cat:'Módulos', desc:'Médico Arquiteto'         },
   { label:'Semana 1 · Sono',    href:'index.html?s=1', icon:'ti-moon',   cat:'Caderno RD'   },
   { label:'Semana 2 · Hábitos', href:'index.html?s=2', icon:'ti-refresh',cat:'Caderno RD'   },
   {
